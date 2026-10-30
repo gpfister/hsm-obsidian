@@ -1,0 +1,6 @@
+{
+  "summary":  "Specification document for configuring nRF52840 USB descriptors with FICR Bluetooth device address serial numbers, protocol identifiers, and testing firmware update workflow.",
+  "updatedAt":  "2026-10-30T23:28:13.270060Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

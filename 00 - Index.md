@@ -23,6 +23,9 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Architecture/USB Composite Stack|USB Composite Stack]] — Dual CDC-ACM Virtual COM Ports (Console vs HSM API).
 - [[Architecture/HSM State Machine|HSM State Machine]] — State transitions and RGB LED indicators.
 
+### 🧩 Feature Specifications
+- [[features/usb-descriptors-ble-address|USB Descriptors & Device Identification]] — Deterministic hardware BLE serial numbers, macOS CDC-ACM port allocation, and multi-device discovery.
+
 ### 📐 Specifications
 - [[Specification/USB Descriptors and Device Identification|USB Descriptors & Device Identification]] — FICR BLE address serial number, protocol IDs, and macOS device node mapping.
 - [[Specification/YubiHSM Protocol|YubiHSM Protocol]] — Binary packet framing, command opcodes, and response payloads.
@@ -38,6 +41,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Development/CLI Reference|CLI Reference]] — Complete documentation for `hsmutil` CLI and BubbleTea TUI.
 
 ### 📜 Sessions & Transcripts
+- [[Sessions/bd3d2f5d-cc3c-4513-97fd-6b35e8fb0ddc|2026-10-31 - USB Descriptors & Device Identification (Phase 2 Specification)]] — Technical specification, architectural mapping, and verification gates.
 - [[Sessions/2026-10-29 - Multi-Repo Initialization|2026-10-29 - Multi-Repo Initialization]] — Genesis session establishing the multirepo workspace.
 
 ### 📊 Monitoring & Telemetry

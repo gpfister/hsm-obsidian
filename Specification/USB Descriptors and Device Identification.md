@@ -8,6 +8,8 @@ tags:
   - ble-address
   - dfu
 created: 2026-10-31
+feature_note: "[[features/usb-descriptors-ble-address|USB Descriptors & Device Identification Feature]]"
+session: "[[Sessions/bd3d2f5d-cc3c-4513-97fd-6b35e8fb0ddc|Phase 2 Specification Session]]"
 ---
 
 # USB Descriptors & Device Identification Specification
@@ -177,7 +179,9 @@ sequenceDiagram
 
 ## 5. Related Documents
 
+- [[features/usb-descriptors-ble-address|Feature Specification: USB Descriptors & Device Identification]]
 - [[Architecture/USB Composite Stack|USB Composite Stack Architecture]]
 - [[Architecture/System Architecture|System Architecture]]
 - [[Specification/YubiHSM Protocol|YubiHSM Protocol Specification]]
 - [[Development/CLI Reference|CLI Reference]]
+- [[Sessions/bd3d2f5d-cc3c-4513-97fd-6b35e8fb0ddc|Phase 2 Specification Session]]
