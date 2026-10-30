@@ -39,5 +39,8 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 ### 📜 Sessions & Transcripts
 - [[Sessions/2026-10-29 - Multi-Repo Initialization|2026-10-29 - Multi-Repo Initialization]] — Genesis session establishing the multirepo workspace.
 
+### 📊 Monitoring & Telemetry
+- [[Monitoring/2026-10-30 - Hardware Serial Console Monitoring|Hardware Serial Console Monitoring (PCA10059)]] — Stream surveillance for `/dev/cu.usbmodem83101` (115200 baud), boot sequence, PSA crypto, and health verification.
+
 ### 🎯 Roadmap & Planning
 - [[Plan/Project Roadmap|Project Roadmap]] — Milestones, future cryptographic extensions, and security certification targets.
