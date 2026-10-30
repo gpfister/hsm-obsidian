@@ -11,7 +11,7 @@ created: 2026-10-29
 
 # nRF52840 HSM Dongle Documentation Vault
 
-Welcome to the central engineering documentation vault for the **nRF52840 Hardware Security Module (HMS) USB Dongle** project (`ncs-nrf52840dongle-kms`).
+Welcome to the central engineering documentation vault for the **nRF52840 Hardware Security Module (HSM) USB Dongle** project (`ncs-nrf52840dongle-kms`).
 
 ---
 
@@ -25,7 +25,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 
 ### 📐 Specifications
 - [[Specification/YubiHSM Protocol|YubiHSM Protocol]] — Binary packet framing, command opcodes, and response payloads.
-- [[Specification/Firmware DFU Protocol|Firmware DFU Protocol]] — Streaming format for `hmsutil firmware update`.
+- [[Specification/Firmware DFU Protocol|Firmware DFU Protocol]] — Streaming format for `hsmutil firmware update`.
 
 ### 🔌 Hardware
 - [[Hardware/nRF52840 Dongle PCA10059|nRF52840 Dongle PCA10059]] — Pinout, RGB LEDs, buttons, and crystal oscillators.
@@ -34,7 +34,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 ### 💻 Development & Workflows
 - [[Development/Environment Setup|Environment Setup]] — Toolchain prerequisites (NCS v3.4.1, UV, Go 1.24+).
 - [[Development/Build and Flash|Build and Flash]] — Firmware compilation, sysbuild, and J-Link programming.
-- [[Development/CLI Reference|CLI Reference]] — Complete documentation for `hmsutil` CLI and BubbleTea TUI.
+- [[Development/CLI Reference|CLI Reference]] — Complete documentation for `hsmutil` CLI and BubbleTea TUI.
 
 ### 📜 Sessions & Transcripts
 - [[Sessions/2026-10-29 - Multi-Repo Initialization|2026-10-29 - Multi-Repo Initialization]] — Genesis session establishing the multirepo workspace.

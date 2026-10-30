@@ -9,12 +9,12 @@ created: 2026-10-29
 
 # System Architecture
 
-The **ncs-nrf52840dongle-kms** workspace implements a Hardware Security Module (HSM) on an **nRF52840 Dongle** (`PCA10059`), communicating via a dual CDC-ACM USB interface and controlled by the cross-platform CLI `hmsutil`.
+The **ncs-nrf52840dongle-kms** workspace implements a Hardware Security Module (HSM) on an **nRF52840 Dongle** (`PCA10059`), communicating via a dual CDC-ACM USB interface and controlled by the cross-platform CLI `hsmutil`.
 
 ```mermaid
 graph TD
     subgraph Host ["Host Workstation (Mac / Linux / Windows)"]
-        CLI["hmsutil (Go CLI & BubbleTea TUI)"]
+        CLI["hsmutil (Go CLI & BubbleTea TUI)"]
         CONSOLE["Serial Terminal / Monitor"]
     end
 
@@ -50,6 +50,6 @@ graph TD
 
 The workspace coordinates three independent sub-repositories:
 
-1. **`nrf52840-hms-firmware`**: NCS/Zephyr workspace repository for the dongle firmware, including dual-stage secure boot configurations and pure HSM logic.
-2. **`nrf52840-hms-cli`**: Go repository delivering the `hmsutil` binary for macOS, Linux, and Windows.
-3. **`nrf52840-hms-obsidian`**: Obsidian documentation vault tracking specifications, architecture, and sessions.
+1. **`nrf52840-hsm-firmware`**: NCS/Zephyr workspace repository for the dongle firmware, including dual-stage secure boot configurations and pure HSM logic.
+2. **`nrf52840-hsm-cli`**: Go repository delivering the `hsmutil` binary for macOS, Linux, and Windows.
+3. **`nrf52840-hsm-obsidian`**: Obsidian documentation vault tracking specifications, architecture, and sessions.
