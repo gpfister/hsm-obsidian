@@ -24,6 +24,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Architecture/HSM State Machine|HSM State Machine]] — State transitions and RGB LED indicators.
 
 ### 📐 Specifications
+- [[Specification/USB Descriptors and Device Identification|USB Descriptors & Device Identification]] — FICR BLE address serial number, protocol IDs, and macOS device node mapping.
 - [[Specification/YubiHSM Protocol|YubiHSM Protocol]] — Binary packet framing, command opcodes, and response payloads.
 - [[Specification/Firmware DFU Protocol|Firmware DFU Protocol]] — Streaming format for `hsmutil firmware update`.
 
@@ -40,6 +41,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Sessions/2026-10-29 - Multi-Repo Initialization|2026-10-29 - Multi-Repo Initialization]] — Genesis session establishing the multirepo workspace.
 
 ### 📊 Monitoring & Telemetry
+- [[Monitoring/2026-10-31 - Production Firmware Flashing and First Boot Telemetry|Production Firmware Flashing & First Boot Telemetry]] — J-Link SWD flashing (S/N: 802007333), first-boot verification, CC310 crypto initialization, and dual CDC-ACM enumeration.
 - [[Monitoring/2026-10-30 - Hardware Serial Console Monitoring|Hardware Serial Console Monitoring (PCA10059)]] — Stream surveillance for `/dev/cu.usbmodem83101` (115200 baud), boot sequence, PSA crypto, and health verification.
 
 ### 🎯 Roadmap & Planning
