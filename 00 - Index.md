@@ -54,7 +54,8 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Monitoring/2026-10-31 - Production Firmware Flashing and First Boot Telemetry|Production Firmware Flashing & First Boot Telemetry]] — J-Link SWD flashing (S/N: 802007333), first-boot verification, CC310 crypto initialization, and dual CDC-ACM enumeration.
 - [[Monitoring/2026-10-30 - Hardware Serial Console Monitoring|Hardware Serial Console Monitoring (PCA10059)]] — Stream surveillance for `/dev/cu.usbmodem83101` (115200 baud), boot sequence, PSA crypto, and health verification.
 
-### 🌿 Repository & Branch Status
+### 🌿 Repository, Releases & Status
+- [[Changelog|Workspace Release Changelog]] — Formal releases, milestone deliveries, and post-merge changelog notes.
 - [[git-status|Workspace Git Status]] — Multi-repository branch topologies, commits, active feature tracking, and worktrees.
 
 ### 🎯 Roadmap & Planning

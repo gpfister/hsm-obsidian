@@ -10,24 +10,28 @@ tags:
   - ficr
   - dfu
 created: 2026-10-31
-status: Verified & Pre-Merge Ready (Phase 5)
+updated: 2026-10-31
+status: Merged to main/master (Phase 6 Post-Merge Complete)
 source_artifact: Sessions/attachments/bd3d2f5d-cc3c-4513-97fd-6b35e8fb0ddc/specification.md
 session: "[[Sessions/bd3d2f5d-cc3c-4513-97fd-6b35e8fb0ddc|Phase 2 Specification Session]]"
 branches:
-  firmware: "feature/usb-descriptors-ble-address (53f764b4)"
-  cli: "feature/usb-descriptors-ble-address (201764bc)"
-  libpkcs11: "feature/usb-descriptors-ble-address (65b1dd05)"
+  firmware: "main (merged feature/usb-descriptors-ble-address, commit adb9c1e)"
+  cli: "main (merged feature/usb-descriptors-ble-address, commit c9f4590)"
+  libpkcs11: "main (merged feature/usb-descriptors-ble-address, commit 4673116)"
 ---
 
 # Feature: nRF52840 USB Descriptors & Device Identification
 
 > [!NOTE]
-> **Lifecycle Phase**: Phase 5 (Review / Pre-Merge) Complete.  
-> **Target Branch**: `feature/usb-descriptors-ble-address` (Ready to merge into `master` / `main`)  
-> **Commits**:
-> - Firmware: [`53f764b4`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) (`feat(usb): implement dynamic serial from BLE address and configure interface descriptors`)
-> - CLI: [`201764bc`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) (`feat(cli): implement serial port autodiscovery heuristics and serial targeting`)
-> - PKCS#11: [`65b1dd05`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) (`feat(p11): prioritize suffix '3' AT port and support NRF52840_HSM_SERIAL targeting`)
+> **Lifecycle Phase**: Phase 6 (Merge / Post-Merge Complete).  
+> **Merged Target**: `main` / `master` across all component repositories.  
+> **Release Note**: [[Changelog|Release v0.2.0 - USB Descriptors & Device Identification]].  
+> **Merge Commits**:
+> - Firmware: [`adb9c1e`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) (`docs(firmware): update README with USB descriptors and BLE address details`)
+> - CLI: [`c9f4590`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) (`docs(cli): update README with serial port autodiscovery heuristics and serial targeting`)
+> - PKCS#11: [`4673116`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) (`docs(p11): update README with AT port prioritization and serial targeting`)
+> - Workspace Root: [`4b6d55b`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`docs(root): update workspace README with USB descriptors and BLE device targeting`)
+> - Obsidian Vault: [`c29b40a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) (`docs(vault): record USB descriptors, BLE address serial specification, plan, and session logs`)
 
 ---
 
