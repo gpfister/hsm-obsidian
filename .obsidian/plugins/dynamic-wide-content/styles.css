@@ -1,0 +1,134 @@
+body.dynamic-wide-content {
+  --dynamic-wide-content-max: min(
+    var(--dynamic-wide-content-max-width, 1600px),
+    calc(100vw - var(--dynamic-wide-content-viewport-margin, 64px))
+  );
+}
+
+@supports (width: 1cqw) {
+  body.dynamic-wide-content {
+    --dynamic-wide-content-max: min(
+      var(--dynamic-wide-content-max-width, 1600px),
+      calc(100cqw - var(--dynamic-wide-content-viewport-margin, 64px))
+    );
+  }
+}
+
+body.dynamic-wide-content .workspace-leaf-content[data-type="markdown"] > .view-content {
+  container-type: inline-size;
+}
+
+body.dynamic-wide-content .dynamic-wide-content-overflow-visible,
+body.dynamic-wide-content.dynamic-wide-content-live-preview .markdown-source-view.mod-cm6 .cm-sizer,
+body.dynamic-wide-content.dynamic-wide-content-live-preview .markdown-source-view.mod-cm6 .cm-contentContainer,
+body.dynamic-wide-content.dynamic-wide-content-live-preview .markdown-source-view.mod-cm6 .cm-content {
+  overflow: visible;
+}
+
+body.dynamic-wide-content.dynamic-wide-content-reading.dynamic-wide-content-tables .markdown-rendered .dynamic-wide-content-table-block,
+body.dynamic-wide-content.dynamic-wide-content-reading.dynamic-wide-content-code .markdown-rendered .dynamic-wide-content-code-block,
+body.dynamic-wide-content.dynamic-wide-content-reading.dynamic-wide-content-diagrams .markdown-rendered .dynamic-wide-content-diagram-block,
+body.dynamic-wide-content.dynamic-wide-content-reading.dynamic-wide-content-images .markdown-rendered .dynamic-wide-content-image-block,
+body.dynamic-wide-content.dynamic-wide-content-reading.dynamic-wide-content-tasknotes .markdown-rendered .dynamic-wide-content-tasknotes-block,
+body.dynamic-wide-content.dynamic-wide-content-live-preview.dynamic-wide-content-tables .markdown-source-view.mod-cm6 .dynamic-wide-content-table-block,
+body.dynamic-wide-content.dynamic-wide-content-live-preview.dynamic-wide-content-code .markdown-source-view.mod-cm6 .dynamic-wide-content-code-block,
+body.dynamic-wide-content.dynamic-wide-content-live-preview.dynamic-wide-content-diagrams .markdown-source-view.mod-cm6 .dynamic-wide-content-diagram-block,
+body.dynamic-wide-content.dynamic-wide-content-live-preview.dynamic-wide-content-images .markdown-source-view.mod-cm6 .dynamic-wide-content-image-block,
+body.dynamic-wide-content.dynamic-wide-content-live-preview.dynamic-wide-content-tasknotes .markdown-source-view.mod-cm6 .dynamic-wide-content-tasknotes-block {
+  position: relative;
+  left: 50%;
+  width: max-content;
+  min-width: 100%;
+  max-width: var(--dynamic-wide-content-max);
+  margin-top: var(--tn-relationships-widget-margin-top, 0.75em);
+  margin-bottom: 0.75em;
+  overflow-x: auto;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+}
+
+body.dynamic-wide-content.dynamic-wide-content-tables .markdown-rendered .dynamic-wide-content-table-inner,
+body.dynamic-wide-content.dynamic-wide-content-code .markdown-rendered .dynamic-wide-content-code-inner,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .markdown-rendered .dynamic-wide-content-diagram-inner,
+body.dynamic-wide-content.dynamic-wide-content-images .markdown-rendered .dynamic-wide-content-image-inner,
+body.dynamic-wide-content.dynamic-wide-content-tasknotes .markdown-rendered .dynamic-wide-content-tasknotes-inner,
+body.dynamic-wide-content.dynamic-wide-content-tables .markdown-source-view.mod-cm6 .dynamic-wide-content-table-inner,
+body.dynamic-wide-content.dynamic-wide-content-code .markdown-source-view.mod-cm6 .dynamic-wide-content-code-inner,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .markdown-source-view.mod-cm6 .dynamic-wide-content-diagram-inner,
+body.dynamic-wide-content.dynamic-wide-content-images .markdown-source-view.mod-cm6 .dynamic-wide-content-image-inner,
+body.dynamic-wide-content.dynamic-wide-content-tasknotes .markdown-source-view.mod-cm6 .dynamic-wide-content-tasknotes-inner {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+body.dynamic-wide-content.dynamic-wide-content-tables .markdown-rendered table.dynamic-wide-content-table,
+body.dynamic-wide-content.dynamic-wide-content-tables .markdown-source-view.mod-cm6 table.dynamic-wide-content-table {
+  width: max-content;
+  min-width: 100%;
+}
+
+body.dynamic-wide-content.dynamic-wide-content-diagrams .dynamic-wide-content-diagram-block,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .dynamic-wide-content-diagram-inner,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .plantuml-preview-view,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .block-language-plantuml,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .block-language-plantuml-png,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .block-language-plantuml-svg,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .block-language-puml,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .block-language-puml-png,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .block-language-puml-svg {
+  text-align: start;
+  width: max-content;
+  min-width: 100%;
+}
+
+body.dynamic-wide-content.dynamic-wide-content-tasknotes .is-readable-line-width .dynamic-wide-content-tasknotes-block.tasknotes-relationships-widget,
+body.dynamic-wide-content.dynamic-wide-content-tasknotes .is-readable-line-width .dynamic-wide-content-tasknotes-block.task-card-note-widget {
+  width: max-content;
+  min-width: 100%;
+  max-width: var(--dynamic-wide-content-max);
+  margin-inline: 0;
+}
+
+body.dynamic-wide-content.dynamic-wide-content-tables.dynamic-wide-content-nowrap-tables .markdown-rendered table.dynamic-wide-content-table th,
+body.dynamic-wide-content.dynamic-wide-content-tables.dynamic-wide-content-nowrap-tables .markdown-rendered table.dynamic-wide-content-table td,
+body.dynamic-wide-content.dynamic-wide-content-tables.dynamic-wide-content-nowrap-tables .markdown-source-view.mod-cm6 table.dynamic-wide-content-table th,
+body.dynamic-wide-content.dynamic-wide-content-tables.dynamic-wide-content-nowrap-tables .markdown-source-view.mod-cm6 table.dynamic-wide-content-table td {
+  white-space: nowrap;
+}
+
+body.dynamic-wide-content.dynamic-wide-content-code .markdown-rendered pre.dynamic-wide-content-code-inner > code,
+body.dynamic-wide-content.dynamic-wide-content-code .markdown-source-view.mod-cm6 pre.dynamic-wide-content-code-inner > code {
+  white-space: pre;
+}
+
+body.dynamic-wide-content.dynamic-wide-content-diagrams .dynamic-wide-content-diagram-block img,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .dynamic-wide-content-diagram-block img.dynamic-wide-content-media,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .block-language-plantuml img,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .plantuml-preview-view img,
+body.dynamic-wide-content.dynamic-wide-content-images .dynamic-wide-content-image-block img.dynamic-wide-content-media,
+body.dynamic-wide-content.dynamic-wide-content-images .dynamic-wide-content-image-block img,
+body.dynamic-wide-content.dynamic-wide-content-images .dynamic-wide-content-image-block .dynamic-wide-content-media:not(svg) {
+  display: block;
+  margin-left: 0;
+  margin-right: 0;
+  width: auto;
+  max-width: none;
+  height: auto;
+}
+
+body.dynamic-wide-content.dynamic-wide-content-diagrams .dynamic-wide-content-diagram-block svg.dynamic-wide-content-media,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .dynamic-wide-content-diagram-block svg,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .block-language-plantuml svg,
+body.dynamic-wide-content.dynamic-wide-content-diagrams .plantuml-preview-view svg {
+  display: block;
+  margin-left: 0;
+  margin-right: 0;
+  max-width: 100%;
+  height: auto;
+}
+
+body.dynamic-wide-content.dynamic-wide-content-diagrams .dynamic-wide-content-diagram-block svg[style*="width"],
+body.dynamic-wide-content.dynamic-wide-content-diagrams .block-language-plantuml svg[style*="width"],
+body.dynamic-wide-content.dynamic-wide-content-diagrams .plantuml-preview-view svg[style*="width"] {
+  max-width: none;
+}

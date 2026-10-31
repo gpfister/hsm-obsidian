@@ -1,3 +1,7 @@
+---
+cssclasses:
+  - wide
+---
 # Technical Specification: nRF52840 USB Descriptors & Device Identification Configuration
 
 ## 1. Summary & Problem Motivation

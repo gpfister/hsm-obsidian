@@ -23,6 +23,11 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Architecture/USB Composite Stack|USB Composite Stack]] — Dual CDC-ACM Virtual COM Ports (Console vs HSM API).
 - [[Architecture/HSM State Machine|HSM State Machine]] — State transitions and RGB LED indicators.
 
+#### 📋 Architecture Decision Records (ADRs)
+- [[Architecture/Decisions/ADR-0001 - Hardware BLE Address for Deterministic USB Serial Number|ADR-0001: Hardware BLE Address for USB Serial Number]] — Deterministic macOS TTY synthesis.
+- [[Architecture/Decisions/ADR-0002 - In-Tree Protocol Descriptor Patching vs macOS DriverKit Extension|ADR-0002: In-Tree Protocol Descriptor Patching vs DriverKit]] — Zero-driver CDC-ACM interface tagging.
+- [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]] — Multi-tiered resolution hierarchy for `hsmutil` and PKCS#11.
+
 ### 🧩 Feature Specifications
 - [[features/usb-descriptors-ble-address|USB Descriptors & Device Identification]] — Deterministic hardware BLE serial numbers, macOS CDC-ACM port allocation, and multi-device discovery.
 
@@ -41,6 +46,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Development/CLI Reference|CLI Reference]] — Complete documentation for `hsmutil` CLI and BubbleTea TUI.
 
 ### 📜 Sessions & Transcripts
+- [[Sessions/9f9ae0e3-f181-44f3-8dde-7b25c55cf4e3|2026-10-31 - USB Descriptors & Device Identification (Phases 3-5 Lifecycle)]] — Implementation, hardware validation, and pre-merge documentation tidy-up.
 - [[Sessions/bd3d2f5d-cc3c-4513-97fd-6b35e8fb0ddc|2026-10-31 - USB Descriptors & Device Identification (Phase 2 Specification)]] — Technical specification, architectural mapping, and verification gates.
 - [[Sessions/2026-10-29 - Multi-Repo Initialization|2026-10-29 - Multi-Repo Initialization]] — Genesis session establishing the multirepo workspace.
 
@@ -48,5 +54,9 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Monitoring/2026-10-31 - Production Firmware Flashing and First Boot Telemetry|Production Firmware Flashing & First Boot Telemetry]] — J-Link SWD flashing (S/N: 802007333), first-boot verification, CC310 crypto initialization, and dual CDC-ACM enumeration.
 - [[Monitoring/2026-10-30 - Hardware Serial Console Monitoring|Hardware Serial Console Monitoring (PCA10059)]] — Stream surveillance for `/dev/cu.usbmodem83101` (115200 baud), boot sequence, PSA crypto, and health verification.
 
+### 🌿 Repository & Branch Status
+- [[git-status|Workspace Git Status]] — Multi-repository branch topologies, commits, active feature tracking, and worktrees.
+
 ### 🎯 Roadmap & Planning
 - [[Plan/Project Roadmap|Project Roadmap]] — Milestones, future cryptographic extensions, and security certification targets.
+- [[Plan/USB Descriptors and BLE Identification Implementation Plan|Implementation Plan: USB Descriptors & BLE Device Identification]] — Multi-repository implementation plan across firmware, CLI, PKCS#11, and documentation.

@@ -1,0 +1,12 @@
+{
+  "maxWidth": 1600,
+  "viewportMargin": 64,
+  "widenTables": true,
+  "widenCodeBlocks": true,
+  "widenDiagrams": true,
+  "widenImages": true,
+  "widenTaskNotes": true,
+  "noWrapTableCells": true,
+  "readingView": true,
+  "livePreview": true
+}
