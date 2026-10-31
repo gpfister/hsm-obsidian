@@ -27,9 +27,11 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Architecture/Decisions/ADR-0001 - Hardware BLE Address for Deterministic USB Serial Number|ADR-0001: Hardware BLE Address for USB Serial Number]] — Deterministic macOS TTY synthesis.
 - [[Architecture/Decisions/ADR-0002 - In-Tree Protocol Descriptor Patching vs macOS DriverKit Extension|ADR-0002: In-Tree Protocol Descriptor Patching vs DriverKit]] — Zero-driver CDC-ACM interface tagging.
 - [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]] — Multi-tiered resolution hierarchy for `hsmutil` and PKCS#11.
+- [[Architecture/Decisions/ADR-0004 - Factory Reset Semantics and Safeguards|ADR-0004: Factory Reset Semantics and Safe Erasure Safeguards]] — Irreversible cryptographic teardown, NVS clearing, and interactive CLI safeguards.
 
 ### 🧩 Feature Specifications
 - [[features/usb-descriptors-ble-address|USB Descriptors & Device Identification]] — Deterministic hardware BLE serial numbers, macOS CDC-ACM port allocation, and multi-device discovery.
+- [[features/hsmutil-reset-and-multi-device-disambiguation|Reset Confirmation & Multi-Device Disambiguation]] — Interactive confirmation safeguards, firmware CC310 zeroization, and deterministic multi-dongle CLI targeting.
 
 ### 📐 Specifications
 - [[Specification/USB Descriptors and Device Identification|USB Descriptors & Device Identification]] — FICR BLE address serial number, protocol IDs, and macOS device node mapping.
