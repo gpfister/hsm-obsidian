@@ -15,21 +15,21 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 ---
 
-## [v0.3.0] — 2026-10-31: Factory Reset Safeguards & Multi-Device Auto-Discovery Disambiguation (Pre-Merge Ready)
+## [v0.3.0] — 2026-10-31: Factory Reset Safeguards & Multi-Device Auto-Discovery Disambiguation
 
 > [!NOTE]
 > **Release Highlights**: Implementation of irreversible hardware factory reset zeroization (`keystore_factory_reset`) on CryptoCell CC310 keys (slots 1..32) and Shamir master secret in NVS, interactive confirmation prompt and `-y`/`--yes` bypass in `hsmutil reset`, and strict auto-discovery disambiguation (`ErrMultipleDevicesDetected`) preventing accidental targeting of multiple connected HSM dongles.
 >
-> **Quality Audit**: 100% compliance across code cleanliness, unit tests, integration test harnesses, and cross-platform compilation targets.
+> **Release Status**: Merged via fast-forward into `master` / `main` production branches across all repositories with feature branches pruned. Verified with 100% test pass rate across unit tests, production sysbuilds, and root integration test suites.
 
 ### 1. Summary of Changes
 
-| Subsystem | Source Branch | Target Branch | Commit | Key Additions |
+| Subsystem | Merged Branch | Target Branch | Commit | Key Additions |
 | :--- | :--- | :--- | :--- | :--- |
-| **Firmware** (`nrf52840-hsm-firmware`) | `feature/factory-reset-zeroization` | `main` | [`ae087c1`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `keystore_factory_reset()` wiping CC310 slots 1..32, SSS zeroization, factory defaults restore, NVS persistence, `AT+RESET` & `AT+FACTORYRESET` (Base commit: [`166c307`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware)). |
-| **CLI** (`nrf52840-hsm-cli`) | `feature/reset-safeguard-and-disambiguation` | `main` | [`c110845`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | Interactive reset safeguard prompt `[y/N]`, `-y/--yes` bypass, `ErrMultipleDevicesDetected` disambiguation error, `ResolvePortOrSerial()` (Base commit: [`29659c2`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli)). |
-| **Workspace Root** (`nrf52840-hsm`) | `feature/reset-and-disambiguation-tests` | `master` | [`61a400e`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | Mock PTY factory zeroization, AT client cryptographic reset test assertions, end-to-end integration test coverage (Base commit: [`c4fb7d6`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)). |
-| **Obsidian Vault** (`nrf52840-hsm-obsidian`) | `master` | `master` | Active | ADR-0004, feature specification, implementation plan, pre-merge status sync. |
+| **Firmware** (`nrf52840-hsm-firmware`) | `feature/factory-reset-zeroization` (pruned) | `main` | [`ae087c1`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `keystore_factory_reset()` wiping CC310 slots 1..32, SSS zeroization, factory defaults restore, NVS persistence, `AT+RESET` & `AT+FACTORYRESET` (Base commit: [`166c307`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware)). |
+| **CLI** (`nrf52840-hsm-cli`) | `feature/reset-safeguard-and-disambiguation` (pruned) | `main` | [`c110845`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | Interactive reset safeguard prompt `[y/N]`, `-y/--yes` bypass, `ErrMultipleDevicesDetected` disambiguation error, `ResolvePortOrSerial()` (Base commit: [`29659c2`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli)). |
+| **Workspace Root** (`nrf52840-hsm`) | `feature/reset-and-disambiguation-tests` (pruned) | `master` | [`61a400e`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | Mock PTY factory zeroization, AT client cryptographic reset test assertions, end-to-end integration test coverage (Base commit: [`c4fb7d6`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)). |
+| **Obsidian Vault** (`nrf52840-hsm-obsidian`) | `master` | `master` | [`6ad1077`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | ADR-0004, feature specification, implementation plan, pre-merge & post-merge release records. |
 
 ---
 

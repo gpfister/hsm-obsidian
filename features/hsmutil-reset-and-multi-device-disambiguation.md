@@ -11,7 +11,7 @@ tags:
   - serial-discovery
   - multi-device
 created: 2026-10-31
-status: Pre-Merge Quality Audit Complete (Phase 5 Approved)
+status: Completed & Released (Phase 6 Post-Merge Complete)
 specification: "[[Specification/Reset Confirmation and Multi-Device Disambiguation|Reset Confirmation and Multi-Device Disambiguation Specification]]"
 specification_session: "[[Sessions/36b74c4b-dd01-44e1-9405-48fdc8d21d87|Phase 2 Specification Session]]"
 plan: "[[Plan/Reset Confirmation and Multi-Device Disambiguation Implementation Plan|Reset Confirmation and Multi-Device Disambiguation Implementation Plan]]"
@@ -35,7 +35,7 @@ affected_repositories:
 > **Formal Specification**: [[Specification/Reset Confirmation and Multi-Device Disambiguation|Reset Confirmation and Multi-Device Disambiguation Specification]] (Approved in Session [[Sessions/36b74c4b-dd01-44e1-9405-48fdc8d21d87|36b74c4b]]).  
 > **Architecture Decisions**: [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]] & [[Architecture/Decisions/ADR-0004 - Factory Reset Semantics and Safeguards|ADR-0004: Factory Reset Semantics and Safe Erasure Safeguards]].  
 > **Implementation Plan**: [[Plan/Reset Confirmation and Multi-Device Disambiguation Implementation Plan|Reset Confirmation & Multi-Device Disambiguation Implementation Plan]] (Approved in Session [[Sessions/4b1bb45a-82b0-4966-bacf-254b577ad6f2|4b1bb45a]]).  
-> **Status**: Phase 5 (Review & Quality Audit) Complete. 100% compliance verified across all subsystems. Ready for merge.
+> **Status**: Phase 6 (Merge & Post-Merge) Complete. All subsystem branches fast-forward merged into base branches (`master` / `main`) and pruned. 100% test pass verified. Formally released in [[Changelog|Release v0.3.0]].
 
 ---
 
@@ -375,10 +375,24 @@ The Phase 5 Quality Audit achieved **100% compliance** across all architectural 
 - **Clean Architecture & Domain Separation**: Domain errors (`ErrMultipleDevicesDetected`) remain decoupled in `internal/domain`, while transport discovery and CLI UI are strictly layered.
 - **Fail-Fast Boundary Validation**: `AutoDiscoverPortTargeting()` fails fast before initiating any physical port serial I/O.
 - **Cryptographic Sanity**: Factory reset strictly wipes all CC310 keys, zeroizes RAM master secrets, reverts PIN/retries, and persists unconfigured state to NVS.
-- **Branches Ready to Merge**:
-  1. Workspace root: `feature/reset-and-disambiguation-tests` (`c4fb7d6`) $\rightarrow$ `master`
-  2. Firmware: `feature/factory-reset-zeroization` (`166c307`) $\rightarrow$ `main`
-  3. CLI: `feature/reset-safeguard-and-disambiguation` (`29659c2`) $\rightarrow$ `main`
+- **Pre-Merge Commits**:
+  1. Workspace root: `feature/reset-and-disambiguation-tests` (`61a400e`, base `c4fb7d6`)
+  2. Firmware: `feature/factory-reset-zeroization` (`ae087c1`, base `166c307`)
+  3. CLI: `feature/reset-safeguard-and-disambiguation` (`c110845`, base `29659c2`)
+
+---
+
+### 6.5 Phase 6 Merge & Release Verification
+
+The feature branches were fast-forward merged into base branches with zero divergence, and the feature branches were pruned:
+- **Workspace Root**: `feature/reset-and-disambiguation-tests` $\rightarrow$ `master` at commit [`61a400e`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)
+- **Firmware**: `feature/factory-reset-zeroization` $\rightarrow$ `main` at commit [`ae087c1`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware)
+- **Host CLI**: `feature/reset-safeguard-and-disambiguation` $\rightarrow$ `main` at commit [`c110845`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli)
+
+**Post-Merge Health Check**:
+- `make status` confirmed clean working directories across all repositories.
+- `make integration-test` passed 100% against mock PTY test harness.
+- Formally cataloged in [[Changelog|Release v0.3.0 - Factory Reset Safeguards & Multi-Device Auto-Discovery Disambiguation]].
 
 ---
 
