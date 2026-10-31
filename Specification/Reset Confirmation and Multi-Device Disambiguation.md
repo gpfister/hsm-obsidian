@@ -23,7 +23,7 @@ related_adrs:
 > [!NOTE]
 > **Specification Origin**: Synthesized from [[investigations/2026-10-31-hsmutil-reset-and-multi-device-disambiguation|Investigation Assessment]], [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]], and [[Architecture/Decisions/ADR-0004 - Factory Reset Semantics and Safeguards|ADR-0004: Factory Reset Semantics and Safe Erasure Safeguards]].  
 > **Target Subsystems**: [`nrf52840-hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli), [`nrf52840-hsm-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware), [`scripts`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts).  
-> **Status**: Approved Requirements / Implementation Ready.
+> **Status**: Verified & Pre-Merge Ready (Phase 5 Quality Audit Passed 100%). Ready to merge into `master`/`main`.
 
 ---
 

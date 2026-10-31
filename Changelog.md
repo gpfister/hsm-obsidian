@@ -15,6 +15,64 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 ---
 
+## [v0.3.0] — 2026-10-31: Factory Reset Safeguards & Multi-Device Auto-Discovery Disambiguation (Pre-Merge Ready)
+
+> [!NOTE]
+> **Release Highlights**: Implementation of irreversible hardware factory reset zeroization (`keystore_factory_reset`) on CryptoCell CC310 keys (slots 1..32) and Shamir master secret in NVS, interactive confirmation prompt and `-y`/`--yes` bypass in `hsmutil reset`, and strict auto-discovery disambiguation (`ErrMultipleDevicesDetected`) preventing accidental targeting of multiple connected HSM dongles.
+>
+> **Quality Audit**: 100% compliance across code cleanliness, unit tests, integration test harnesses, and cross-platform compilation targets.
+
+### 1. Summary of Changes
+
+| Subsystem | Source Branch | Target Branch | Commit | Key Additions |
+| :--- | :--- | :--- | :--- | :--- |
+| **Firmware** (`nrf52840-hsm-firmware`) | `feature/factory-reset-zeroization` | `main` | [`ae087c1`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `keystore_factory_reset()` wiping CC310 slots 1..32, SSS zeroization, factory defaults restore, NVS persistence, `AT+RESET` & `AT+FACTORYRESET` (Base commit: [`166c307`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware)). |
+| **CLI** (`nrf52840-hsm-cli`) | `feature/reset-safeguard-and-disambiguation` | `main` | [`c110845`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | Interactive reset safeguard prompt `[y/N]`, `-y/--yes` bypass, `ErrMultipleDevicesDetected` disambiguation error, `ResolvePortOrSerial()` (Base commit: [`29659c2`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli)). |
+| **Workspace Root** (`nrf52840-hsm`) | `feature/reset-and-disambiguation-tests` | `master` | [`61a400e`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | Mock PTY factory zeroization, AT client cryptographic reset test assertions, end-to-end integration test coverage (Base commit: [`c4fb7d6`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)). |
+| **Obsidian Vault** (`nrf52840-hsm-obsidian`) | `master` | `master` | Active | ADR-0004, feature specification, implementation plan, pre-merge status sync. |
+
+---
+
+### 2. Detailed Subsystem Changes
+
+#### Firmware Subsystem (`nrf52840-hsm-firmware`)
+- **Factory Reset Hardware Zeroization**:
+  - Implemented `keystore_factory_reset(void)` in `firmware/lib/src/keystore.c` and header prototype in `include/hsm/keystore.h`.
+  - Iterates all 32 persistent slots and calls `crypto_cc310_destroy_key(slot_id)`.
+  - Zeroizes RAM Shamir Secret Sharing master secret with `sss_zeroize()`.
+  - Restores default master PIN (`"12345678"`) and resets PIN retry counter to `3`.
+  - Persists zeroized state to Non-Volatile Storage (`save_to_nvs()`).
+  - Emits asynchronous state notification `notify_state(HSM_STATE_UNCONFIGURED)` switching RGB LED to breathing BLUE.
+- **AT Command Handler**:
+  - Bound `AT+RESET` and added alias `AT+FACTORYRESET` to `keystore_factory_reset()`.
+
+#### Host CLI Subsystem (`nrf52840-hsm-cli`)
+- **Confirmation Safeguards (`hsmutil reset`)**:
+  - Bound `-y, --yes` flag to bypass interactive prompt.
+  - Interactive warning banner and explicit `(yes/no)` confirmation prompt on stdin.
+  - Non-affirmative responses abort cleanly with exit code 0 and `Reset cancelled.`.
+  - Success feedback informs operator that device is unconfigured and guides to `hsmutil init --threshold`.
+- **Multi-Device Auto-Discovery Disambiguation**:
+  - Defined domain error `ErrMultipleDevicesDetected` formatting a table of attached devices with BLE serials, AT Data ports, and Console ports.
+  - Refactored `AutoDiscoverPortTargeting()` to halt with `ErrMultipleDevicesDetected` if `len(dongles) > 1` and no `--serial` or `--port` is supplied.
+  - Implemented `ResolvePortOrSerial()` transparently parsing paths vs 12-digit hex BLE serials for `hsmutil key migrate`.
+
+#### Workspace Root & Test Harness (`scripts`)
+- **Mock HSM Serial Engine**:
+  - Enhanced `scripts/mock_hsm_pty.py` to clear all key slots, master secret, and revert `shamir_initialized` to `False` on `AT+RESET`.
+- **Automated Integration & Regression Tests**:
+  - Added cryptographic reset verification in `scripts/test_at_client.py`.
+  - Added reset safeguard prompt cancellation and `--yes` assertions to `scripts/run_integration_tests.sh`.
+
+---
+
+### 3. Architecture Decision Records
+
+- [[Architecture/Decisions/ADR-0004 - Factory Reset Semantics and Safeguards|ADR-0004: Factory Reset Semantics and Safe Erasure Safeguards]]
+- [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]]
+
+---
+
 ## [v0.2.0] — 2026-10-31: USB Descriptors & Device Identification
 
 > [!NOTE]

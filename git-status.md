@@ -7,7 +7,7 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-10-31
-lifecycle_phase: Phase 4 (Develop Complete / Ready for Review)
+lifecycle_phase: Phase 5 (Review & Quality Audit Complete / Pre-Merge Ready)
 feature: "[[features/hsmutil-reset-and-multi-device-disambiguation|Reset Confirmation & Multi-Device Disambiguation]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
@@ -20,23 +20,35 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 ## 1. Repository Status Overview
 
-| Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `feature/reset-and-disambiguation-tests` | `master` | `c4fb7d6` (*feat(scripts): add factory reset zeroization and confirmation test harness*) | **Active / Clean** |
-| **Firmware** | [nrf52840-hsm-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `feature/factory-reset-zeroization` | `main` | `166c307` (*feat(keystore): implement keystore_factory_reset with CC310 zeroization and AT+FACTORYRESET*) | **Active / Clean** |
-| **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `feature/reset-safeguard-and-disambiguation` | `main` | `29659c2` (*feat(cli): add reset confirmation safeguard and multi-device auto-discovery disambiguation*) | **Active / Clean** |
-| **PKCS#11 Provider** | [nrf52840-hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) | `main` | Clean | `4673116` (*docs(p11): update README with AT port prioritization and serial targeting*) | **Merged & Clean** |
-| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `1336a6d` (*docs(vault): record phase 4 implementation progress, code modifications, and test reports*) | **Clean** |
+| Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Pre-Merge Readiness |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `feature/reset-and-disambiguation-tests` | `master` | `61a400e` (*docs(root): update README with reset safeguards and multi-device disambiguation*) | **Active / Clean** | **Ready to Merge (Fast-Forward to `master`)** |
+| **Firmware** | [nrf52840-hsm-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `feature/factory-reset-zeroization` | `main` | `ae087c1` (*docs(firmware): update README with CC310 factory reset and AT+RESET*) | **Active / Clean** | **Ready to Merge (Fast-Forward to `main`)** |
+| **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `feature/reset-safeguard-and-disambiguation` | `main` | `c110845` (*docs(cli): update README with reset safeguards and multi-dongle disambiguation*) | **Active / Clean** | **Ready to Merge (Fast-Forward to `main`)** |
+| **PKCS#11 Provider** | [nrf52840-hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) | `main` | Clean | `4673116` (*docs(p11): update README with AT port prioritization and serial targeting*) | **Merged & Clean** | Up to date (`main`) |
+| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `1a12af1` (*docs(vault): record phase 5 pre-merge review, quality audit completion, and repository status*) | **Clean** | Active documentation |
 
 ---
 
 ## 2. In-Flight Feature Development: Reset Confirmation & Multi-Device Disambiguation
 
 > [!NOTE]
-> **Status**: Phase 4 (Develop) successfully completed. Code modifications, unit tests, integration test harnesses, and cross-compilation builds are verified and passing 100%.  
+> **Status**: Phase 5 (Review & Pre-Merge) Complete. Comprehensive Quality Audit achieved **100% compliance** across all repositories and test suites.  
 > Detailed feature note: [[features/hsmutil-reset-and-multi-device-disambiguation|Reset Confirmation & Multi-Device Disambiguation]].  
 > Implementation Plan: [[Plan/Reset Confirmation and Multi-Device Disambiguation Implementation Plan|Reset Confirmation & Multi-Device Disambiguation Implementation Plan]].  
-> Specification: [[Specification/Reset Confirmation and Multi-Device Disambiguation|Reset Confirmation & Multi-Device Disambiguation Specification]].
+> Specification: [[Specification/Reset Confirmation and Multi-Device Disambiguation|Reset Confirmation & Multi-Device Disambiguation Specification]].  
+> Architecture Decision Record: [[Architecture/Decisions/ADR-0004 - Factory Reset Semantics and Safeguards|ADR-0004: Factory Reset Semantics and Safeguards]].
+
+### 2.0 Pre-Merge Quality Audit & Verification Summary
+
+| Verification Gate | Target Subsystem | Command | Result | Audit Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **Code Cleanliness & Style** | CLI, Firmware, Scripts | Static analysis & linter checks | Zero dead code, proper error wrapping, explicit comments preserved | **100% Passed** |
+| **Firmware Unit Tests** | `nrf52840-hsm-firmware` | `ctest --test-dir firmware/lib/build --output-on-failure` | 100% pass across crypto, keystore, and AT protocol engine | **100% Passed** |
+| **Firmware Sysbuild** | `nrf52840-hsm-firmware` | `west build -b nrf52840dongle/nrf52840 firmware/app -d firmware/app/build-prod` | Dual-stage bootloader + MCUboot application built cleanly | **100% Passed** |
+| **CLI Unit Tests** | `nrf52840-hsm-cli` | `go test ./... -v` | 100% pass across discovery, domain errors, and reset command UI tests | **100% Passed** |
+| **CLI Cross-Compilation** | `nrf52840-hsm-cli` | `make cli-build-all` | Clean builds for `darwin/arm64`, `linux/arm64`, `linux/amd64`, `windows/arm64`, `windows/amd64` | **100% Passed** |
+| **Mock PTY Integration** | Workspace Root | `make integration-test` | End-to-end integration tests including factory reset zeroization and safeguards | **100% Passed** |
 
 ### 2.1 Multi-Repository Git Topology
 
@@ -60,8 +72,10 @@ gitGraph
 
 #### 1. Firmware Subsystem (`nrf52840-hsm-firmware`)
 - **Active Branch**: `feature/factory-reset-zeroization`
-- **Latest Commit**: [`166c307`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) — *feat(keystore): implement keystore_factory_reset with CC310 zeroization and AT+FACTORYRESET*
+- **Latest Commit**: [`ae087c1`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) — *docs(firmware): update README with CC310 factory reset and AT+RESET*
+- **Base Feature Commit**: [`166c307`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) — *feat(keystore): implement keystore_factory_reset with CC310 zeroization and AT+FACTORYRESET*
 - **Modified Files**:
+  - [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/README.md): Documented hardware zeroization and AT+RESET/AT+FACTORYRESET commands.
   - [`firmware/lib/include/hsm/keystore.h`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/firmware/lib/include/hsm/keystore.h) (+10 lines): Added `int keystore_factory_reset(void);` API prototype.
   - [`firmware/lib/src/keystore.c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/firmware/lib/src/keystore.c) (+21 lines): Implemented hardware zeroization looping slots 1..32, CC310 key destruction, `sss_zeroize()`, default PIN restoration, and NVS persistence.
   - [`firmware/lib/src/at_commands.c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/firmware/lib/src/at_commands.c) (+7 lines): Bound `AT+RESET` and alias `AT+FACTORYRESET` to `keystore_factory_reset()`.
@@ -71,8 +85,10 @@ gitGraph
 
 #### 2. Host CLI Subsystem (`nrf52840-hsm-cli`)
 - **Active Branch**: `feature/reset-safeguard-and-disambiguation`
-- **Latest Commit**: [`29659c2`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) — *feat(cli): add reset confirmation safeguard and multi-device auto-discovery disambiguation*
+- **Latest Commit**: [`c110845`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) — *docs(cli): update README with reset safeguards and multi-dongle disambiguation*
+- **Base Feature Commit**: [`29659c2`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) — *feat(cli): add reset confirmation safeguard and multi-device auto-discovery disambiguation*
 - **Modified Files**:
+  - [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli/README.md): Documented reset safeguards, `-y` flag, and multi-dongle auto-discovery disambiguation.
   - [`internal/domain/at_errors.go`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli/internal/domain/at_errors.go) (+18 lines): Added `ErrMultipleDevicesDetected` error type formatting multi-device instructions.
   - [`internal/infra/serial/discovery.go`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli/internal/infra/serial/discovery.go) (+79 lines): Refactored `AutoDiscoverPortTargeting()` to reject multi-dongle ambiguity; implemented `ResolvePortOrSerial()`.
   - [`internal/infra/serial/discovery_test.go`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli/internal/infra/serial/discovery_test.go) (+239 lines): Added unit test suite covering discovery edge cases.
@@ -86,8 +102,10 @@ gitGraph
 
 #### 3. Workspace Root & Test Harness (`nrf52840-hsm`)
 - **Active Branch**: `feature/reset-and-disambiguation-tests`
-- **Latest Commit**: [`c4fb7d6`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) — *feat(scripts): add factory reset zeroization and confirmation test harness*
+- **Latest Commit**: [`61a400e`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) — *docs(root): update README with reset safeguards and multi-device disambiguation*
+- **Base Feature Commit**: [`c4fb7d6`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) — *feat(scripts): add factory reset zeroization and confirmation test harness*
 - **Modified Files**:
+  - [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/README.md): Documented factory reset zeroization safeguards and multi-device targeting disambiguation.
   - [`scripts/mock_hsm_pty.py`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/mock_hsm_pty.py) (+25 lines): Added `AT+RESET` slot zeroization and master secret erasure.
   - [`scripts/test_at_client.py`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/test_at_client.py) (+84 lines): Added cryptographic reset assertion tests.
   - [`scripts/run_integration_tests.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/run_integration_tests.sh) (+20 lines): Added integration assertions for reset prompt cancellation and `--yes` flag.
