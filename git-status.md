@@ -26,7 +26,7 @@ This document tracks real-time Git branch topologies, commit records, working di
 | **Firmware** | [nrf52840-hsm-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `main` | Clean | `adb9c1e` (*docs(firmware): update README with USB descriptors and BLE address details*) | **Merged & Clean** |
 | **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `main` | Clean | `c9f4590` (*docs(cli): update README with serial port autodiscovery heuristics and serial targeting*) | **Merged & Clean** |
 | **PKCS#11 Provider** | [nrf52840-hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) | `main` | Clean | `4673116` (*docs(p11): update README with AT port prioritization and serial targeting*) | **Merged & Clean** |
-| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `c29b40a` (*docs(vault): record USB descriptors, BLE address serial specification, plan, and session logs*) | **Merged & Clean** |
+| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `1f347e8` (*docs(vault): update git status, branch tracking, and release changelog for v0.2.0 post-merge*) | **Merged & Clean** |
 
 ---
 
@@ -95,7 +95,7 @@ gitGraph
 
 #### 4. Obsidian Vault (`nrf52840-hsm-obsidian`)
 - **Active Branch**: `master`
-- **Latest Commit**: [`c29b40a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) — *docs(vault): record USB descriptors, BLE address serial specification, plan, and session logs*
+- **Latest Commit**: [`1f347e8`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) — *docs(vault): update git status, branch tracking, and release changelog for v0.2.0 post-merge*
 - **Delivered Records**:
   - Feature note [[features/usb-descriptors-ble-address|USB Descriptors & Device Identification]].
   - System Specification [[Specification/USB Descriptors and Device Identification|USB Descriptors and Device Identification]].
