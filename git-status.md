@@ -26,7 +26,7 @@ This document tracks real-time Git branch topologies, commit records, working di
 | **Firmware** | [nrf52840-hsm-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `feature/factory-reset-zeroization` | `main` | `166c307` (*feat(keystore): implement keystore_factory_reset with CC310 zeroization and AT+FACTORYRESET*) | **Active / Clean** |
 | **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `feature/reset-safeguard-and-disambiguation` | `main` | `29659c2` (*feat(cli): add reset confirmation safeguard and multi-device auto-discovery disambiguation*) | **Active / Clean** |
 | **PKCS#11 Provider** | [nrf52840-hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) | `main` | Clean | `4673116` (*docs(p11): update README with AT port prioritization and serial targeting*) | **Merged & Clean** |
-| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `1c7416b` (*docs(vault): document clarified requirements, scope, and ADR-0004*) | **Active (Doc updates in progress)** |
+| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `1336a6d` (*docs(vault): record phase 4 implementation progress, code modifications, and test reports*) | **Clean** |
 
 ---
 
