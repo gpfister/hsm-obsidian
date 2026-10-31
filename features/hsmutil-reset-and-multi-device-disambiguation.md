@@ -11,7 +11,11 @@ tags:
   - serial-discovery
   - multi-device
 created: 2026-10-31
-status: Clarified / Specified
+status: Implementation & Test Verification Complete (Phase 4)
+specification: "[[Specification/Reset Confirmation and Multi-Device Disambiguation|Reset Confirmation and Multi-Device Disambiguation Specification]]"
+specification_session: "[[Sessions/36b74c4b-dd01-44e1-9405-48fdc8d21d87|Phase 2 Specification Session]]"
+plan: "[[Plan/Reset Confirmation and Multi-Device Disambiguation Implementation Plan|Reset Confirmation and Multi-Device Disambiguation Implementation Plan]]"
+planning_session: "[[Sessions/4b1bb45a-82b0-4966-bacf-254b577ad6f2|Phase 3 Planning Session]]"
 investigation: "[[investigations/2026-10-31-hsmutil-reset-and-multi-device-disambiguation|Investigation: hsmutil Reset Confirmation & Multi-Device Disambiguation]]"
 related_adrs:
   - "[[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]]"
@@ -28,8 +32,10 @@ affected_repositories:
 
 > [!NOTE]
 > **Specification Origin**: Clarified requirements stemming from root-cause investigation [[investigations/2026-10-31-hsmutil-reset-and-multi-device-disambiguation|Investigation Report (2026-10-31)]].  
+> **Formal Specification**: [[Specification/Reset Confirmation and Multi-Device Disambiguation|Reset Confirmation and Multi-Device Disambiguation Specification]] (Approved in Session [[Sessions/36b74c4b-dd01-44e1-9405-48fdc8d21d87|36b74c4b]]).  
 > **Architecture Decisions**: [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]] & [[Architecture/Decisions/ADR-0004 - Factory Reset Semantics and Safeguards|ADR-0004: Factory Reset Semantics and Safe Erasure Safeguards]].  
-> **Status**: Approved Requirements / Implementation Ready.
+> **Implementation Plan**: [[Plan/Reset Confirmation and Multi-Device Disambiguation Implementation Plan|Reset Confirmation & Multi-Device Disambiguation Implementation Plan]] (Approved in Session [[Sessions/4b1bb45a-82b0-4966-bacf-254b577ad6f2|4b1bb45a]]).  
+> **Status**: Implementation Plan Approved / Ready for Phase 4 Execution.
 
 ---
 
@@ -279,23 +285,98 @@ flowchart TD
 
 ## 5. Verification & Acceptance Criteria
 
-| ID | Test Scenario | Expected Outcome |
-| :--- | :--- | :--- |
-| **TC-RST-01** | `hsmutil reset` interactive prompt cancellation (`n` or `no`) | Command outputs `Reset cancelled.`, exits with code `0`, no serial data sent. |
-| **TC-RST-02** | `hsmutil reset -y` or `--yes` bypass | Bypasses prompt, executes factory reset, prints full success guide. |
-| **TC-RST-03** | Firmware factory reset CC310 wipe | After `AT+RESET`, previously generated keys in slots 1..32 fail signing operations (`ERR_KEY_NOT_FOUND`). |
-| **TC-RST-04** | Firmware unconfigured state transition | After reset, LED breathes BLUE, `AT+INFO` reports unconfigured state (`configured=0`), requiring `init`. |
-| **TC-RST-05** | Mock serial reset | Mock PTY zeroes slots and master secret upon receiving `AT+RESET`. |
-| **TC-DISC-01** | Single dongle attached without `--serial` | Automatically targets dongle command port (suffix `3`) without error. |
-| **TC-DISC-02** | Multiple dongles attached without `--serial` | Fails with `ErrMultipleDevicesDetected`, displaying table of dongles with their BLE serials and ports. |
-| **TC-DISC-03** | Multiple dongles attached with `--serial <ID>` | Resolves unambiguously to the specified dongle's command port. |
-| **TC-DISC-04** | `hsmutil key migrate` dual targeting | Resolves `--source` and `--target` using either serial ID or direct port path via `ResolvePortOrSerial()`. |
-| **TC-DISC-05** | `hsmutil devices` enumeration | Lists all attached dongles without erroring or blocking. |
+| ID | Test Scenario | Expected Outcome | Verification Status |
+| :--- | :--- | :--- | :--- |
+| **TC-RST-01** | `hsmutil reset` interactive prompt cancellation (`n` or `no`) | Command outputs `Reset cancelled.`, exits with code `0`, no serial data sent. | **PASSED** (`internal/ui/cli/cli_test.go`, integration script) |
+| **TC-RST-02** | `hsmutil reset -y` or `--yes` bypass | Bypasses prompt, executes factory reset, prints full success guide. | **PASSED** (`internal/ui/cli/cli_test.go`, integration script) |
+| **TC-RST-03** | Firmware factory reset CC310 wipe | After `AT+RESET`, previously generated keys in slots 1..32 fail signing operations (`ERR_KEY_NOT_FOUND`). | **PASSED** (`ctest`, mock harness test) |
+| **TC-RST-04** | Firmware unconfigured state transition | After reset, LED breathes BLUE, `AT+INFO` reports unconfigured state (`configured=0`), requiring `init`. | **PASSED** (`ctest`, state notify mock) |
+| **TC-RST-05** | Mock serial reset | Mock PTY zeroes slots and master secret upon receiving `AT+RESET`. | **PASSED** (`scripts/test_at_client.py`) |
+| **TC-DISC-01** | Single dongle attached without `--serial` | Automatically targets dongle command port (suffix `3`) without error. | **PASSED** (`internal/infra/serial/discovery_test.go`) |
+| **TC-DISC-02** | Multiple dongles attached without `--serial` | Fails with `ErrMultipleDevicesDetected`, displaying table of dongles with their BLE serials and ports. | **PASSED** (`internal/infra/serial/discovery_test.go`) |
+| **TC-DISC-03** | Multiple dongles attached with `--serial <ID>` | Resolves unambiguously to the specified dongle's command port. | **PASSED** (`internal/infra/serial/discovery_test.go`) |
+| **TC-DISC-04** | `hsmutil key migrate` dual targeting | Resolves `--source` and `--target` using either serial ID or direct port path via `ResolvePortOrSerial()`. | **PASSED** (`internal/ui/cli/cli_test.go`) |
+| **TC-DISC-05** | `hsmutil devices` enumeration | Lists all attached dongles without erroring or blocking. | **PASSED** (`internal/infra/serial/discovery_test.go`) |
 
 ---
 
-## 6. Traceability & Vault Links
+## 6. Phase 4 Implementation & Test Verification Report
 
+> [!NOTE]
+> **Phase 4 Execution**: Completed by `@coding` on 2026-10-31 across three repositories. All source modifications, unit test suites, integration test harnesses, and cross-platform compilation targets passed with 100% success.
+
+### 6.1 Subsystem Commit Inventory
+
+| Subsystem | Repository | Branch | Commit | Key Modified Files |
+| :--- | :--- | :--- | :--- | :--- |
+| **Workspace Root & Harness** | [`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `feature/reset-and-disambiguation-tests` | [`c4fb7d6`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | [`scripts/mock_hsm_pty.py`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/mock_hsm_pty.py), [`scripts/test_at_client.py`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/test_at_client.py), [`scripts/run_integration_tests.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/run_integration_tests.sh) |
+| **Firmware Subsystem** | [`nrf52840-hsm-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `feature/factory-reset-zeroization` | [`166c307`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | [`firmware/lib/include/hsm/keystore.h`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/firmware/lib/include/hsm/keystore.h), [`firmware/lib/src/keystore.c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/firmware/lib/src/keystore.c), [`firmware/lib/src/at_commands.c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/firmware/lib/src/at_commands.c) |
+| **CLI Subsystem** | [`nrf52840-hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `feature/reset-safeguard-and-disambiguation` | [`29659c2`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | [`internal/domain/at_errors.go`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli/internal/domain/at_errors.go), [`internal/infra/serial/discovery.go`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli/internal/infra/serial/discovery.go), [`internal/infra/serial/discovery_test.go`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli/internal/infra/serial/discovery_test.go), [`internal/ui/cli/auth.go`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli/internal/ui/cli/auth.go), [`internal/ui/cli/cli_test.go`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli/internal/ui/cli/cli_test.go), [`internal/ui/cli/migrate.go`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli/internal/ui/cli/migrate.go), [`internal/ui/cli/root.go`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli/internal/ui/cli/root.go) |
+
+---
+
+### 6.2 Code Modifications by Subsystem
+
+#### 1. Firmware Subsystem (`nrf52840-hsm-firmware`)
+- **Keystore Factory Reset Engine (`firmware/lib/src/keystore.c`, `include/hsm/keystore.h`)**:
+  - Implemented `keystore_factory_reset(void)`:
+    1. Resets authentication state (`s_authenticated = false`) and purges ephemeral session secrets.
+    2. Iterates all 32 persistent hardware slots (1..32) and destroys keys via `crypto_cc310_destroy_key(slot_id)`.
+    3. Zeroizes Shamir Secret Sharing master secret in RAM via `sss_zeroize(&s_master_secret)`.
+    4. Re-initializes factory default PIN (`"12345678"`) and resets PIN retry counter to `3`.
+    5. Commits zeroized state and default credentials to non-volatile storage (`save_to_nvs()`).
+    6. Dispatches asynchronous state transition notification (`notify_state(HSM_STATE_UNCONFIGURED)`), switching RGB LED to breathing **BLUE**.
+- **AT Command Dispatcher (`firmware/lib/src/at_commands.c`)**:
+  - Bound `AT+RESET` and alias `AT+FACTORYRESET` to `keystore_factory_reset()`.
+  - Added formatted success response `OK\r\n` upon complete zeroization.
+
+#### 2. Host CLI Subsystem (`nrf52840-hsm-cli`)
+- **Reset Command Safeguards (`internal/ui/cli/auth.go`, `root.go`)**:
+  - Added `-y, --yes` flag to `hsmutil reset` command definition.
+  - Implemented interactive stdin confirmation prompt displaying destructive warning.
+  - Gracefully aborts with `Reset cancelled.` (exit code 0) if user input is not affirmative (`"y"` or `"yes"`), bypassing serial connection entirely.
+  - Formatted post-reset instructions advising user that device is unconfigured and requires `hsmutil init --threshold`.
+- **Deterministic Auto-Discovery & Disambiguation (`internal/infra/serial/discovery.go`)**:
+  - Introduced domain error `ErrMultipleDevicesDetected` formatting a table of attached devices with their BLE serials, AT Data ports, and Console ports.
+  - Modified `AutoDiscoverPortTargeting(targetSerial)`:
+    - If `targetSerial` is empty and `len(dongles) > 1`, returns `ErrMultipleDevicesDetected`.
+    - If `targetSerial` matches multiple ports (e.g. invalid wildcards), returns `ErrMultipleDevicesDetected`.
+  - Implemented `ResolvePortOrSerial(target)` helper for flexible resolution of direct port paths or BLE serials.
+- **Key Migration Refactoring (`internal/ui/cli/migrate.go`)**:
+  - Updated `--source` and `--target` resolution to leverage `ResolvePortOrSerial()`, allowing users to migrate between devices by BLE serial without hardcoding volatile OS port paths.
+- **Unit & UI Test Suites (`internal/infra/serial/discovery_test.go`, `internal/ui/cli/cli_test.go`)**:
+  - Comprehensive unit tests for single-device discovery, multiple-device rejection, serial targeting, port resolution, reset prompt cancellation, and `--yes` flag execution.
+
+#### 3. Workspace Root & Testing Harness (`scripts`)
+- **Mock HSM Serial Engine (`scripts/mock_hsm_pty.py`)**:
+  - Enhanced `AT+RESET` handler to clear slot dictionaries, wipe master secret, reset auth state and retry count to 3, and set `shamir_initialized = False`.
+- **AT Client Test Suite (`scripts/test_at_client.py`)**:
+  - Added automated test cases asserting cryptographic zeroization across keys, failure of subsequent signing requests after reset, and state restoration.
+- **Integration Test Script (`scripts/run_integration_tests.sh`)**:
+  - Added test stages verifying `hsmutil reset` interactive prompt cancellation and non-interactive `--yes` execution against mock PTY.
+
+---
+
+### 6.3 Test Verification Results
+
+| Test Harness / Suite | Repository | Command | Execution Result |
+| :--- | :--- | :--- | :--- |
+| **Firmware Unit Tests** | `nrf52840-hsm-firmware` | `ctest --test-dir firmware/lib/build --output-on-failure` | **100% Passed** (all test cases passing cleanly) |
+| **Firmware Sysbuild** | `nrf52840-hsm-firmware` | `west build -b nrf52840dongle/nrf52840 firmware/app -d firmware/app/build-prod` | **Passed Cleanly** (Dual-stage bootloader + MCUboot application) |
+| **CLI Unit Tests** | `nrf52840-hsm-cli` | `go test ./... -v` | **100% Passed** (all unit tests passing across all packages) |
+| **CLI Cross-Compilation** | `nrf52840-hsm-cli` | `make cli-build-all` | **Passed Cleanly** (darwin/arm64, linux/arm64, linux/amd64, windows/arm64, windows/amd64) |
+| **Mock Integration Tests** | Workspace Root | `make integration-test` | **100% Passed** (Full end-to-end integration including zeroization & safeguards) |
+
+---
+
+## 7. Traceability & Vault Links
+
+- **Formal Specification**: [[Specification/Reset Confirmation and Multi-Device Disambiguation|Reset Confirmation and Multi-Device Disambiguation Specification]]
+- **Specification Session**: [[Sessions/36b74c4b-dd01-44e1-9405-48fdc8d21d87|Phase 2 Specification Session]]
+- **Archived Specification Artifact**: `[[Sessions/attachments/36b74c4b-dd01-44e1-9405-48fdc8d21d87/specification.md|specification.md]]`
+- **Implementation Plan**: [[Plan/Reset Confirmation and Multi-Device Disambiguation Implementation Plan|Reset Confirmation & Multi-Device Disambiguation Implementation Plan]]
+- **Planning Session**: [[Sessions/4b1bb45a-82b0-4966-bacf-254b577ad6f2|Phase 3 Planning Session]]
+- **Archived Plan Artifact**: `[[Sessions/attachments/4b1bb45a-82b0-4966-bacf-254b577ad6f2/plan.md|plan.md]]`
 - **Investigation**: [[investigations/2026-10-31-hsmutil-reset-and-multi-device-disambiguation|Issue Assessment (2026-10-31)]]
 - **ADRs**:
   - [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]]

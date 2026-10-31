@@ -19,9 +19,12 @@ affected_components:
   - nrf52840-hsm-cli
   - nrf52840-hsm-firmware
   - scripts
+specification: "[[Specification/Reset Confirmation and Multi-Device Disambiguation|Reset Confirmation and Multi-Device Disambiguation Specification]]"
 related_adrs:
   - "[[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]]"
+  - "[[Architecture/Decisions/ADR-0004 - Factory Reset Semantics and Safeguards|ADR-0004: Factory Reset Semantics and Safe Erasure Safeguards]]"
 related_features:
+  - "[[features/hsmutil-reset-and-multi-device-disambiguation|Reset Confirmation & Multi-Device Disambiguation]]"
   - "[[features/usb-descriptors-ble-address|USB Descriptors & Device Identification]]"
 related_architecture:
   - "[[Architecture/HSM State Machine|HSM State Machine]]"
@@ -33,8 +36,9 @@ related_architecture:
 > [!NOTE]
 > **Investigation Source**: [`issue-assessment.md`](file:///Users/gpfister/.gemini/antigravity/brain/597d007f-0afa-4845-b766-880c6ae6e465/issue-assessment.md)  
 > **Archived Artifact**: `[[Sessions/attachments/597d007f-0afa-4845-b766-880c6ae6e465/issue-assessment.md|Attachments]]`  
-> **Status**: Approved by User / Ready for Remediation Handoff to `@coding`  
-> **Architecture Linkages**: [[Architecture/HSM State Machine|HSM State Machine]], [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]], [[features/usb-descriptors-ble-address|USB Descriptors & Device Identification]]
+> **Formal Specification**: [[Specification/Reset Confirmation and Multi-Device Disambiguation|Reset Confirmation and Multi-Device Disambiguation Specification]]  
+> **Status**: Approved by User / Ready for Implementation  
+> **Architecture Linkages**: [[Architecture/HSM State Machine|HSM State Machine]], [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]], [[Architecture/Decisions/ADR-0004 - Factory Reset Semantics and Safeguards|ADR-0004: Factory Reset Semantics and Safe Erasure Safeguards]], [[features/hsmutil-reset-and-multi-device-disambiguation|Reset Confirmation & Multi-Device Disambiguation]], [[features/usb-descriptors-ble-address|USB Descriptors & Device Identification]]
 
 ---
 

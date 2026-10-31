@@ -113,7 +113,21 @@ Streams a signed MCUboot application binary (`zephyr.signed.bin`) in chunked pac
 
 - **`hsmutil unlock`** (alias **`auth`**): Authenticates session, transitions dongle to unlocked state, and sets RGB LED solid **GREEN**.
 - **`hsmutil lock`**: Closes session, transitions dongle to locked state, and sets RGB LED solid **RED**.
-- **`hsmutil reset`**: Resets device configuration state, transitioning RGB LED to pulsating **BLUE**.
+- **`hsmutil reset`**: Performs complete cryptographic factory reset of the HSM dongle, zeroizing all 32 CC310 hardware key slots, wiping the Shamir Secret Sharing master secret from RAM and NVS, restoring factory defaults (PIN: `"12345678"`, retries: 3), and transitioning hardware to `HSM_STATE_UNCONFIGURED` (pulsating/breathing **BLUE** LED).
+  - **Flags**:
+    - `-y, --yes`: Bypasses interactive confirmation prompt.
+  - **Interactive Safeguard**:
+    - If `--yes` is not passed, prompts:
+      ```text
+      WARNING: This will permanently delete all stored cryptographic keys,
+      zeroize the Shamir master secret, and return the HSM to an unconfigured state.
+      This action cannot be undone!
+
+      Are you sure you want to proceed? (yes/no): 
+      ```
+    - Typing anything other than `"y"` or `"yes"` aborts with `Reset cancelled.` (exit code 0) without connecting to the serial device or sending `AT+RESET`.
+  - **Multi-Device Behavior**:
+    - If multiple dongles are plugged in without `-p` or `-s`, fails with `ErrMultipleDevicesDetected`, printing all connected dongles and prompting to specify `-s <BLE>` or `-p <PORT>`.
 
 ---
 
@@ -126,6 +140,9 @@ Streams a signed MCUboot application binary (`zephyr.signed.bin`) in chunked pac
 
 ## Cross-References
 
+- [[features/hsmutil-reset-and-multi-device-disambiguation|Feature: Reset Confirmation & Multi-Device Disambiguation]]
+- [[Specification/Reset Confirmation and Multi-Device Disambiguation|Specification: Reset Confirmation and Multi-Device Disambiguation]]
 - [[features/usb-descriptors-ble-address|USB Descriptors & Device Identification Feature Spec]]
 - [[Architecture/USB Composite Stack|USB Composite Stack Architecture]]
 - [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]]
+- [[Architecture/Decisions/ADR-0004 - Factory Reset Semantics and Safeguards|ADR-0004: Factory Reset Semantics and Safe Erasure Safeguards]]

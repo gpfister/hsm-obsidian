@@ -1,0 +1,6 @@
+{
+  "summary":  "Multi-repository implementation plan for hsmutil reset confirmation & factory reset zeroization, and multi-device auto-discovery disambiguation. Covers nrf52840-hsm-firmware, nrf52840-hsm-cli, and root test harness scripts.",
+  "updatedAt":  "2026-10-31T01:26:54.849488Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

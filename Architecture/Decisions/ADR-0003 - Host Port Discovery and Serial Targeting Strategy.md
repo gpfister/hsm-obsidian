@@ -14,6 +14,9 @@ deciders:
   - Software Architect
 references:
   - "[[features/usb-descriptors-ble-address|USB Descriptors & Device Identification Feature Spec]]"
+  - "[[features/hsmutil-reset-and-multi-device-disambiguation|Feature: Reset Confirmation & Multi-Device Disambiguation]]"
+  - "[[Specification/Reset Confirmation and Multi-Device Disambiguation|Specification: Reset Confirmation and Multi-Device Disambiguation]]"
+  - "[[Plan/Reset Confirmation and Multi-Device Disambiguation Implementation Plan|Implementation Plan: Reset Confirmation & Multi-Device Disambiguation]]"
   - "[[Plan/USB Descriptors and BLE Identification Implementation Plan|Implementation Plan: USB Descriptors & BLE Device Identification]]"
   - "[[Development/CLI Reference|hsmutil CLI Reference]]"
 ---

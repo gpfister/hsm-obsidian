@@ -34,6 +34,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[features/hsmutil-reset-and-multi-device-disambiguation|Reset Confirmation & Multi-Device Disambiguation]] — Interactive confirmation safeguards, firmware CC310 zeroization, and deterministic multi-dongle CLI targeting.
 
 ### 📐 Specifications
+- [[Specification/Reset Confirmation and Multi-Device Disambiguation|Reset Confirmation & Multi-Device Disambiguation]] — Interactive confirmation safeguards, CC310 zeroization, and deterministic multi-device auto-discovery.
 - [[Specification/USB Descriptors and Device Identification|USB Descriptors & Device Identification]] — FICR BLE address serial number, protocol IDs, and macOS device node mapping.
 - [[Specification/YubiHSM Protocol|YubiHSM Protocol]] — Binary packet framing, command opcodes, and response payloads.
 - [[Specification/Firmware DFU Protocol|Firmware DFU Protocol]] — Streaming format for `hsmutil firmware update`.
@@ -48,6 +49,8 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Development/CLI Reference|CLI Reference]] — Complete documentation for `hsmutil` CLI and BubbleTea TUI.
 
 ### 📜 Sessions & Transcripts
+- [[Sessions/4b1bb45a-82b0-4966-bacf-254b577ad6f2|2026-10-31 - Reset Confirmation & Multi-Device Disambiguation (Phase 3 Planning)]] — Approved multi-repository implementation plan, architectural blueprint, and task breakdown.
+- [[Sessions/36b74c4b-dd01-44e1-9405-48fdc8d21d87|2026-10-31 - Reset Confirmation & Multi-Device Disambiguation (Phase 2 Specification)]] — Approved technical specification, zeroization flow, and multi-device disambiguation protocol.
 - [[Sessions/9f9ae0e3-f181-44f3-8dde-7b25c55cf4e3|2026-10-31 - USB Descriptors & Device Identification (Phases 3-5 Lifecycle)]] — Implementation, hardware validation, and pre-merge documentation tidy-up.
 - [[Sessions/bd3d2f5d-cc3c-4513-97fd-6b35e8fb0ddc|2026-10-31 - USB Descriptors & Device Identification (Phase 2 Specification)]] — Technical specification, architectural mapping, and verification gates.
 - [[Sessions/2026-10-29 - Multi-Repo Initialization|2026-10-29 - Multi-Repo Initialization]] — Genesis session establishing the multirepo workspace.
@@ -65,4 +68,5 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 
 ### 🎯 Roadmap & Planning
 - [[Plan/Project Roadmap|Project Roadmap]] — Milestones, future cryptographic extensions, and security certification targets.
+- [[Plan/Reset Confirmation and Multi-Device Disambiguation Implementation Plan|Implementation Plan: Reset Confirmation & Multi-Device Disambiguation]] — Multi-repository implementation plan across firmware keystore zeroization, CLI confirmation safeguards, and serial disambiguation.
 - [[Plan/USB Descriptors and BLE Identification Implementation Plan|Implementation Plan: USB Descriptors & BLE Device Identification]] — Multi-repository implementation plan across firmware, CLI, PKCS#11, and documentation.

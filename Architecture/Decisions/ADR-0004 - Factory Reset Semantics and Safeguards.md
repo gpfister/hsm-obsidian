@@ -16,6 +16,8 @@ deciders:
   - CLI Lead
 references:
   - "[[features/hsmutil-reset-and-multi-device-disambiguation|Feature: Reset Confirmation & Multi-Device Disambiguation]]"
+  - "[[Specification/Reset Confirmation and Multi-Device Disambiguation|Specification: Reset Confirmation and Multi-Device Disambiguation]]"
+  - "[[Plan/Reset Confirmation and Multi-Device Disambiguation Implementation Plan|Implementation Plan: Reset Confirmation & Multi-Device Disambiguation]]"
   - "[[investigations/2026-10-31-hsmutil-reset-and-multi-device-disambiguation|Investigation: hsmutil Reset Confirmation & Multi-Device Disambiguation]]"
   - "[[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]]"
 ---
