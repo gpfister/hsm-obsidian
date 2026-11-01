@@ -26,9 +26,9 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 | Subsystem | Branch | Commit | Key Additions |
 | :--- | :--- | :--- | :--- |
-| **Air-Gapped OS** (`rpi-z2w-yocto-hsm`) | `main` | [`580b452`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | Initial scaffolding of Yocto 5.0 Scarthgap layer (`meta-hsm-os`), Kas configurations (`kas-project.yml`, `kas-dev.yml`, `kas-prod.yml`), `nrf52840-hsm-kmod` driver, `nftables` rules, first-login wizard, RAUC A/B update service, and build scripts. |
+| **Air-Gapped OS** (`rpi-z2w-yocto-hsm`) | `main` | [`1ce95a1`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | Complete Yocto 5.0 Scarthgap layer (`meta-hsm-os`): real SHA-512 crypt passwords, root locking (`usermod -L root`), volatile RAM overlays (`/media`, `/etc`, `/home`), `hsm-set-date` setuid helper, udev rules and `blacklist-cdc-acm.conf`, silent journald in prod, Waveshare USB HAT (B) DWC2 host overlay, HDMI force hotplug, USB RAUC bundle auto-detection, and ARM64 `hsmutil` binary (Base commit: [`580b452`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm)). |
 | **Workspace Root** (`nrf52840-hsm`) | `master` | Working Tree | Added `rpi-z2w-yocto-hsm` to `SUBREPOS` in root `Makefile`; added `yocto-build-dev`, `yocto-build-prod`, `yocto-bundle`, `yocto-shell`, and `yocto-clean` targets; updated root `AGENTS.md`. |
-| **Obsidian Vault** (`nrf52840-hsm-obsidian`) | `master` | [`8e3fe33`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | Authored `Architecture/07 - Air-Gapped RPi HSM OS Architecture.md`, `Development/Yocto Build and RAUC Update Guide.md`, updated `00 - Index.md`, `git-status.md`, and `Changelog.md`. |
+| **Obsidian Vault** (`nrf52840-hsm-obsidian`) | `master` | [`5f9834a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | Authored `Architecture/07 - Air-Gapped RPi HSM OS Architecture.md`, `Hardware/Waveshare USB HAT (B) Integration.md`, `Development/Yocto Build and RAUC Update Guide.md`, updated `00 - Index.md`, `git-status.md`, and `Changelog.md`. |
 
 ---
 
@@ -38,20 +38,36 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 - **Yocto Layer & Architecture**:
   - Initialized custom layer `meta-hsm-os` compatible with Yocto 5.0 (`scarthgap`).
   - Integrated `kas` orchestration with reproducible container runtime (`ghcr.io/siemens/kas/kas:latest`).
+  - Configured `hsm-image-base.bb` with `read-only-rootfs` and common utilities.
+  - Implemented `hsm-image-prod.bb` with locked root superuser (`usermod -L root`) and `hsm-image-dev.bb` with root password `root`, sudo escalation, and debugging packages.
 - **Kernel & Hardware Lockdown**:
-  - Implemented kernel config fragments stripping wireless (`CONFIG_CFG80211=n`, `CONFIG_BT=n`), Ethernet, and unnecessary peripherals.
-  - Device tree overlays disabling WiFi, Bluetooth, and debug GPIO headers.
+  - Implemented kernel config fragment (`hardened.cfg`) stripping wireless (`CONFIG_CFG80211=n`, `CONFIG_BT=n`), Ethernet, USB net drivers, and user GPIO probing (`CONFIG_GPIO_SYSFS=n`).
+  - Enforced kernel memory hardening: `CONFIG_SECURITY=y`, `CONFIG_HARDENED_USERCOPY=y`, `CONFIG_FORTIFY_SOURCE=y`, `CONFIG_STRICT_KERNEL_RWX=y`, `CONFIG_RANDOMIZE_BASE=y`.
+  - Configured `/boot/config.txt` via `rpi-config_%.bbappend`: disabled WiFi/Bluetooth (`disable-wifi`, `disable-bt`), forced DWC2 host mode (`dtoverlay=dwc2,dr_mode=host`) for Waveshare USB HAT (B), and enabled HDMI console force hotplug (`hdmi_force_hotplug=1`, `hdmi_drive=2`).
 - **Out-of-Tree Driver (`nrf52840-hsm-kmod`)**:
-  - Dedicated character driver matching USB `0x1209:0x0001` and extracting device BLE address.
-  - In production mode: binds and exposes AT command channel (`cdc_acm_uart1`) under `/dev/tty.hsm<ble><num>` while suppressing logger port (`cdc_acm_uart0`).
+  - Dedicated character driver matching USB `0x1209:0x0001` and extracting device BLE address from USB serial number.
+  - Blacklisted generic Linux ACM driver (`blacklist-cdc-acm.conf`) for exclusive dongle claiming.
+  - In production mode: binds and exposes AT command channel (`cdc_acm_uart1`) under `/dev/tty.hsm<ble><num>` with symlink `/dev/tty.hsm` while suppressing logger port (`cdc_acm_uart0`).
+  - In development mode: exposes both console and AT command ports.
+  - Installed udev rules (`99-nrf52840-hsm.rules`) setting permissions to `0660` with group `dialout`.
+- **Volatile Storage & Logging**:
+  - Implemented `volatile-storage` service and `hsm-setup-volatile.sh`:
+    - Mounts `tmpfs` on `/media` for unprivileged USB storage mount points.
+    - Mounts `overlayfs` on `/etc` (`/run/overlay/etc-upper`), allowing runtime password updates in volatile RAM without altering immutable flash.
+    - Mounts `tmpfs` on `/home/hsmutil` populated from `/etc/skel`.
+  - Implemented `systemd-journald-airgap`:
+    - Production: `Storage=none`, zero console/syslog/kmsg forwarding (no disk or console data leakage).
+    - Development: `Storage=volatile` with 64 MB RAM buffer limit.
 - **Network Security & User Space**:
   - Enforced `nftables` default drop across input, output, and forward chains.
-  - Implemented mandatory first-login wizard enforcing user password rotation, keyboard layout selection, and locale setting.
-  - Implemented every-login UTC clock synchronization prompt to compensate for lack of battery RTC/NTP.
-  - Implemented USB storage automount service under `/media/usb-*` for `hsmutil` user space key exports.
+  - Configured dedicated unprivileged user `hsmutil` in groups `users`, `dialout`, `tty`, `storage` with SHA-512 crypt password.
+  - Implemented mandatory first-login wizard (`first-login-wizard.sh`) enforcing user password change, physical keyboard layout selection (`loadkeys`), and UTC timezone standard.
+  - Implemented every-login UTC clock synchronization prompt (`clock-setup.sh`) backed by setuid root C helper (`hsm-set-date`), allowing unprivileged time synchronization without sudo.
+  - Implemented USB storage automount service under `/media/usb-*` for `hsmutil` user space key exports and backups.
 - **Dual-Slot RAUC A/B Updates**:
   - Integrated `meta-rauc` and `meta-rauc-raspberrypi` with U-Boot boot counter and watchdog fallback.
-  - Implemented ECDSA P-256 PKI key generation script and automated USB update installer service (`rauc-usb-autoinstall`).
+  - Implemented ECDSA P-256 PKI key generation script (`generate-rauc-keys.sh`) and offline bundle generator (`create-rauc-bundle.sh`).
+  - Automated USB update installer service (`rauc-usb-autoinstall`): detects `*.raucb` bundles on USB insertion via `usb-mount.sh` and verifies x509 CMS signatures before streaming into the inactive slot.
 
 ---
 

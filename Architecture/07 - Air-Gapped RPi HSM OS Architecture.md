@@ -9,6 +9,7 @@ tags:
   - rauc
   - rpi
 created: 2026-11-01
+updated: 2026-11-01
 status: Approved
 repository: rpi-z2w-yocto-hsm
 ---
@@ -32,21 +33,24 @@ Standard host operating systems (macOS, Windows, general Linux distributions) pr
 flowchart TD
     subgraph Threats ["Threat Vectors & Mitigations"]
         T1["Network Infiltration / Remote Code Exec"] --> M1["Hardware DTB & Kernel Disable of WiFi, BLE, Ethernet\n+ nftables 100% Total-Drop Firewall"]
-        T2["Rootfs Tampering / Malware Persistence"] --> M2["Read-Only Root Filesystem (ext4 / squashfs)\nImmutable A/B Partitions"]
+        T2["Rootfs Tampering / Malware Persistence"] --> M2["Read-Only Root Filesystem (ext4 / squashfs)\nImmutable A/B Partitions + RAM Overlays"]
         T3["Side-Channel / Core Dump Leakage"] --> M3["Quiet Kernel Logging, Disabled Syslog / Journald on Disk,\nRAM-Only volatile storage"]
         T4["Physical Port / Hardware Header Attacks"] --> M4["GPIO headers disabled in DTB,\nStrict USB VID/PID whitelist"]
         T5["Malicious Firmware / OS Updates"] --> M5["Dual-Slot RAUC A/B Updates\nx509 ECDSA/RSA Cryptographic Verification"]
         T6["Accidental Dongle Port Exposure"] --> M6["nrf52840-hsm-kmod Driver\nProduction Mode: Binds AT Data Channel only, suppresses Logger"]
+        T7["Root Privilege Escalation"] --> M7["Root account locked (usermod -L root),\nDedicated unprivileged user hsmutil"]
     end
 ```
 
-The system establishes five foundational security invariants:
+The system establishes seven foundational security invariants:
 
 1. **Total Physical Air-Gap**: WiFi, Bluetooth, and Ethernet controller drivers are stripped from the kernel defconfig and hardware pins are disabled in the device tree overlay. Even if network hardware is physically present, the OS kernel possesses no drivers or peripheral clocks to activate them.
 2. **Total Packet Drop (`nftables`)**: An unconditional `nftables` policy drops 100% of inbound, outbound, and forwarded traffic. In the event a rogue USB network adapter is attached, all network traffic is discarded at the netfilter ingress layer.
-3. **Immutable Read-Only Filesystem**: The active OS runs from a read-only rootfs (`ext4` or `squashfs`). No persistent modifications to system binaries, configurations, or libraries can survive a reboot. Volatile operational state resides strictly in RAM (`tmpfs`).
-4. **Zero SSH / Remote Access**: SSH daemons (`dropbear`, `openssh-server`), Telnet, and remote terminal services are completely excluded from the package manifest. Console access is restricted exclusively to the physical HDMI display (`tty1`) and optional dev UART.
-5. **Deterministic Cryptographic Channel Binding**: Out-of-tree kernel driver `nrf52840-hsm-kmod` detects nRF52840 dongles (`0x1209:0x0001`), creates deterministic `/dev/tty.hsm<ble_address><num>` nodes, and in production mode strictly binds the AT command channel (`cdc_acm_uart1`) while completely suppressing the debug logging port (`cdc_acm_uart0`).
+3. **Immutable Read-Only Filesystem & Volatile Overlays**: The active OS runs from a read-only rootfs (`ext4` or `squashfs`). No persistent modifications to system binaries, configurations, or libraries survive a reboot. Volatile operational state resides strictly in RAM (`tmpfs` mounts for `/media` and `/home/hsmutil`, and `overlayfs` on `/etc` backed by `/run`).
+4. **Zero SSH / Remote Access**: SSH daemons (`dropbear`, `openssh-server`), Telnet, and remote terminal services are completely excluded from the package manifest. Console access is restricted exclusively to the physical HDMI display (`tty1`) with forced hotplug support.
+5. **Deterministic Cryptographic Channel Binding**: Out-of-tree kernel driver `nrf52840-hsm-kmod` detects nRF52840 dongles (`0x1209:0x0001`), creates deterministic `/dev/tty.hsm<ble_address><num>` nodes, and in production mode strictly binds the AT command channel (`cdc_acm_uart1`) while completely suppressing the debug logging port (`cdc_acm_uart0`). The default `cdc_acm` driver is blacklisted.
+6. **Zero Log Retention**: In production mode, systemd journald is configured with `Storage=none` and forwards to syslog/kmsg/console are disabled, preventing forensic data recovery from RAM or flash.
+7. **Strict Superuser Lockdown**: In production images, the `root` superuser account is explicitly locked (`usermod -L root`). Operators execute operations through the unprivileged `hsmutil` user account, utilizing setuid root helpers (`hsm-set-date`) only for strictly scoped operations.
 
 ---
 
@@ -81,10 +85,83 @@ graph TD
 ### Supported Hardware Targets
 - **Primary / Reference Target**: `raspberrypi0-2w-64` (Raspberry Pi Zero 2 W, BCM2710A1, 512 MB LPDDR2). Minimal power draw and ultra-compact form factor.
 - **Performance Targets**: `raspberrypi3-64`, `raspberrypi4-64`, `raspberrypi5`. Supported through Kas build overrides for faster cryptographic batch operations and desktop ergonomics.
+- **Hardware Integration Details**: See [[Hardware/Waveshare USB HAT (B) Integration|Waveshare USB HAT (B) Integration Specification]].
 
 ---
 
-## 3. Operating System Architecture & Stack
+## 3. Yocto Layer Structure (`meta-hsm-os`)
+
+The custom layer [`meta-hsm-os/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os) contains all recipes, configuration fragments, services, and kernel modules required for the air-gapped system.
+
+```text
+meta-hsm-os/
+├── conf/
+│   └── layer.conf                          # Layer configuration (Scarthgap 5.0 compatibility)
+├── recipes-bsp/
+│   ├── bootfiles/
+│   │   └── rpi-config_%.bbappend          # config.txt: dwc2 host mode, hdmi force hotplug, no wifi/bt
+│   └── rpi-u-boot-scr/
+│       ├── files/boot.cmd.in               # Dual-slot A/B U-Boot boot script template
+│       └── rpi-u-boot-scr.bbappend         # Generates boot.scr with RAUC fallback logic
+├── recipes-connectivity/
+│   └── nftables/
+│       ├── files/nftables.conf             # 100% total-drop ingress/egress/forward firewall rules
+│       ├── files/nftables-load.service     # Systemd boot service loading nftables rules
+│       └── nftables-rules.bb               # Rules installation recipe
+├── recipes-core/
+│   ├── images/
+│   │   ├── hsm-image-base.bb               # Base image definition (read-only-rootfs, common pkgs)
+│   │   ├── hsm-image-dev.bb                # Dev image (root login, sudo, debug-tweaks, strace)
+│   │   └── hsm-image-prod.bb               # Prod image (locked root, quiet kernel, strict lockdown)
+│   ├── init-wizard/
+│   │   ├── files/first-login-wizard.sh     # Interactive first-login setup (pwd, loadkeys, locale)
+│   │   ├── files/clock-setup.sh            # Interactive every-login UTC timestamp synchronization
+│   │   ├── files/hsm-set-date.c            # Setuid root C helper for unprivileged date updates
+│   │   ├── files/hsm-profile.sh            # /etc/profile.d/hsm-login.sh shell hook
+│   │   └── init-wizard.bb                  # Init wizard packaging recipe
+│   ├── systemd-journald-airgap/
+│   │   ├── files/journald-dev.conf         # Storage=volatile (64M RAM buffer)
+│   │   ├── files/journald-prod.conf        # Storage=none (zero log retention)
+│   │   └── systemd-journald-airgap.bb      # Journald drop-in configuration recipe
+│   ├── users/
+│   │   └── hsmutil-user.bb                 # Creates hsmutil account, assigns groups, dev sudoers
+│   └── volatile-storage/
+│       ├── files/hsm-setup-volatile.sh     # Mounts /media tmpfs, /etc overlayfs, /home/hsmutil tmpfs
+│       ├── files/hsm-volatile-storage.service # Early boot service running setup script
+│       └── volatile-storage.bb             # Volatile storage unit recipe
+├── recipes-kernel/
+│   ├── linux/
+│   │   ├── files/hardened.cfg              # Kernel defconfig fragment (no net, security hardening)
+│   │   └── linux-raspberrypi_%.bbappend    # Kernel append injecting hardened.cfg
+│   └── nrf52840-hsm-kmod/
+│       ├── files/nrf52840_hsm.c            # Out-of-tree kernel driver for USB 0x1209:0x0001
+│       ├── files/blacklist-cdc-acm.conf    # Modprobe blacklist preventing cdc_acm driver binding
+│       ├── files/99-nrf52840-hsm.rules     # Udev rules for /dev/tty.hsm* permissions & symlink
+│       ├── files/Makefile                  # Kernel module build Makefile
+│       └── nrf52840-hsm-kmod.bb            # Kernel module bitbake recipe
+├── recipes-rauc/
+│   └── bundles/
+│       └── update-bundle.bb                # RAUC update bundle recipe (.raucb)
+└── recipes-support/
+    ├── hsmutil/
+    │   ├── files/hsmutil-arm64             # Pre-compiled Go 1.24+ ARM64 binary
+    │   └── hsmutil.bb                      # Installs binary to /usr/local/bin/hsmutil
+    ├── rauc/
+    │   ├── files/rauc-ca.cert.pem          # Embedded Root CA public certificate
+    │   ├── files/system.conf               # RAUC slot configuration (A/B mmcblk0p2/p3)
+    │   ├── files/rauc-usb-autoinstall.sh   # Background script checking USB for .raucb bundles
+    │   ├── files/rauc-usb-autoinstall.service # Systemd service for USB auto-update
+    │   └── rauc_%.bbappend                 # Injects config, certificate, and services
+    └── usb-mount/
+        ├── files/usb-mount.sh              # Auto-mount script for FAT32/ext4 USB storage
+        ├── files/usb-mount@.service        # Instantiated systemd service for udev mounts
+        ├── files/99-usb-storage-mount.rules# Udev rule triggering usb-mount@.service
+        └── usb-mount.bb                    # Packaging recipe for automount infrastructure
+```
+
+---
+
+## 4. Operating System Runtime Architecture
 
 ```mermaid
 flowchart TD
@@ -103,27 +180,31 @@ flowchart TD
 
     subgraph KernelSpace ["Linux Kernel 6.6 LTS (Hardened)"]
         KCONFIG["Hardened Defconfig (No Net, No BT, No WiFi)"]
-        DTB["Device Tree Overlays (disable-wifi-bt.dtbo)"]
+        DTB["Device Tree Overlays (dwc2 host, no-wifi, no-bt)"]
         KMOD["nrf52840-hsm-kmod (Out-of-tree Driver)"]
         NFT["nftables Total Drop Hook"]
         
         KMOD --> DEV_NODES["/dev/tty.hsm<ble_address><number>"]
+        DEV_NODES --> SYMLINK["/dev/tty.hsm (Symlink)"]
     end
 
-    subgraph UserSpace ["User Space (Read-Only Rootfs)"]
+    subgraph UserSpace ["User Space (Read-Only Rootfs + RAM Overlays)"]
+        VOLATILE["volatile-storage.service\n(/media tmpfs, /etc overlayfs, /home tmpfs)"]
         INIT["System Init & Login Service"]
         WIZARD["Mandatory Login Wizard (PWD / Loadkeys / Locale)"]
-        DATE_PROMPT["Login Clock Prompt (UTC Date Synchronization)"]
-        AUTOMOUNT["Automount Manager (udev-rules /media/usb-*)"]
+        DATE_PROMPT["Login Clock Prompt (UTC Date Synchronization via hsm-set-date)"]
+        AUTOMOUNT["Automount Manager (usb-mount.sh -> /media/usb-*)"]
         RAUC_SRV["RAUC Update Service (rauc-usb-autoinstall)"]
         HSMUTIL["/usr/local/bin/hsmutil (CLI / TUI)"]
         
+        VOLATILE --> INIT
         INIT --> WIZARD
         WIZARD --> DATE_PROMPT
         DATE_PROMPT --> HSMUTIL
         AUTOMOUNT --> HSMUTIL
+        AUTOMOUNT -. Detects .raucb .-> RAUC_SRV
         RAUC_SRV --> UBOOT
-        DEV_NODES --> HSMUTIL
+        SYMLINK --> HSMUTIL
     end
 
     SLOT_A --> KernelSpace
@@ -131,7 +212,7 @@ flowchart TD
     KernelSpace --> UserSpace
 ```
 
-### 3.1 Partition Layout (Dual-Slot A/B)
+### 4.1 Partition Layout (Dual-Slot A/B)
 The storage media (MicroSD / eMMC) is partitioned into 5 regions:
 
 | Partition | Device | Filesystem | Mount Point | Description |
@@ -140,64 +221,107 @@ The storage media (MicroSD / eMMC) is partitioned into 5 regions:
 | **P2** | `/dev/mmcblk0p2` | `ext4` | `/` (Slot A) | Read-only System Rootfs Slot A. |
 | **P3** | `/dev/mmcblk0p3` | `ext4` | `/` (Slot B) | Read-only System Rootfs Slot B. |
 | **P4** | `/dev/mmcblk0p4` | `ext4` | `/data` | Persistent writable state (user home `/home/hsmutil`, machine-id, u-boot env). |
-| **RAM** | `tmpfs` | `tmpfs` | `/tmp`, `/run`, `/var/volatile` | Volatile working memory discarded on power off. |
-
-### 3.2 Component Breakdown
-
-#### 1. U-Boot Dual-Slot Boot Counter
-U-Boot manages active slot selection and automatic fallback:
-- Loads boot script `boot.scr` generated from `meta-hsm-os/recipes-bsp/rpi-u-boot-scr/files/boot.cmd`.
-- Maintains variables `BOOT_ORDER`, `BOOT_A_LEFT`, and `BOOT_B_LEFT`.
-- If an updated partition fails to boot successfully (watchdog reset or manual reboot before RAUC marks it good), U-Boot decrements the boot counter and reverts to the previously working slot.
-
-#### 2. Out-of-Tree Kernel Driver (`nrf52840-hsm-kmod`)
-Custom kernel driver (`meta-hsm-os/recipes-kernel/nrf52840-hsm-kmod/`):
-- Intercepts USB enumeration for Vendor ID `0x1209` and Product ID `0x0001`.
-- Extracts device serial number (the 12-character hexadecimal BLE MAC address burned into FICR).
-- Synthesizes deterministic character device nodes `/dev/tty.hsm<ble_address><interface_index>`.
-- In **Production**: Only the AT command channel (`cdc_acm_uart1`) is bound and exposed. The debug logger interface (`cdc_acm_uart0`) is intentionally detached and suppressed to prevent log snooping.
-- In **Development**: Both interfaces are registered for development debugging.
-
-#### 3. Network Isolation & Firewall (`nftables`)
-- Layer: `recipes-connectivity/nftables/files/nftables.conf`.
-- Flushes all chains on boot and applies `type filter hook input priority 0; policy drop;` across input, forward, and output chains.
-- Disables loopback networking beyond standard internal IPC.
-
-#### 4. Dedicated Operator User Space & First-Login Wizard
-- Standard non-root user `hsmutil` belongs to `dialout`, `tty`, and `storage` groups.
-- **First Login Wizard** (`init-wizard`):
-  - On first boot, triggers `/usr/sbin/first-login-wizard`.
-  - Enforces mandatory password change for user `hsmutil`.
-  - Prompts operator to select physical keyboard layout via `loadkeys` (preventing typographical errors in cryptographic PIN entry).
-  - Configures terminal locale.
-- **Every Login Clock Prompt**:
-  - Because air-gapped systems have no NTP network connectivity and the Raspberry Pi lacks an onboard battery-backed Real-Time Clock (RTC), every login shell invokes a prompt asking the operator for current UTC timestamp (`date -s "YYYY-MM-DD HH:MM:SS"`). This ensures valid x509 certificate validity periods during CSR generation.
-
-#### 5. USB Storage Automount
-- Handled via `recipes-support/usb-mount/`.
-- Dynamically detects inserted USB mass storage drives (FAT32, ext4, NTFS) and mounts them under `/media/usb-<devname>` with ownership `hsmutil:storage` and mode `0770`.
-- Allows offline export and import of public keys, CSRs, signed firmware binaries, and RAUC update bundles.
+| **RAM** | `tmpfs` | `tmpfs` | `/tmp`, `/run`, `/var/volatile`, `/media` | Volatile working memory discarded on power off. |
 
 ---
 
-## 4. Production vs Development Matrix
+## 5. Security & Subsystem Implementation Details
+
+### 5.1 Kernel Hardening & Network Elimination
+Configured via [`meta-hsm-os/recipes-kernel/linux/files/hardened.cfg`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-kernel/linux/files/hardened.cfg):
+- **Wireless Drivers Stripped**: `CONFIG_WIRELESS`, `CONFIG_CFG80211`, `CONFIG_MAC80211`, `CONFIG_BT`, `CONFIG_WLAN`, `CONFIG_RFKILL` are entirely unset.
+- **Wired Network Drivers Stripped**: `CONFIG_NET_ETHERNET`, `CONFIG_USB_NET_DRIVERS`, `CONFIG_USB_USBNET`, `CONFIG_USB_NET_SMSC95XX`, `CONFIG_USB_NET_LAN78XX`, `CONFIG_USB_RTL8152` are disabled.
+- **Memory Hardening**: `CONFIG_SECURITY=y`, `CONFIG_HARDENED_USERCOPY=y`, `CONFIG_FORTIFY_SOURCE=y`, `CONFIG_STRICT_KERNEL_RWX=y`, `CONFIG_STRICT_MODULE_RWX=y`, `CONFIG_RANDOMIZE_BASE=y`.
+- **GPIO Sysfs Disabled**: `CONFIG_GPIO_SYSFS` is unset to prevent userspace manipulation of raw microcontroller pins.
+
+### 5.2 Packet Filter (`nftables`)
+Configured via [`meta-hsm-os/recipes-connectivity/nftables/files/nftables.conf`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-connectivity/nftables/files/nftables.conf):
+- Flushes rulesets on boot and establishes default `policy drop` across input, forward, and output hooks on the `inet` family.
+- Even if a malicious USB device attempts to emulate an Ethernet adapter, all frames are immediately discarded at the netfilter ingress hook.
+
+### 5.3 Deterministic Hardware Driver (`nrf52840-hsm-kmod`)
+The dedicated kernel module [`meta-hsm-os/recipes-kernel/nrf52840-hsm-kmod/files/nrf52840_hsm.c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-kernel/nrf52840-hsm-kmod/files/nrf52840_hsm.c):
+1. **CDC-ACM Blacklist**: `blacklist cdc_acm` in [`blacklist-cdc-acm.conf`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-kernel/nrf52840-hsm-kmod/files/blacklist-cdc-acm.conf) ensures the generic Linux ACM driver does not bind to the dongle.
+2. **Deterministic Device Nodes**:
+   - Matches USB VID `0x1209` and PID `0x0001`.
+   - Reads the hardware BLE MAC address from `udev->serial`.
+   - Synthesizes device node `/dev/tty.hsm<ble_address><port_index>`.
+   - Udev rule creates convenience symlink `/dev/tty.hsm` pointing to primary device `/dev/tty.hsm*0`.
+3. **Production Port Filtering**:
+   - In **Production Mode** (`hsm_dev_mode=0`): Interfaces 0 and 1 (Zephyr debug logger console) are deliberately rejected during USB probe (`return -ENODEV`). Only Interfaces 2 and 3 (HSM AT crypto channel) are bound.
+   - In **Development Mode** (`hsm_dev_mode=1`): Both debug console and AT channels are registered.
+
+### 5.4 Volatile Storage & RAM Overlays
+Implemented via [`meta-hsm-os/recipes-core/volatile-storage/files/hsm-setup-volatile.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/volatile-storage/files/hsm-setup-volatile.sh):
+1. **RAM Mount for `/media`**: Mounts `tmpfs` on `/media` to host USB partition mount points without modifying the underlying rootfs.
+2. **RAM Overlayfs for `/etc`**: Mounts an `overlayfs` on `/etc` (`lowerdir=/etc,upperdir=/run/overlay/etc-upper,workdir=/run/overlay/etc-work`). This allows the operator to execute `passwd` to modify passwords in `/etc/shadow` in volatile RAM without mutating the immutable disk image.
+3. **Ephemeral `/home/hsmutil`**: Mounts `tmpfs` with mode `0750` for user `hsmutil` and copies skeleton files from `/etc/skel`. Cryptographic working files are discarded when powered down.
+
+### 5.5 Silent Journald Logging
+Implemented via [`meta-hsm-os/recipes-core/systemd-journald-airgap/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/systemd-journald-airgap/):
+- **Production (`journald-prod.conf`)**:
+  ```ini
+  [Journal]
+  Storage=none
+  ForwardToSyslog=no
+  ForwardToKMsg=no
+  ForwardToConsole=no
+  ```
+  Prevents memory exhaustion, disk wear, and sensitive cryptographic material leakage into system journals.
+- **Development (`journald-dev.conf`)**:
+  ```ini
+  [Journal]
+  Storage=volatile
+  ForwardToSyslog=no
+  ForwardToKMsg=no
+  ForwardToConsole=no
+  RuntimeMaxUse=64M
+  ```
+
+### 5.6 User Management & Login Wizard
+Configured via [`recipes-core/users/hsmutil-user.bb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/users/hsmutil-user.bb) and [`recipes-core/init-wizard/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/init-wizard/):
+- **User `hsmutil`**: Standard unprivileged operator belonging to `users`, `dialout`, `tty`, and `storage`. Initial default password set to `hsmutil` (SHA-512 crypt).
+- **Superuser Security**: In production (`hsm-image-prod.bb`), `extrausers` executes `usermod -L root;` locking the root password. In development (`hsm-image-dev.bb`), root password is set to `root`.
+- **First-Login Wizard (`first-login-wizard.sh`)**:
+  - Triggers on console login via `/etc/profile.d/hsm-login.sh`.
+  - Checks for marker file `~/.wizard_completed`.
+  - Enforces mandatory password change for `hsmutil` via `passwd`.
+  - Prompts operator to select physical keyboard layout (US, FR, DE, UK, fr_CH, sg) using `loadkeys` and persists selection to `~/.keymap`.
+  - Exports standard UTC timezone (`export TZ=UTC`).
+- **Login Clock Calibration (`clock-setup.sh` & `hsm-set-date.c`)**:
+  - Raspberry Pi boards lack an onboard battery RTC, and NTP is impossible in an air-gapped environment.
+  - On every login, prompts operator for current UTC timestamp (`YYYY-MM-DD HH:MM:SS`).
+  - Calls setuid root helper `/usr/local/bin/hsm-set-date` (mode `4755`), which validates timestamp with `strptime`/`timegm` and calls `settimeofday()`.
+  - Grants unprivileged `hsmutil` the ability to calibrate system time safely without sudo.
+
+### 5.7 USB Mass Storage Automount & Auto-Update
+Implemented in [`meta-hsm-os/recipes-support/usb-mount/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-support/usb-mount/):
+- Udev detects partition insertions and instantiates `usb-mount@<dev>.service`.
+- Mounts FAT32 or ext4 filesystem under `/media/usb-<devname>` with ownership `hsmutil:storage` and mode `0770`.
+- **Automatic RAUC Ingestion**: If any `*.raucb` file is present in the root directory of the mounted drive, `usb-mount.sh` automatically launches `rauc-usb-autoinstall.service`.
+
+---
+
+## 6. Production vs Development Matrix
 
 | Dimension | Specification | Production (`prod`) | Development (`dev`) |
 | :--- | :--- | :--- | :--- |
 | **Target Image** | BitBake Recipe | `hsm-image-prod` | `hsm-image-dev` |
 | **Kas Overlay** | Configuration File | `kas-prod.yml` | `kas-dev.yml` |
 | **Filesystem** | Root Filesystem Type | Strict read-only `ext4` / `squashfs` | Read-only `ext4` with writable `overlayfs` |
+| **Volatile State** | RAM Overlays | `/media` tmpfs, `/etc` overlayfs, `/home` tmpfs | Same |
 | **Networking** | Physical Drivers | WiFi, BLE, Ethernet stripped from kernel | Same (strict air-gap enforced) |
 | **Firewall** | Packet Filter Rules | `nftables` total drop (0 packets allowed) | `nftables` total drop |
-| **Superuser Access** | Root Account | Password locked/unset, login disabled | Password `root`, login permitted on console |
+| **Superuser Access** | Root Account | Account locked (`usermod -L root`) | Password `root`, login permitted |
 | **`hsmutil` User** | Escalation Privilege | Standard unprivileged operator, no `sudo` | Sudoer with `NOPASSWD: ALL` |
-| **Logging** | Syslog / Journald / Dmesg | Disabled (`quiet`, no disk journal, silent console) | Active in RAM / `journalctl` available |
+| **Clock Setup** | Timestamp Sync Helper | Setuid root `hsm-set-date` helper | Setuid `hsm-set-date` or `sudo date` |
+| **Logging** | Syslog / Journald / Dmesg | Disabled (`Storage=none`, silent console) | Active in RAM (`Storage=volatile`, 64M) |
 | **Dongle Port Binding** | Serial Node Exposure | Only AT command port `/dev/tty.hsm<ble>0` | Both AT command port and debug console |
 | **Remote Terminal** | SSH (`sshd` / `dropbear`) | Completely absent | Completely absent |
 
 ---
 
-## 5. Offline RAUC A/B Firmware Update Protocol
+## 7. Offline RAUC A/B Firmware Update Protocol
 
 Updates are distributed exclusively as cryptographically signed `.raucb` bundles delivered via physical USB drives.
 
@@ -238,8 +362,9 @@ sequenceDiagram
 
 ---
 
-## 6. Subsystem Integration & Cross-References
+## 8. Subsystem Integration & Cross-References
 
+- **Hardware Hub Integration**: [[Hardware/Waveshare USB HAT (B) Integration|Waveshare USB HAT (B) Integration Specification]]
 - **Dongle Hardware**: [[Hardware/nRF52840 Dongle PCA10059|nRF52840 Dongle PCA10059 Specification]]
 - **Dongle USB Interfaces**: [[Architecture/USB Composite Stack|USB Composite Stack Architecture]]
 - **Dongle Serial Identification**: [[Architecture/Decisions/ADR-0001 - Hardware BLE Address for Deterministic USB Serial Number|ADR-0001: BLE Address Serial Number]]

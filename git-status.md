@@ -26,8 +26,8 @@ This document tracks real-time Git branch topologies, commit records, working di
 | **Firmware** | [nrf52840-hsm-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `main` | Clean | `ae087c1` (*docs(firmware): update README with CC310 factory reset and AT+RESET*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0 Released** |
 | **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `main` | Clean | `c110845` (*docs(cli): update README with reset safeguards and multi-dongle disambiguation*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0 Released** |
 | **PKCS#11 Provider** | [nrf52840-hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) | `main` | Clean | `4673116` (*docs(p11): update README with AT port prioritization and serial targeting*) | **Clean** | Up to date (`main`) |
-| **Air-Gapped OS** | [rpi-z2w-yocto-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | `main` | Clean | `580b452` (*feat: initial scaffolding of rpi-z2w-yocto-hsm air-gapped embedded OS*) | **Clean** | **Scaffolding Complete / v0.4.0-alpha** |
-| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `8e3fe33` (*docs(vault): document rpi-z2w-yocto-hsm architecture, operational guide, and git status*) | **Clean** | Active documentation |
+| **Air-Gapped OS** | [rpi-z2w-yocto-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | `main` | Clean | `1ce95a1` (*feat(yocto): complete air-gapped hardened OS recipes and configuration*) | **Clean** | **Recipes & Hardening Complete / v0.4.0-alpha** |
+| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `5f9834a` (*docs(vault): document complete Yocto implementation for rpi-z2w-yocto-hsm*) | **Clean** | Up to date (`master`) |
 
 ---
 
@@ -35,18 +35,40 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 - **Repository Path**: [`rpi-z2w-yocto-hsm/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm)
 - **Active Branch**: `main`
-- **Latest Commit**: [`580b452`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *feat: initial scaffolding of rpi-z2w-yocto-hsm air-gapped embedded OS*
+- **Latest Commit**: [`1ce95a1`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *feat(yocto): complete air-gapped hardened OS recipes and configuration*
+- **Base Scaffolding Commit**: [`580b452`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *feat: initial scaffolding of rpi-z2w-yocto-hsm air-gapped embedded OS*
 - **Architecture Note**: [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|07 - Air-Gapped RPi HSM OS Architecture]]
+- **Hardware Integration Note**: [[Hardware/Waveshare USB HAT (B) Integration|Waveshare USB HAT (B) Integration]]
 - **Operational Guide**: [[Development/Yocto Build and RAUC Update Guide|Yocto Build and RAUC Update Guide]]
-- **Scaffolded Components**:
-  - Declarative Kas build configurations: `kas-project.yml` (Scarthgap 5.0 layers), `kas-dev.yml` (development tweaks), `kas-prod.yml` (production hardening).
-  - Out-of-tree kernel driver `nrf52840-hsm-kmod` creating `/dev/tty.hsm<ble_address><num>`.
-  - Kernel defconfig hardening & device tree overlays disabling WiFi, Bluetooth, Ethernet, and debug GPIO headers.
-  - `nftables` total-drop firewall dropping 100% of ingress, egress, and routed packets.
-  - User `hsmutil` configuration with mandatory first-login password/loadkeys/locale setup wizard and every-login UTC clock prompt.
-  - USB mass storage automount service under `/media/usb-*` for offline key and certificate transfers.
-  - Dual-slot A/B partition manager integrated with U-Boot boot counter and `rauc-usb-autoinstall.service` for x509-signed `.raucb` updates.
-  - Automation scripts: `scripts/run-kas.sh`, `scripts/flash-sd.sh`, `scripts/generate-rauc-keys.sh`, `scripts/create-rauc-bundle.sh`.
+- **Implemented Components & Recipes**:
+  - **Declarative Kas Build Configurations**: `kas-project.yml` (Scarthgap 5.0 layers), `kas-dev.yml` (development tweaks, sudo), `kas-prod.yml` (production hardening, quiet kernel, locked root).
+  - **Out-of-Tree Driver (`nrf52840-hsm-kmod`)**:
+    - Character driver matching USB `0x1209:0x0001` extracting device BLE address.
+    - Blacklisted generic ACM driver (`blacklist-cdc-acm.conf`).
+    - Exposes deterministic `/dev/tty.hsm<ble_address><port>` nodes with `/dev/tty.hsm` symlink and `0660` permissions owned by group `dialout`.
+    - In production mode: strictly binds AT command interface (`cdc_acm_uart1`) and suppresses debug logger interface (`cdc_acm_uart0`).
+  - **Kernel Defconfig Hardening & Device Tree Overlays**:
+    - `hardened.cfg`: completely removes wireless (`CFG80211=n`, `BT=n`), Ethernet, USB network drivers, and userspace GPIO sysfs.
+    - Memory hardening: `CONFIG_SECURITY=y`, `CONFIG_HARDENED_USERCOPY=y`, `CONFIG_FORTIFY_SOURCE=y`, `CONFIG_STRICT_KERNEL_RWX=y`, `CONFIG_RANDOMIZE_BASE=y`.
+    - `rpi-config_%.bbappend`: disables onboard WiFi/Bluetooth (`disable-wifi`, `disable-bt`), enables DWC2 USB host mode (`dtoverlay=dwc2,dr_mode=host`) for Waveshare USB HAT (B), and enables HDMI force hotplug (`hdmi_force_hotplug=1`, `hdmi_drive=2`).
+  - **Packet Filter Firewall (`nftables`)**:
+    - Unconditional default drop policy across input, forward, and output chains (`nftables.conf`).
+  - **Volatile Storage & RAM Overlays**:
+    - `volatile-storage` service mounts `tmpfs` on `/media`, `overlayfs` on `/etc` (`/run/overlay/etc-upper`), and `tmpfs` on `/home/hsmutil`.
+    - Allows volatile runtime operations (like `passwd`) without modifying the read-only flash rootfs.
+  - **Silent Journald Configuration**:
+    - Production: `Storage=none` with all console/syslog/kmsg forwards disabled.
+    - Development: `Storage=volatile` with 64 MB RAM limit.
+  - **User Management & Login Wizard**:
+    - `hsmutil-user.bb`: dedicated unprivileged `hsmutil` user with groups `users`, `dialout`, `tty`, `storage`.
+    - Production image locks superuser (`usermod -L root;`); dev image configures password `root` and sudo.
+    - First-login setup wizard (`first-login-wizard.sh`): forced password reset, interactive keyboard selection (`loadkeys`), and UTC timezone standard.
+    - Interactive login clock prompt (`clock-setup.sh`) backed by setuid root C helper (`hsm-set-date`), allowing unprivileged time calibration without sudo.
+  - **USB Mass Storage Automount & Offline RAUC Updates**:
+    - `usb-mount.sh` automatically mounts FAT32/ext4 partitions under `/media/usb-*` with ownership `hsmutil:storage`.
+    - Detects `*.raucb` update bundles and automatically triggers `rauc-usb-autoinstall.service`.
+    - Dual-slot A/B partition management with U-Boot boot counter and watchdog fallback.
+  - **Automation Scripts**: `scripts/run-kas.sh`, `scripts/flash-sd.sh`, `scripts/generate-rauc-keys.sh`, `scripts/create-rauc-bundle.sh`.
 - **Root Makefile Targets**:
   - `make yocto-build-dev` — builds development image (`hsm-image-dev`).
   - `make yocto-build-prod` — builds production air-gapped image (`hsm-image-prod`).

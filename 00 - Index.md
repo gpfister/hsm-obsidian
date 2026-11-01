@@ -19,7 +19,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 
 ### 🏗️ Architecture
 - [[Architecture/System Architecture|System Architecture]] — Multi-repository layout, system blocks, and runtime interactions.
-- [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|Air-Gapped RPi HSM OS Architecture]] — Ultra-hardened embedded Linux appliance, physical network isolation, out-of-tree kernel driver, and dual-slot RAUC A/B updates.
+- [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|Air-Gapped RPi HSM OS Architecture]] — Ultra-hardened embedded Linux appliance, physical network isolation, out-of-tree kernel driver, volatile RAM overlays, and dual-slot RAUC A/B updates.
 - [[Architecture/Dual-Stage Secure Boot|Dual-Stage Secure Boot]] — B0 immutable bootloader, MCUboot, and ECDSA P-256 signature chain.
 - [[Architecture/USB Composite Stack|USB Composite Stack]] — Dual CDC-ACM Virtual COM Ports (Console vs HSM API).
 - [[Architecture/HSM State Machine|HSM State Machine]] — State transitions and RGB LED indicators.
@@ -42,6 +42,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 
 ### 🔌 Hardware
 - [[Hardware/nRF52840 Dongle PCA10059|nRF52840 Dongle PCA10059]] — Pinout, RGB LEDs, buttons, and crystal oscillators.
+- [[Hardware/Waveshare USB HAT (B) Integration|Waveshare USB HAT (B) Integration]] — 4-port USB 2.0 expansion hub, DWC2 host overlay, power budgeting, and peripheral port allocation.
 - [[Hardware/JLink Debug Header|JLink Debug Header]] — SWD connector pinout and Segger J-Link integration.
 
 ### 💻 Development & Workflows
