@@ -6,9 +6,9 @@ tags:
   - repository
   - branches
 created: 2026-10-31
-updated: 2026-10-31
-lifecycle_phase: Phase 6 (Merge & Post-Merge Complete / Release v0.3.0)
-feature: "[[features/hsmutil-reset-and-multi-device-disambiguation|Reset Confirmation & Multi-Device Disambiguation]]"
+updated: 2026-11-01
+lifecycle_phase: Sub-Repository Scaffolding & Integration (`rpi-z2w-yocto-hsm`)
+feature: "[[Architecture/07 - Air-Gapped RPi HSM OS Architecture|Air-Gapped RPi HSM OS Architecture]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
 
@@ -22,11 +22,37 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `master` | Clean | `61a400e` (*docs(root): update README with reset safeguards and multi-device disambiguation*) | **Clean** | **Merged (Fast-Forward to `master`) / v0.3.0 Released** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `master` | Clean | `61a400e` (*docs(root): update README with reset safeguards and multi-device disambiguation*) | **Clean** | **Merged (Fast-Forward to `master`) / Root Makefile & AGENTS.md updated** |
 | **Firmware** | [nrf52840-hsm-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `main` | Clean | `ae087c1` (*docs(firmware): update README with CC310 factory reset and AT+RESET*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0 Released** |
 | **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `main` | Clean | `c110845` (*docs(cli): update README with reset safeguards and multi-dongle disambiguation*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0 Released** |
 | **PKCS#11 Provider** | [nrf52840-hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) | `main` | Clean | `4673116` (*docs(p11): update README with AT port prioritization and serial targeting*) | **Clean** | Up to date (`main`) |
-| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `6ad1077` (*docs(vault): record phase 6 post-merge release v0.3.0 across git-status, feature spec, and changelog*) | **Clean** | Active documentation |
+| **Air-Gapped OS** | [rpi-z2w-yocto-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | `main` | Clean | `580b452` (*feat: initial scaffolding of rpi-z2w-yocto-hsm air-gapped embedded OS*) | **Clean** | **Scaffolding Complete / v0.4.0-alpha** |
+| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `8e3fe33` (*docs(vault): document rpi-z2w-yocto-hsm architecture, operational guide, and git status*) | **Clean** | Active documentation |
+
+---
+
+## 1.1 New Sub-Repository: `rpi-z2w-yocto-hsm`
+
+- **Repository Path**: [`rpi-z2w-yocto-hsm/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm)
+- **Active Branch**: `main`
+- **Latest Commit**: [`580b452`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *feat: initial scaffolding of rpi-z2w-yocto-hsm air-gapped embedded OS*
+- **Architecture Note**: [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|07 - Air-Gapped RPi HSM OS Architecture]]
+- **Operational Guide**: [[Development/Yocto Build and RAUC Update Guide|Yocto Build and RAUC Update Guide]]
+- **Scaffolded Components**:
+  - Declarative Kas build configurations: `kas-project.yml` (Scarthgap 5.0 layers), `kas-dev.yml` (development tweaks), `kas-prod.yml` (production hardening).
+  - Out-of-tree kernel driver `nrf52840-hsm-kmod` creating `/dev/tty.hsm<ble_address><num>`.
+  - Kernel defconfig hardening & device tree overlays disabling WiFi, Bluetooth, Ethernet, and debug GPIO headers.
+  - `nftables` total-drop firewall dropping 100% of ingress, egress, and routed packets.
+  - User `hsmutil` configuration with mandatory first-login password/loadkeys/locale setup wizard and every-login UTC clock prompt.
+  - USB mass storage automount service under `/media/usb-*` for offline key and certificate transfers.
+  - Dual-slot A/B partition manager integrated with U-Boot boot counter and `rauc-usb-autoinstall.service` for x509-signed `.raucb` updates.
+  - Automation scripts: `scripts/run-kas.sh`, `scripts/flash-sd.sh`, `scripts/generate-rauc-keys.sh`, `scripts/create-rauc-bundle.sh`.
+- **Root Makefile Targets**:
+  - `make yocto-build-dev` — builds development image (`hsm-image-dev`).
+  - `make yocto-build-prod` — builds production air-gapped image (`hsm-image-prod`).
+  - `make yocto-bundle` — creates signed RAUC update bundle (`.raucb`).
+  - `make yocto-shell` — interactive Kas shell inside build container.
+  - `make yocto-clean` — cleans build artifacts.
 
 ---
 

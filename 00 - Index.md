@@ -19,6 +19,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 
 ### 🏗️ Architecture
 - [[Architecture/System Architecture|System Architecture]] — Multi-repository layout, system blocks, and runtime interactions.
+- [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|Air-Gapped RPi HSM OS Architecture]] — Ultra-hardened embedded Linux appliance, physical network isolation, out-of-tree kernel driver, and dual-slot RAUC A/B updates.
 - [[Architecture/Dual-Stage Secure Boot|Dual-Stage Secure Boot]] — B0 immutable bootloader, MCUboot, and ECDSA P-256 signature chain.
 - [[Architecture/USB Composite Stack|USB Composite Stack]] — Dual CDC-ACM Virtual COM Ports (Console vs HSM API).
 - [[Architecture/HSM State Machine|HSM State Machine]] — State transitions and RGB LED indicators.
@@ -47,6 +48,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Development/Environment Setup|Environment Setup]] — Toolchain prerequisites (NCS v3.4.1, UV, Go 1.24+).
 - [[Development/Build and Flash|Build and Flash]] — Firmware compilation, sysbuild, and J-Link programming.
 - [[Development/CLI Reference|CLI Reference]] — Complete documentation for `hsmutil` CLI and BubbleTea TUI.
+- [[Development/Yocto Build and RAUC Update Guide|Yocto Build & RAUC Update Guide]] — Kas containerized builds, SD card flashing, RAUC x509 PKI bundles, and offline update procedures.
 
 ### 📜 Sessions & Transcripts
 - [[Sessions/4b1bb45a-82b0-4966-bacf-254b577ad6f2|2026-10-31 - Reset Confirmation & Multi-Device Disambiguation (Phase 3 Planning)]] — Approved multi-repository implementation plan, architectural blueprint, and task breakdown.

@@ -6,12 +6,52 @@ tags:
   - history
   - milestones
 created: 2026-10-31
-updated: 2026-10-31
+updated: 2026-11-01
 ---
 
 # Workspace Release Changelog
 
 This document tracks all formal releases, milestone deliveries, and post-merge changelog notes across the orchestrated multi-repository workspace (`ncs-nrf52840dongle-kms`).
+
+---
+
+## [v0.4.0-alpha] — 2026-11-01: Air-Gapped Raspberry Pi Embedded Linux OS (`rpi-z2w-yocto-hsm`)
+
+> [!NOTE]
+> **Release Highlights**: Addition and initialization of the `rpi-z2w-yocto-hsm` sub-repository delivering an ultra-hardened, air-gapped 64-bit embedded Linux operating system built with Yocto Project 5.0 LTS (`scarthgap`) and Linux Kernel 6.6 LTS. Features containerized Kas build workflows, complete physical network elimination (WiFi, BLE, Ethernet disabled at hardware/DTB and kernel level), `nftables` 100% total-drop firewall, out-of-tree `nrf52840-hsm-kmod` kernel driver, mandatory first-login wizard with clock prompt, read-only root filesystem, USB mass storage automount, and dual-slot RAUC A/B update verification using x509 PKI certificates.
+>
+> **Release Status**: Scaffolding complete across sub-repository, root Makefile targets integrated, and architecture documentation indexed in vault.
+
+### 1. Summary of Changes
+
+| Subsystem | Branch | Commit | Key Additions |
+| :--- | :--- | :--- | :--- |
+| **Air-Gapped OS** (`rpi-z2w-yocto-hsm`) | `main` | [`580b452`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | Initial scaffolding of Yocto 5.0 Scarthgap layer (`meta-hsm-os`), Kas configurations (`kas-project.yml`, `kas-dev.yml`, `kas-prod.yml`), `nrf52840-hsm-kmod` driver, `nftables` rules, first-login wizard, RAUC A/B update service, and build scripts. |
+| **Workspace Root** (`nrf52840-hsm`) | `master` | Working Tree | Added `rpi-z2w-yocto-hsm` to `SUBREPOS` in root `Makefile`; added `yocto-build-dev`, `yocto-build-prod`, `yocto-bundle`, `yocto-shell`, and `yocto-clean` targets; updated root `AGENTS.md`. |
+| **Obsidian Vault** (`nrf52840-hsm-obsidian`) | `master` | [`8e3fe33`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | Authored `Architecture/07 - Air-Gapped RPi HSM OS Architecture.md`, `Development/Yocto Build and RAUC Update Guide.md`, updated `00 - Index.md`, `git-status.md`, and `Changelog.md`. |
+
+---
+
+### 2. Detailed Subsystem Changes
+
+#### Air-Gapped OS Subsystem (`rpi-z2w-yocto-hsm`)
+- **Yocto Layer & Architecture**:
+  - Initialized custom layer `meta-hsm-os` compatible with Yocto 5.0 (`scarthgap`).
+  - Integrated `kas` orchestration with reproducible container runtime (`ghcr.io/siemens/kas/kas:latest`).
+- **Kernel & Hardware Lockdown**:
+  - Implemented kernel config fragments stripping wireless (`CONFIG_CFG80211=n`, `CONFIG_BT=n`), Ethernet, and unnecessary peripherals.
+  - Device tree overlays disabling WiFi, Bluetooth, and debug GPIO headers.
+- **Out-of-Tree Driver (`nrf52840-hsm-kmod`)**:
+  - Dedicated character driver matching USB `0x1209:0x0001` and extracting device BLE address.
+  - In production mode: binds and exposes AT command channel (`cdc_acm_uart1`) under `/dev/tty.hsm<ble><num>` while suppressing logger port (`cdc_acm_uart0`).
+- **Network Security & User Space**:
+  - Enforced `nftables` default drop across input, output, and forward chains.
+  - Implemented mandatory first-login wizard enforcing user password rotation, keyboard layout selection, and locale setting.
+  - Implemented every-login UTC clock synchronization prompt to compensate for lack of battery RTC/NTP.
+  - Implemented USB storage automount service under `/media/usb-*` for `hsmutil` user space key exports.
+- **Dual-Slot RAUC A/B Updates**:
+  - Integrated `meta-rauc` and `meta-rauc-raspberrypi` with U-Boot boot counter and watchdog fallback.
+  - Implemented ECDSA P-256 PKI key generation script and automated USB update installer service (`rauc-usb-autoinstall`).
 
 ---
 
