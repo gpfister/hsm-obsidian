@@ -6,7 +6,7 @@ tags:
   - history
   - milestones
 created: 2026-10-31
-updated: 2026-11-01
+updated: 2026-11-02
 ---
 
 # Workspace Release Changelog
@@ -20,7 +20,20 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 > [!NOTE]
 > **Release Highlights**: Addition and initialization of the `rpi-z2w-yocto-hsm` sub-repository delivering an ultra-hardened, air-gapped 64-bit embedded Linux operating system built with Yocto Project 5.0 LTS (`scarthgap`) and Linux Kernel 6.6 LTS. Features containerized Kas build workflows, complete physical network elimination (WiFi, BLE, Ethernet disabled at hardware/DTB and kernel level), `nftables` 100% total-drop firewall, out-of-tree `nrf52840-hsm-kmod` kernel driver, mandatory first-login wizard with clock prompt, read-only root filesystem, USB mass storage automount, and dual-slot RAUC A/B update verification using x509 PKI certificates.
 >
-> **Release Status**: Scaffolding complete across sub-repository, root Makefile targets integrated, and architecture documentation indexed in vault.
+> **Release Status**: Scaffolding complete; development OS image (`hsm-image-dev`) verified with 5,844 BitBake tasks successfully completed; bootable WIC image and fast block map deployed; flashing instructions documented; root Makefile targets integrated; architecture documentation indexed in vault.
+
+### 0. Milestone: Verified Yocto Development Build (5,844 Tasks Succeeded)
+
+- **Target Image**: `hsm-image-dev` for `raspberrypi0-2w-64` (Raspberry Pi Zero 2 W 64-bit).
+- **Build Execution**: Successfully executed `kas build kas-dev.yml` (via `make yocto-build-dev`): **5,844 tasks attempted and succeeded** with zero errors or task failures.
+- **Deployed Artifacts** in [`rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64):
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2` (**95 MB**): Raw bootable SD disk image with dual-slot A/B partitions and U-Boot.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap` (**4.0 KB**): Block map file for accelerated flashing.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.tar.bz2` (**73 MB**): Rootfs compressed tarball containing packages and `hsmutil`.
+  - Kernel Device Tree Overlays & Boot Files: `disable-bt.dtbo` (1.0 KB), `disable-wifi.dtbo` (387 B), `dwc2.dtbo` (801 B), `bcm2710-rpi-zero-2.dtb` (33.7 KB), `boot.scr` (1.3 KB).
+- **Flashing Procedures**:
+  - Direct streaming flasher: `./scripts/flash-sd.sh build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2 <target_device>`.
+  - Fast block map copy: `sudo bmaptool copy --bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic <target_device>`.
 
 ### 1. Summary of Changes
 

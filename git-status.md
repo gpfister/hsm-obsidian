@@ -6,8 +6,8 @@ tags:
   - repository
   - branches
 created: 2026-10-31
-updated: 2026-11-01
-lifecycle_phase: Sub-Repository Scaffolding & Integration (`rpi-z2w-yocto-hsm`)
+updated: 2026-11-02
+lifecycle_phase: Sub-Repository Scaffolding & Yocto Image Build Verification (5,844 Tasks)
 feature: "[[Architecture/07 - Air-Gapped RPi HSM OS Architecture|Air-Gapped RPi HSM OS Architecture]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
@@ -26,7 +26,7 @@ This document tracks real-time Git branch topologies, commit records, working di
 | **Firmware** | [nrf52840-hsm-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `main` | Clean | `ae087c1` (*docs(firmware): update README with CC310 factory reset and AT+RESET*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0 Released** |
 | **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `main` | Clean | `c110845` (*docs(cli): update README with reset safeguards and multi-dongle disambiguation*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0 Released** |
 | **PKCS#11 Provider** | [nrf52840-hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) | `main` | Clean | `4673116` (*docs(p11): update README with AT port prioritization and serial targeting*) | **Clean** | Up to date (`main`) |
-| **Air-Gapped OS** | [rpi-z2w-yocto-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | `main` | Clean | `1ce95a1` (*feat(yocto): complete air-gapped hardened OS recipes and configuration*) | **Clean** | **Recipes & Hardening Complete / v0.4.0-alpha** |
+| **Air-Gapped OS** | [rpi-z2w-yocto-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | `main` | Clean | `1ce95a1` (*feat(yocto): complete air-gapped hardened OS recipes and configuration*) | **Clean** | **Yocto Build Verified (`hsm-image-dev` 5,844 Tasks Succeeded) / v0.4.0-alpha** |
 | **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `5f9834a` (*docs(vault): document complete Yocto implementation for rpi-z2w-yocto-hsm*) | **Clean** | Up to date (`master`) |
 
 ---
@@ -75,6 +75,25 @@ This document tracks real-time Git branch topologies, commit records, working di
   - `make yocto-bundle` — creates signed RAUC update bundle (`.raucb`).
   - `make yocto-shell` — interactive Kas shell inside build container.
   - `make yocto-clean` — cleans build artifacts.
+
+### 1.1.1 Verified Yocto Development Image Build & Deployed Artifacts
+
+The containerized Kas build workflow for the development image has been executed and verified:
+- **Build Target**: `hsm-image-dev` for machine `raspberrypi0-2w-64`
+- **BitBake Execution**: **5,844 tasks attempted and succeeded** (zero build errors, zero task failures)
+- **Deployed Artifacts** in [`rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64):
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2` (**95 MB**): Compressed raw bootable SD image with dual-slot A/B partition topology and U-Boot.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap` (**4.0 KB**): Fast block map file for accelerated flashing.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.tar.bz2` (**73 MB**): Rootfs compressed tarball with hardened configs and `hsmutil`.
+  - Kernel Device Tree Overlays & Boot Files:
+    - `disable-bt.dtbo` (**1.0 KB**): Disables onboard Broadcom Bluetooth controller at boot.
+    - `disable-wifi.dtbo` (**387 B**): Disables onboard Broadcom SDIO WiFi interface at boot.
+    - `dwc2.dtbo` (**801 B**): Configures DWC2 USB host mode for Waveshare USB HAT (B).
+    - `bcm2710-rpi-zero-2.dtb` (**33.7 KB**): Compiled device tree blob for Raspberry Pi Zero 2 W SoC.
+    - `boot.scr` (**1.3 KB**): U-Boot boot script for A/B slot selection and fallback.
+- **Flashing Procedures**:
+  - Direct streaming flasher: `./scripts/flash-sd.sh build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2 <target_device>`
+  - High-speed block copy: `sudo bmaptool copy --bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic <target_device>`
 
 ---
 

@@ -9,7 +9,7 @@ tags:
   - updates
   - rpi
 created: 2026-11-01
-updated: 2026-11-01
+updated: 2026-11-02
 status: Approved
 repository: rpi-z2w-yocto-hsm
 ---
@@ -95,12 +95,33 @@ Kas configurations are organized hierarchically:
 - [`kas-dev.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/kas-dev.yml): Inherits `kas-project.yml`, builds target `hsm-image-dev`, sets `HSM_DEV_MODE=1`, enables `debug-tweaks`, root password `root`, sudo escalation for user `hsmutil`, and RAM-only logging (`Storage=volatile`).
 - [`kas-prod.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/kas-prod.yml): Inherits `kas-project.yml`, builds target `hsm-image-prod`, sets `HSM_DEV_MODE=0`, enforces quiet kernel, locks root account (`usermod -L root`), and enables silent journald (`Storage=none`).
 
+### 2.4 Verified Build Execution & Benchmark
+
+The development image build pipeline has been executed and verified in the containerized Kas environment:
+- **Build Target**: `hsm-image-dev`
+- **Machine Target**: `raspberrypi0-2w-64` (Raspberry Pi Zero 2 W 64-bit ARMv8 Cortex-A53)
+- **BitBake Tasks**: **5,844 tasks attempted and succeeded** (0 failed tasks, 0 build errors)
+- **Deployment Directory**: [`rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64)
+
+#### Verified Deployed Artifacts
+
+| Artifact | Size | Description |
+| :--- | :--- | :--- |
+| `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2` | **95 MB** | Compressed raw bootable SD card disk image formatted with dual-slot A/B partition topology, U-Boot environment, and hardened Linux rootfs. |
+| `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap` | **4.0 KB** | Fast block map file enabling high-speed SD card flashing via `bmaptool copy` by writing only populated sectors. |
+| `hsm-image-dev-raspberrypi0-2w-64.rootfs.tar.bz2` | **73 MB** | Compressed root filesystem archive containing base packages, systemd configurations, and `hsmutil` user space. |
+| `disable-bt.dtbo` | **1.0 KB** | Kernel device tree overlay disabling onboard Broadcom Bluetooth controller at boot. |
+| `disable-wifi.dtbo` | **387 B** | Kernel device tree overlay disabling onboard Broadcom SDIO WiFi interface at boot. |
+| `dwc2.dtbo` | **801 B** | Kernel device tree overlay forcing DWC2 USB controller host mode for Waveshare USB HAT (B). |
+| `bcm2710-rpi-zero-2.dtb` | **33.7 KB** | Compiled Device Tree Blob for Raspberry Pi Zero 2 W SoC. |
+| `boot.scr` | **1.3 KB** | Compiled U-Boot boot script handling dual-slot A/B slot selection, boot counters, and kernel handoff. |
+
 ---
 
 ## 3. Flashing to MicroSD Card
 
-Once the build finishes, the raw partitioned image is available under:
-`rpi-z2w-yocto-hsm/build/tmp/deploy/images/<machine>/hsm-image-<variant>.rootfs.wic.bz2`
+Once the build finishes, the raw partitioned image and fast block map are available under:
+[`rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64)
 
 ### 3.1 Device Identification Safety
 
@@ -119,16 +140,22 @@ Once the build finishes, the raw partitioned image is available under:
   # Identify target SD card (e.g., /dev/sdb or /dev/mmcblk0)
   ```
 
-### 3.2 Executing Flashing Script
+### 3.2 Method A: Built-in Streaming Flasher (`scripts/flash-sd.sh`)
 
-Use the built-in flasher [`scripts/flash-sd.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/scripts/flash-sd.sh):
+Use the workspace flasher script [`scripts/flash-sd.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/scripts/flash-sd.sh):
 
 ```bash
 # Syntax: ./scripts/flash-sd.sh <image_path> <target_device>
 
+# Example (macOS):
 ./scripts/flash-sd.sh \
-  build/tmp/deploy/images/raspberrypi0-2w-64/hsm-image-prod.rootfs.wic.bz2 \
+  build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2 \
   /dev/rdisk4
+
+# Example (Linux):
+./scripts/flash-sd.sh \
+  build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2 \
+  /dev/sdb
 ```
 
 The script performs safety checks:
@@ -137,6 +164,24 @@ The script performs safety checks:
 3. Requires explicit interactive typing of `"yes"` before invoking `dd`.
 4. Streams decompression via `bzip2 -dc` directly to the raw block device with `bs=4M status=progress conv=fsync`.
 5. Executes `sync` to ensure buffered blocks are flushed to physical flash.
+
+### 3.3 Method B: High-Speed Flashing via Block Map (`bmaptool copy`)
+
+Using `bmaptool` is up to 5 times faster than standard `dd` because it skips unallocated image sectors:
+
+```bash
+# Decompress WIC image (keep compressed original with -k)
+bzip2 -dk build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2
+
+# Flash with bmaptool:
+sudo bmaptool copy \
+  --bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap \
+  build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic \
+  /dev/rdisk4  # or /dev/sdb on Linux
+```
+
+> [!TIP]
+> On macOS, `bmaptool` can be installed via `brew install bmap-tools`. On Ubuntu/Debian, install with `sudo apt install bmap-tools`.
 
 ---
 
@@ -271,7 +316,7 @@ The resulting `.raucb` bundle encapsulates the new kernel, device tree, and root
 ### 6.3 Offline Automated USB Installation
 1. **Copy Bundle to USB Storage**:
    ```bash
-   cp build/tmp/deploy/images/raspberrypi0-2w-64/update-bundle-raspberrypi0-2w-64.raucb /Volumes/SECURE_USB/update.raucb
+   cp build/deploy/images/raspberrypi0-2w-64/update-bundle-raspberrypi0-2w-64.raucb /Volumes/SECURE_USB/update.raucb
    ```
 2. **Insert USB Drive into Appliance**:
    - Plug the drive into an available Waveshare USB HAT port.
