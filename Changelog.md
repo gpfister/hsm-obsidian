@@ -39,7 +39,7 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 | Subsystem | Branch | Commit | Key Additions |
 | :--- | :--- | :--- | :--- |
-| **Air-Gapped OS** (`rpi-z2w-yocto-hsm`) | `main` | [`1ce95a1`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | Complete Yocto 5.0 Scarthgap layer (`meta-hsm-os`): real SHA-512 crypt passwords, root locking (`usermod -L root`), volatile RAM overlays (`/media`, `/etc`, `/home`), `hsm-set-date` setuid helper, udev rules and `blacklist-cdc-acm.conf`, silent journald in prod, Waveshare USB HAT (B) DWC2 host overlay, HDMI force hotplug, USB RAUC bundle auto-detection, and ARM64 `hsmutil` binary (Base commit: [`580b452`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm)). |
+| **Air-Gapped OS** (`rpi-z2w-yocto-hsm`) | `main` | [`91428c8`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | Fix U-Boot device tree handoff (`${fdt_addr}`), VideoCore `bootargs` extraction, and dual-slot WIC layout (`sdimage-dual-raspberrypi.wks.in`). Packaging conflicts resolved (`053bf75`, `cb4e8ca`). Complete Yocto 5.0 layer (`1ce95a1`). |
 | **Workspace Root** (`nrf52840-hsm`) | `master` | Working Tree | Added `rpi-z2w-yocto-hsm` to `SUBREPOS` in root `Makefile`; added `yocto-build-dev`, `yocto-build-prod`, `yocto-bundle`, `yocto-shell`, and `yocto-clean` targets; updated root `AGENTS.md`. |
 | **Obsidian Vault** (`nrf52840-hsm-obsidian`) | `master` | [`5f9834a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | Authored `Architecture/07 - Air-Gapped RPi HSM OS Architecture.md`, `Hardware/Waveshare USB HAT (B) Integration.md`, `Development/Yocto Build and RAUC Update Guide.md`, updated `00 - Index.md`, `git-status.md`, and `Changelog.md`. |
 
@@ -81,6 +81,17 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
   - Integrated `meta-rauc` and `meta-rauc-raspberrypi` with U-Boot boot counter and watchdog fallback.
   - Implemented ECDSA P-256 PKI key generation script (`generate-rauc-keys.sh`) and offline bundle generator (`create-rauc-bundle.sh`).
   - Automated USB update installer service (`rauc-usb-autoinstall`): detects `*.raucb` bundles on USB insertion via `usb-mount.sh` and verifies x509 CMS signatures before streaming into the inactive slot.
+
+---
+
+### 3. Investigation & Remediation: First-Boot Device Tree Failure (`91428c8`)
+
+- **Root Cause Assessment**: [[investigations/01 - RPi Zero 2 W First Boot Device Tree Failure|01 - RPi Zero 2 W First Boot Device Tree Failure]] (Session `7727fe1d-b544-42ae-848b-ab6b2767f731`).
+- **Defects Remediated**:
+  1. **Device Tree Handoff (`boot.cmd.in`)**: Eliminated erroneous `load mmc 0:1 ${fdt_addr_r} booti.dtb` which halted with error `-14`. Passed firmware-prepared device tree pointer at `${fdt_addr}` directly to `booti ${kernel_addr_r} - ${fdt_addr}`, preserving VideoCore hardware overlays (`disable-bt`, `disable-wifi`, `dwc2`) and dynamic board configuration.
+  2. **VideoCore Bootargs Extraction**: Added `fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs` to initialize serial console and kernel parameters from `cmdline.txt`.
+  3. **Dual-Slot Kernel Isolation**: Updated RAUC boot logic to load `/boot/Image` directly from the active slot (`mmc 0:2` for Slot A, `mmc 0:3` for Slot B) with fallback to `mmc 0:1`, ensuring atomic kernel updates and rollbacks.
+  4. **Dual-Slot WIC Partitioning**: Set `WKS_FILE = "sdimage-dual-raspberrypi.wks.in"` in `kas-project.yml` ensuring Partition 1 (`boot`), Partition 2 (`rootfs_A`), and Partition 3 (`rootfs_B`) are provisioned in `.wic` images.
 
 ---
 

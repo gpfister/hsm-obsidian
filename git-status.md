@@ -7,8 +7,9 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-02
-lifecycle_phase: Sub-Repository Scaffolding & Yocto Image Build Verification (5,844 Tasks)
+lifecycle_phase: First Boot DTB Remediation & Dual-Slot Layout Verification
 feature: "[[Architecture/07 - Air-Gapped RPi HSM OS Architecture|Air-Gapped RPi HSM OS Architecture]]"
+investigation: "[[investigations/01 - RPi Zero 2 W First Boot Device Tree Failure|01 - RPi Zero 2 W First Boot Device Tree Failure]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
 
@@ -26,7 +27,7 @@ This document tracks real-time Git branch topologies, commit records, working di
 | **Firmware** | [nrf52840-hsm-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `main` | Clean | `ae087c1` (*docs(firmware): update README with CC310 factory reset and AT+RESET*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0 Released** |
 | **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `main` | Clean | `c110845` (*docs(cli): update README with reset safeguards and multi-dongle disambiguation*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0 Released** |
 | **PKCS#11 Provider** | [nrf52840-hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) | `main` | Clean | `4673116` (*docs(p11): update README with AT port prioritization and serial targeting*) | **Clean** | Up to date (`main`) |
-| **Air-Gapped OS** | [rpi-z2w-yocto-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | `main` | Clean | `1ce95a1` (*feat(yocto): complete air-gapped hardened OS recipes and configuration*) | **Clean** | **Yocto Build Verified (`hsm-image-dev` 5,844 Tasks Succeeded) / v0.4.0-alpha** |
+| **Air-Gapped OS** | [rpi-z2w-yocto-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | `main` | Clean | `91428c8` (*fix(yocto): fix device tree handoff and enable dual-slot wic partition layout*) | **Clean** | **Yocto First Boot Fix & Dual-Slot Verified / v0.4.0-alpha** |
 | **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `5f9834a` (*docs(vault): document complete Yocto implementation for rpi-z2w-yocto-hsm*) | **Clean** | Up to date (`master`) |
 
 ---
@@ -35,12 +36,19 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 - **Repository Path**: [`rpi-z2w-yocto-hsm/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm)
 - **Active Branch**: `main`
-- **Latest Commit**: [`1ce95a1`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *feat(yocto): complete air-gapped hardened OS recipes and configuration*
+- **Latest Commit**: [`91428c8`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *fix(yocto): fix device tree handoff and enable dual-slot wic partition layout*
 - **Base Scaffolding Commit**: [`580b452`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *feat: initial scaffolding of rpi-z2w-yocto-hsm air-gapped embedded OS*
+- **Investigation Note**: [[investigations/01 - RPi Zero 2 W First Boot Device Tree Failure|01 - RPi Zero 2 W First Boot Device Tree Failure]]
 - **Architecture Note**: [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|07 - Air-Gapped RPi HSM OS Architecture]]
 - **Hardware Integration Note**: [[Hardware/Waveshare USB HAT (B) Integration|Waveshare USB HAT (B) Integration]]
 - **Operational Guide**: [[Development/Yocto Build and RAUC Update Guide|Yocto Build and RAUC Update Guide]]
-- **Implemented Components & Recipes**:
+- **Implemented Components & Remediation**:
+  - **U-Boot Device Tree Handoff & Bootargs Fix**:
+    - Replaced failed `load mmc 0:1 ${fdt_addr_r} booti.dtb` with direct pass of firmware pointer `${fdt_addr}` to `booti`, preserving VideoCore GPU hardware overlays (`disable-bt`, `disable-wifi`, `dwc2`).
+    - Added `fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs` in `boot.cmd.in` to initialize serial console and kernel parameters from `cmdline.txt`.
+    - Configured slot-specific kernel loading from `/boot/Image` on `${BOOT_DEV}` (`mmc 0:2` / `mmc 0:3`) with fallback to `mmc 0:1`.
+  - **Dual-Slot WIC Layout**:
+    - Configured `WKS_FILE = "sdimage-dual-raspberrypi.wks.in"` in `kas-project.yml` providing Partition 1 (`boot`), Partition 2 (`rootfs_A`), and Partition 3 (`rootfs_B`).
   - **Declarative Kas Build Configurations**: `kas-project.yml` (Scarthgap 5.0 layers), `kas-dev.yml` (development tweaks, sudo), `kas-prod.yml` (production hardening, quiet kernel, locked root).
   - **Out-of-Tree Driver (`nrf52840-hsm-kmod`)**:
     - Character driver matching USB `0x1209:0x0001` extracting device BLE address.

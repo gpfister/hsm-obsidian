@@ -63,6 +63,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Monitoring/2026-10-30 - Hardware Serial Console Monitoring|Hardware Serial Console Monitoring (PCA10059)]] — Stream surveillance for `/dev/cu.usbmodem83101` (115200 baud), boot sequence, PSA crypto, and health verification.
 
 ### 🔍 Investigations & Issue Assessments
+- [[investigations/01 - RPi Zero 2 W First Boot Device Tree Failure|01 - RPi Zero 2 W First Boot Device Tree Failure]] — Root cause analysis and remediation for U-Boot device tree handoff (`${fdt_addr}`), VideoCore `bootargs` extraction, and dual-slot WIC partition layout.
 - [[investigations/2026-10-31-hsmutil-reset-and-multi-device-disambiguation|2026-10-31 - hsmutil Reset Confirmation & Multi-Device Disambiguation]] — Root-cause analysis and remediation architecture for factory reset erasure semantics and multi-dongle auto-discovery disambiguation.
 
 ### 🌿 Repository, Releases & Status
