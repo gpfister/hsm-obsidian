@@ -25,12 +25,12 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Ahead of `origin/main` (`+1`) | `af2d24e` (*docs: generalize root documentation terminology*) | Staged/Modified | **Phase 5 Pre-Merge Review** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Ahead of `origin/main` (`+2`) | `58b82c0` (*docs: align root README and AGENTS.md with hsmutil command restructuring*) | **Clean** | **Phase 5 Pre-Merge Review** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Ahead of `origin/main` (`+1`) | `e03c9bb` (*docs(firmware): generalize title and clarify PCA10059 hardware target support*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `feature/cli-restructuring-bubbletea-pkcs11` | Local feature branch | `6c8781c` (*feat(cli): restructure commands under device, add static build, bubble tea UX, and pkcs11 parity*) | **Clean** | **Phase 5 Pre-Merge Review** |
 | **PKCS#11 Provider** | [hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11) | `main` | Ahead of `origin/main` (`+1`) | `9c54759` (*docs: generalize terminology in README.md*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Ahead of `origin/main` (`+1`) | `28925aa` (*docs: generalize README terminology to HSM USB key and appliance*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+4`) | `8fa4243` (*docs(vault): formalize ADR-0015, implementation plan, and CLI reference*) | Modified | **Phase 5 Pre-Merge Tidy-Up** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+5`) | `16e98c5` (*docs(vault): pre-merge tidy-up and feature specification for hsmutil restructuring*) | **Clean** | **Phase 5 Pre-Merge Review** |
 
 ---
 
