@@ -11,8 +11,9 @@ tags:
   - ergonomics
 created: 2026-11-05
 updated: 2026-11-05
-status: "Pre-Merge Review (Phase 5)"
-target_branch: "feature/cli-restructuring-bubbletea-pkcs11"
+status: "Post-Merge Complete (Phase 6)"
+target_branch: "main"
+merged_from: "feature/cli-restructuring-bubbletea-pkcs11"
 target_repo: "hsm-cli"
 latest_commit: "6c8781c"
 adrs:
@@ -24,17 +25,19 @@ references:
   - "[[Plan/HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS11 Equivalence Implementation Plan|Implementation Plan: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence]]"
   - "[[Specification/HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|Technical Specification: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence]]"
   - "[[Development/CLI Reference|CLI Reference (hsmutil)]]"
+  - "[[Changelog|Workspace Release Changelog]]"
   - "[[00 - Index|Vault Index]]"
 ---
 
 # Feature Specification: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence
 
 > [!NOTE]
-> **Lifecycle Phase**: Phase 5 (Review / Pre-Merge).  
+> **Lifecycle Phase**: Phase 6 (Post-Merge Complete).  
 > **Target Repository**: [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli)  
-> **Feature Branch**: `feature/cli-restructuring-bubbletea-pkcs11`  
+> **Target Branch**: `main`  
+> **Source Branch**: `feature/cli-restructuring-bubbletea-pkcs11`  
 > **Commit**: [`6c8781c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (*feat(cli): restructure commands under device, add static build, bubble tea UX, and pkcs11 parity*)  
-> **Status**: Implementation completed, verified via automated tests and manual inspections; ready for review and merge.
+> **Merge Status**: Fast-forward merged (`189c7fd..6c8781c`), working tree clean, verification suite `go test ./...` passed 100% across all packages.
 
 ---
 

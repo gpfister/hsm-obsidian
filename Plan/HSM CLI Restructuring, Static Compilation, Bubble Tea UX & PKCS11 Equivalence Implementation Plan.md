@@ -11,10 +11,10 @@ tags:
   - static-compilation
   - ergonomics
 created: 2026-11-05
-status: Approved (Ready for Implementation)
+status: Completed (Phase 6 Post-Merge Complete)
 target_branches:
-  cli: feature/cli-restructure-bubbletea-pkcs11
-  obsidian: feature/cli-restructure-bubbletea-pkcs11
+  cli: main (merged from feature/cli-restructuring-bubbletea-pkcs11)
+  obsidian: main
 adrs:
   - "[[Architecture/Decisions/ADR-0015 - HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|ADR-0015: HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]]"
   - "[[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014: Documentation Terminology Generalization to Generic HSM USB Key]]"
@@ -32,7 +32,7 @@ adrs:
 > **Target Repositories**:
 > - [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`hsmutil`)
 > - [`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian)  
-> **Execution Status**: Approved — Ready for Phase 4 (Develop).
+> **Execution Status**: Completed & Merged into `main` (Phase 6 Post-Merge Complete). Fast-forward merged `189c7fd..6c8781c` in `hsm-cli`, working tree clean, verification suite `go test ./...` 100% passed.
 
 ---
 

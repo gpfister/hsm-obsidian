@@ -15,6 +15,43 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 ---
 
+## [Merged] — 2026-11-05: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence (Merged into main)
+
+> [!NOTE]
+> **Post-Merge Milestone**: Comprehensive restructuring of the host management CLI (`hsmutil`) successfully merged into `main` in [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli). Feature branch `feature/cli-restructuring-bubbletea-pkcs11` was fast-forward merged (`189c7fd..6c8781c`), working tree clean, and all packages passed verification suites (`go test ./...`).
+>
+> **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+>
+> **Merge Details**:
+> - **Repository**: [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli)
+> - **Source Branch**: `feature/cli-restructuring-bubbletea-pkcs11`
+> - **Target Branch**: `main`
+> - **Merge Status**: Fast-forward merged (`189c7fd..6c8781c`)
+> - **Working Tree**: Clean across all workspace repositories
+> - **Verification**: `go test ./...` passed cleanly 100% across all packages
+>
+> **Key Deliverables & Architectural Enhancements**:
+> 1. **Resource Command Hierarchy**: Reorganized commands under `hsmutil device <subcommand>` (`list`, `info`, `init`, `lock`, `reset`, `status`, `migrate`, `firmware`) and `hsmutil key <subcommand>` (`list`, `generate`, `pubkey`, `sign`, `migrate`), with clean top-level utilities (`unlock`, `echo`, `random`, `pkcs11`).
+> 2. **Non-Breaking Backward Compatibility**: Preserved legacy root commands (`info`, `reset`, `lock`, `init`, `status`, `firmware`, `auth`) as hidden aliases on `rootCmd`.
+> 3. **Ergonomic Aliases & Pluralization**: Added visible alias `hsmutil devices -> hsmutil device list` and Makefile relative symlink `bin/hsmutils -> bin/hsmutil`.
+> 4. **Pruned Deprecated Code**: Removed unmaintained monolithic full-screen dashboard (`hsmutil tui`, `internal/ui/tui/`) and redundant embedded test runner (`hsmutil test`).
+> 5. **Renamed Auth to Unlock**: Renamed `auth` command to `unlock` with `auth` retained as convenience alias.
+> 6. **Terminology Neutrality**: Replaced `nrf52840` references with generic HSM USB Key / device across all user-facing CLI text and help messages per [[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014]].
+> 7. **Bubble Tea Micro-Components**: Integrated Charm's Bubble Tea micro-components (`bubbles/textinput` for masked password bullets `••••••` during `unlock`, `bubbles/progress` for animated gradient DFU transfer bar during `device firmware update`) with automatic TTY detection and clean headless fallback.
+> 8. **Static Binary Compilation**: Enforced `CGO_ENABLED=0` across all Makefile targets for zero-dependency portability across host and cross-compilation platforms (`darwin/arm64`, `linux/arm64`, `linux/amd64`, `windows/arm64`, `windows/amd64`).
+> 9. **PKCS#11 Parity & Matrix**: Formalized complete equivalence matrix and GAP analysis against OpenSC `pkcs11-tool`.
+>
+> ### Deliverables & Architecture Records
+> - **Commit**: [`6c8781c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`6c8781c`) — *feat(cli): restructure commands under device, add static build, bubble tea UX, and pkcs11 parity*
+> - **ADR Formalized**: [[Architecture/Decisions/ADR-0015 - HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|ADR-0015: HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]]
+> - **Technical Specification**: [[Specification/HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|Technical Specification: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence]]
+> - **Feature Note**: [[features/cli-restructuring-bubbletea-pkcs11|HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence]]
+> - **Implementation Plan**: [[Plan/HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS11 Equivalence Implementation Plan|Implementation Plan: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence]]
+> - **CLI Reference**: [[Development/CLI Reference|CLI Reference (hsmutil)]]
+> - **Status Note**: [[git-status|Workspace Git Status & Repository Topologies]]
+
+---
+
 ## [Merged] — 2026-11-05: Documentation Terminology Generalization to Generic HSM USB Key (Merged into main)
 
 > [!NOTE]
