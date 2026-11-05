@@ -15,6 +15,70 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 ---
 
+## [Merged] — 2026-11-05: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm) (Merged into main)
+
+> [!NOTE]
+> **Post-Merge Milestone**: Multi-repository delivery of HSM dual-mode authentication, host CLI rebranding (`gphsm`), pure-Go PAM pwquality password validation, and PKCS#11 provider refactoring (`libgphsm`) successfully merged into `main` across all target repositories. All feature and task branches were merged, working trees clean on `main`, and 100% test passage achieved across firmware CTest, CLI unit tests, and the end-to-end multi-phase integration test suite (`make integration-test`).
+>
+> **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+>
+> **Merge Details Across Repositories**:
+> - **Firmware Subsystem ([`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware))**: `feature/dual-mode-auth` merged into `main` (`e03c9bb..7f516bd`). Working tree clean on `main`.
+> - **PKCS#11 Provider Library ([`libgphsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/libgphsm))**: `task/rename-libgphsm-dual-mode` merged into `main` (`9c54759..d25adea`). Working tree clean on `main`.
+> - **Host Management CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**: `feature/gphsm-dual-mode` merged into `main` (`6c8781c..14ea65f`). Working tree clean on `main`.
+> - **Root Workspace Orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: `task/dual-mode-workspace-alignment` merged into `main` (`58b82c0..2848d50`). Working tree clean on `main`.
+> - **Central Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Post-merge status, branch tracking, and release records synchronized on `main`.
+>
+> **Verification & Integration Results**:
+> - **Firmware Unit Tests**: `ctest` passed 100% across keystore dual-mode state, NVS persistence, and AT command dispatch.
+> - **CLI Verification**: `go test ./...` passed cleanly across domain, infra, and UI packages.
+> - **End-to-End Integration Tests (`make integration-test`)**:
+>   - **Phase A**: 16/16 AT protocol & ceremony steps passed (probing, status queries, PIN/Shamir initialization, auth mutual exclusivity, key operations, factory reset zeroization).
+>   - **Phase B**: `libgphsm` PKCS#11 mock suite passed 100%.
+>   - **Phase C**: `gphsm` CLI test suite passed 100%.
+>
+> **Key Deliverables & Architectural Enhancements**:
+> 1. **Firmware Dual-Mode Authentication Keystore (`auth_method_t`)**:
+>    - Distinct keystore methods: `NONE` (unconfigured), `PIN` (passphrase mode), `SHAMIR` (3-of-5 threshold mode) with persistent NVS storage.
+>    - Extended PIN storage supporting up to 64 bytes with 16-byte random salt and SHA-256 hash.
+>    - Dedicated initialization endpoints: `AT+INIT=PIN,<pin>` and `AT+INIT=SHAMIR` with re-initialization guards (`+CME ERROR: 41`).
+>    - Comprehensive status output via `AT+STATUS?` (`CONFIGURED`, `AUTH`, `METHOD`, `RETRIES`, `KEYCOUNT`).
+>    - Mutual exclusivity enforcement between `AT+AUTH` and `AT+SHARE` (`+CME ERROR: 42`).
+>    - Zeroization in `AT+RESET` / `AT+FACTORYRESET` resetting salt, hash, keys, and restoring unconfigured state.
+> 2. **PKCS#11 Provider Library Refactoring (`libgphsm`)**:
+>    - Repository and library renamed to `libgphsm` emitting `libgphsm.{dylib,so,dll}`.
+>    - Dual-mode token flags: sets `CKF_PROTECTED_AUTHENTICATION_PATH` in Shamir mode.
+>    - Adapted `C_Login` to recognize external pre-authentication (`AUTH == 1`) in Shamir mode without requiring in-band PIN entry.
+>    - Clean CMake and Makefile integration with updated CTest mock suite.
+> 3. **Host CLI Rebranding to `gphsm` (`hsm-cli`)**:
+>    - Rebranded executable to `gphsm` with backward-compatible `hsmutil` and `hsmutils` symlinks.
+>    - Dual-mode initialization wizard (`gphsm device init`) with interactive TTY prompts for PIN vs Shamir mode.
+>    - Embedded pure-Go `pam_pwquality` validation enforcing Yocto appliance password complexity.
+>    - Auto-detecting `gphsm unlock` (alias `auth`) handling PIN prompts and custodian share ceremonies.
+>    - Purged legacy internal `p11` diagnostic commands and dynamic PKCS#11 loaders.
+>    - Homogeneous migration validation ensuring `source.METHOD == target.METHOD`.
+> 4. **Root Workspace & Multi-Repository Orchestration**:
+>    - Makefile targets updated: `cli-build`, `libpkcs11-build`, `libpkcs11-test`, `make integration-test`.
+>    - Updated `scripts/mock_hsm_pty.py` to support dual-mode initialization, mutual exclusivity, and extended status responses.
+>    - Updated `scripts/run_integration_tests.sh` and `scripts/test_at_client.py` covering all dual-mode auth paths.
+>
+> ### Deliverables & Architecture Records
+> - **Commits**:
+>   - Firmware: [`7f516bd`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) — *docs(firmware): document dual-mode authentication in README*
+>   - PKCS#11: [`d25adea`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/libgphsm) — *docs(p11): align protocol ID reference with ADR-0013 in README*
+>   - CLI: [`14ea65f`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) — *feat(cli): rebrand to gphsm, add dual-mode auth, pwquality PIN validation, and purge p11*
+>   - Root: [`2848d50`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) — *docs(workspace): update root README and AGENTS.md for gphsm, libgphsm, and dual-mode auth*
+> - **ADRs Formalized**:
+>   - [[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]
+>   - [[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]
+> - **Technical Specification**: [[Specification/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring|Technical Specification: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring]]
+> - **Feature Note**: [[features/dual-mode-auth-gphsm-and-libgphsm-refactoring|Dual-Mode Authentication, CLI Rebranding (gphsm) & PKCS#11 Refactoring (libgphsm)]]
+> - **Implementation Plan**: [[Plan/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring Implementation Plan|Implementation Plan: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring]]
+> - **CLI Reference**: [[Development/CLI Reference|CLI Reference (gphsm)]]
+> - **Status Note**: [[git-status|Workspace Git Status & Repository Topologies]]
+
+---
+
 ## [Merged] — 2026-11-05: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence (Merged into main)
 
 > [!NOTE]

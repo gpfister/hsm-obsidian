@@ -14,12 +14,12 @@ tags:
   - yocto
   - pwquality
 created: 2026-11-05
-status: Approved (Phase 3 Complete — Ready for Development)
+status: Completed (Phase 6 Post-Merge Complete)
 target_branches:
-  root: task/dual-mode-workspace-alignment
-  firmware: feature/dual-mode-auth
-  cli: feature/gphsm-dual-mode
-  libgphsm: task/rename-libgphsm-dual-mode
+  root: main (merged from task/dual-mode-workspace-alignment)
+  firmware: main (merged from feature/dual-mode-auth)
+  cli: main (merged from feature/gphsm-dual-mode)
+  libgphsm: main (merged from task/rename-libgphsm-dual-mode)
   obsidian: main
 adrs:
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture]]"
@@ -33,11 +33,17 @@ adrs:
 # Multi-Repository Implementation Plan: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm)
 
 > [!NOTE]
-> **Approved Plan Reference**: HSM Dual-Mode Authentication, CLI Renaming (`gphsm`), and PKCS#11 Refactoring (`libgphsm`)  
-> **Target Lifecycle Phase**: Phase 3 (Plan Approved) $\rightarrow$ Phase 4 (Develop Handoff)  
+> **Implementation Plan Reference**: HSM Dual-Mode Authentication, CLI Renaming (`gphsm`), and PKCS#11 Refactoring (`libgphsm`)  
+> **Target Lifecycle Phase**: Phase 6 (Post-Merge Complete — All Subsystems Merged on `main`)  
 > **Related Architecture Decision Records**:
 > - [[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]
 > - [[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]  
+> **Merged Commits**:
+> - Firmware: [`7f516bd`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) (`feature/dual-mode-auth` &rarr; `main`)
+> - PKCS#11: [`d25adea`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/libgphsm) (`task/rename-libgphsm-dual-mode` &rarr; `main`)
+> - CLI: [`14ea65f`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`feature/gphsm-dual-mode` &rarr; `main`)
+> - Root Workspace: [`2848d50`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`task/dual-mode-workspace-alignment` &rarr; `main`)
+> - Knowledge Vault: [`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) on `main`  
 > **Target Repositories & Working Branches**:
 > - Workspace Root: `task/dual-mode-workspace-alignment`
 > - [`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware): `feature/dual-mode-auth`
