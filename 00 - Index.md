@@ -31,10 +31,12 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Architecture/Decisions/ADR-0004 - Factory Reset Semantics and Safeguards|ADR-0004: Factory Reset Semantics and Safe Erasure Safeguards]] — Irreversible cryptographic teardown, NVS clearing, and interactive CLI safeguards.
 
 ### 🧩 Feature Specifications
+- [[features/uncompressed-wic-image-and-sd-flash-tooling|Uncompressed WIC Image Generation & SD Flash Tooling Alignment]] — Uncompressed `.wic` artifact retention in Kas/BitBake, deploy directory path alignment, and cross-platform macOS/Linux `dd` support in `flash-sd.sh`.
 - [[features/usb-descriptors-ble-address|USB Descriptors & Device Identification]] — Deterministic hardware BLE serial numbers, macOS CDC-ACM port allocation, and multi-device discovery.
 - [[features/hsmutil-reset-and-multi-device-disambiguation|Reset Confirmation & Multi-Device Disambiguation]] — Interactive confirmation safeguards, firmware CC310 zeroization, and deterministic multi-dongle CLI targeting.
 
 ### 📐 Specifications
+- [[Specification/Uncompressed WIC Image Generation and SD Flash Tooling Alignment|Uncompressed WIC Image Generation & SD Flash Tooling Alignment]] — Technical specification for `IMAGE_FSTYPES` `.wic` emission and cross-platform SD card flashing.
 - [[Specification/Reset Confirmation and Multi-Device Disambiguation|Reset Confirmation & Multi-Device Disambiguation]] — Interactive confirmation safeguards, CC310 zeroization, and deterministic multi-device auto-discovery.
 - [[Specification/USB Descriptors and Device Identification|USB Descriptors & Device Identification]] — FICR BLE address serial number, protocol IDs, and macOS device node mapping.
 - [[Specification/YubiHSM Protocol|YubiHSM Protocol]] — Binary packet framing, command opcodes, and response payloads.
@@ -72,5 +74,6 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 
 ### 🎯 Roadmap & Planning
 - [[Plan/Project Roadmap|Project Roadmap]] — Milestones, future cryptographic extensions, and security certification targets.
+- [[Plan/Uncompressed WIC Image Generation and SD Flash Tooling Implementation Plan|Implementation Plan: Uncompressed WIC Image Generation & SD Flash Tooling Alignment]] — Repository work breakdown and build verification plan for `rpi-z2w-yocto-hsm`.
 - [[Plan/Reset Confirmation and Multi-Device Disambiguation Implementation Plan|Implementation Plan: Reset Confirmation & Multi-Device Disambiguation]] — Multi-repository implementation plan across firmware keystore zeroization, CLI confirmation safeguards, and serial disambiguation.
 - [[Plan/USB Descriptors and BLE Identification Implementation Plan|Implementation Plan: USB Descriptors & BLE Device Identification]] — Multi-repository implementation plan across firmware, CLI, PKCS#11, and documentation.

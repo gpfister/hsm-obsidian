@@ -6,9 +6,9 @@ tags:
   - repository
   - branches
 created: 2026-10-31
-updated: 2026-11-02
-lifecycle_phase: First Boot DTB Remediation & Dual-Slot Layout Verification
-feature: "[[Architecture/07 - Air-Gapped RPi HSM OS Architecture|Air-Gapped RPi HSM OS Architecture]]"
+updated: 2026-11-05
+lifecycle_phase: Phase 6 Post-Merge Complete — Uncompressed WIC Image Generation & SD Flash Tooling Alignment
+feature: "[[features/uncompressed-wic-image-and-sd-flash-tooling|Uncompressed WIC Image Generation & SD Flash Tooling Alignment]]"
 investigation: "[[investigations/01 - RPi Zero 2 W First Boot Device Tree Failure|01 - RPi Zero 2 W First Boot Device Tree Failure]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
@@ -23,26 +23,32 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `master` | Clean | `61a400e` (*docs(root): update README with reset safeguards and multi-device disambiguation*) | **Clean** | **Merged (Fast-Forward to `master`) / Root Makefile & AGENTS.md updated** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `master` | Clean | `3713c98` (*feat: register rpi-z2w-yocto-hsm sub-repository and root build targets*) | **Clean** | **Merged (`master`) / Root Makefile & AGENTS.md updated** |
 | **Firmware** | [nrf52840-hsm-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `main` | Clean | `ae087c1` (*docs(firmware): update README with CC310 factory reset and AT+RESET*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0 Released** |
-| **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `main` | Clean | `c110845` (*docs(cli): update README with reset safeguards and multi-dongle disambiguation*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0 Released** |
+| **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `main` | Clean | `ceb18d7` (*feat(serial): add native support for /dev/tty.hsm* nodes*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0+ Released** |
 | **PKCS#11 Provider** | [nrf52840-hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) | `main` | Clean | `4673116` (*docs(p11): update README with AT port prioritization and serial targeting*) | **Clean** | Up to date (`main`) |
-| **Air-Gapped OS** | [rpi-z2w-yocto-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | `main` | Clean | `91428c8` (*fix(yocto): fix device tree handoff and enable dual-slot wic partition layout*) | **Clean** | **Yocto First Boot Fix & Dual-Slot Verified / v0.4.0-alpha** |
-| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `5f9834a` (*docs(vault): document complete Yocto implementation for rpi-z2w-yocto-hsm*) | **Clean** | Up to date (`master`) |
+| **Air-Gapped OS** | [rpi-z2w-yocto-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | `main` | Clean | `b99899f` (*feat(image): generate uncompressed .wic disk image and align SD flash script*) | **Clean** | **Merged (`feature/uncompressed-wic-image` $\rightarrow$ `main`, pruned) / v0.4.0-alpha** |
+| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `edf62cd` (*docs(vault): archive RPi Zero 2 W first-boot device tree failure investigation and remediation*) | **Updated** | Post-Merge Vault Synchronization (`master`) |
 
 ---
 
-## 1.1 New Sub-Repository: `rpi-z2w-yocto-hsm`
+## 1.1 Sub-Repository: `rpi-z2w-yocto-hsm`
 
 - **Repository Path**: [`rpi-z2w-yocto-hsm/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm)
-- **Active Branch**: `main`
-- **Latest Commit**: [`91428c8`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *fix(yocto): fix device tree handoff and enable dual-slot wic partition layout*
+- **Active Branch**: `main` (feature branch `feature/uncompressed-wic-image` fast-forward merged and deleted)
+- **Latest Commit**: [`b99899f`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *feat(image): generate uncompressed .wic disk image and align SD flash script*
+- **Previous Commit**: [`91428c8`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *fix(yocto): fix device tree handoff and enable dual-slot wic partition layout*
 - **Base Scaffolding Commit**: [`580b452`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *feat: initial scaffolding of rpi-z2w-yocto-hsm air-gapped embedded OS*
+- **Feature Note**: [[features/uncompressed-wic-image-and-sd-flash-tooling|Uncompressed WIC Image Generation & SD Flash Tooling Alignment]]
 - **Investigation Note**: [[investigations/01 - RPi Zero 2 W First Boot Device Tree Failure|01 - RPi Zero 2 W First Boot Device Tree Failure]]
 - **Architecture Note**: [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|07 - Air-Gapped RPi HSM OS Architecture]]
 - **Hardware Integration Note**: [[Hardware/Waveshare USB HAT (B) Integration|Waveshare USB HAT (B) Integration]]
 - **Operational Guide**: [[Development/Yocto Build and RAUC Update Guide|Yocto Build and RAUC Update Guide]]
 - **Implemented Components & Remediation**:
+  - **Uncompressed WIC Image Generation & SD Flash Tooling Alignment (`b99899f`)**:
+    - Updated `IMAGE_FSTYPES = "tar.bz2 wic wic.bz2 wic.bmap"` in `kas-project.yml` so BitBake emits and retains the standalone uncompressed `.wic` disk image alongside `.wic.bz2`, `.wic.bmap`, and `.tar.bz2`.
+    - Updated `scripts/flash-sd.sh` and `README.md` to reference `build/deploy/images/raspberrypi0-2w-64/` instead of `build/tmp/deploy/images/...`.
+    - Added host OS detection (`uname -s`) in `scripts/flash-sd.sh` to select macOS BSD `dd` flags (`bs=4m status=progress`) on `Darwin` and GNU coreutils `dd` flags (`bs=4M status=progress conv=fsync`) on `Linux`.
   - **U-Boot Device Tree Handoff & Bootargs Fix**:
     - Replaced failed `load mmc 0:1 ${fdt_addr_r} booti.dtb` with direct pass of firmware pointer `${fdt_addr}` to `booti`, preserving VideoCore GPU hardware overlays (`disable-bt`, `disable-wifi`, `dwc2`).
     - Added `fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs` in `boot.cmd.in` to initialize serial console and kernel parameters from `cmdline.txt`.
@@ -90,9 +96,10 @@ The containerized Kas build workflow for the development image has been executed
 - **Build Target**: `hsm-image-dev` for machine `raspberrypi0-2w-64`
 - **BitBake Execution**: **5,844 tasks attempted and succeeded** (zero build errors, zero task failures)
 - **Deployed Artifacts** in [`rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64):
-  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2` (**95 MB**): Compressed raw bootable SD image with dual-slot A/B partition topology and U-Boot.
-  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap` (**4.0 KB**): Fast block map file for accelerated flashing.
-  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.tar.bz2` (**73 MB**): Rootfs compressed tarball with hardened configs and `hsmutil`.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic` $\rightarrow$ `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105101217.wic` (**1.6 GB**): Uncompressed raw bootable SD image with dual-slot A/B partition topology and U-Boot.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2` $\rightarrow$ `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105101217.wic.bz2` (**168 MB**): Compressed raw bootable SD image with dual-slot A/B partition topology and U-Boot.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap` $\rightarrow$ `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105101217.wic.bmap` (**8.0 KB**): Fast block map file for accelerated flashing.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.tar.bz2` $\rightarrow$ `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105101217.tar.bz2` (**73 MB**): Rootfs compressed tarball with hardened configs and `hsmutil`.
   - Kernel Device Tree Overlays & Boot Files:
     - `disable-bt.dtbo` (**1.0 KB**): Disables onboard Broadcom Bluetooth controller at boot.
     - `disable-wifi.dtbo` (**387 B**): Disables onboard Broadcom SDIO WiFi interface at boot.
@@ -100,6 +107,7 @@ The containerized Kas build workflow for the development image has been executed
     - `bcm2710-rpi-zero-2.dtb` (**33.7 KB**): Compiled device tree blob for Raspberry Pi Zero 2 W SoC.
     - `boot.scr` (**1.3 KB**): U-Boot boot script for A/B slot selection and fallback.
 - **Flashing Procedures**:
+  - Direct raw flasher: `./scripts/flash-sd.sh build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic <target_device>`
   - Direct streaming flasher: `./scripts/flash-sd.sh build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2 <target_device>`
   - High-speed block copy: `sudo bmaptool copy --bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic <target_device>`
 

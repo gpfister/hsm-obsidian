@@ -6,7 +6,7 @@ tags:
   - history
   - milestones
 created: 2026-10-31
-updated: 2026-11-02
+updated: 2026-11-05
 ---
 
 # Workspace Release Changelog
@@ -15,23 +15,25 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 ---
 
-## [v0.4.0-alpha] — 2026-11-01: Air-Gapped Raspberry Pi Embedded Linux OS (`rpi-z2w-yocto-hsm`)
+## [v0.4.0-alpha] — 2026-11-05: Air-Gapped Raspberry Pi Embedded Linux OS (`rpi-z2w-yocto-hsm`)
 
 > [!NOTE]
 > **Release Highlights**: Addition and initialization of the `rpi-z2w-yocto-hsm` sub-repository delivering an ultra-hardened, air-gapped 64-bit embedded Linux operating system built with Yocto Project 5.0 LTS (`scarthgap`) and Linux Kernel 6.6 LTS. Features containerized Kas build workflows, complete physical network elimination (WiFi, BLE, Ethernet disabled at hardware/DTB and kernel level), `nftables` 100% total-drop firewall, out-of-tree `nrf52840-hsm-kmod` kernel driver, mandatory first-login wizard with clock prompt, read-only root filesystem, USB mass storage automount, and dual-slot RAUC A/B update verification using x509 PKI certificates.
 >
-> **Release Status**: Scaffolding complete; development OS image (`hsm-image-dev`) verified with 5,844 BitBake tasks successfully completed; bootable WIC image and fast block map deployed; flashing instructions documented; root Makefile targets integrated; architecture documentation indexed in vault.
+> **Release Status**: Scaffolding complete; development OS image (`hsm-image-dev`) verified with 5,844 BitBake tasks successfully completed; uncompressed `.wic` (`1.6 GB`), compressed `.wic.bz2` (`168 MB`), fast block map `.wic.bmap` (`8.0 KB`), and `.tar.bz2` (`73 MB`) deployed; cross-platform macOS/Linux SD card flashing (`scripts/flash-sd.sh`) aligned; root Makefile targets integrated; architecture documentation indexed in vault.
 
 ### 0. Milestone: Verified Yocto Development Build (5,844 Tasks Succeeded)
 
 - **Target Image**: `hsm-image-dev` for `raspberrypi0-2w-64` (Raspberry Pi Zero 2 W 64-bit).
 - **Build Execution**: Successfully executed `kas build kas-dev.yml` (via `make yocto-build-dev`): **5,844 tasks attempted and succeeded** with zero errors or task failures.
 - **Deployed Artifacts** in [`rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64):
-  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2` (**95 MB**): Raw bootable SD disk image with dual-slot A/B partitions and U-Boot.
-  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap` (**4.0 KB**): Block map file for accelerated flashing.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic` (**1.6 GB**): Uncompressed raw bootable SD disk image with dual-slot A/B partitions and U-Boot.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2` (**168 MB**): Bzip2-compressed raw bootable SD disk image with dual-slot A/B partitions and U-Boot.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap` (**8.0 KB**): Block map file for accelerated flashing.
   - `hsm-image-dev-raspberrypi0-2w-64.rootfs.tar.bz2` (**73 MB**): Rootfs compressed tarball containing packages and `hsmutil`.
   - Kernel Device Tree Overlays & Boot Files: `disable-bt.dtbo` (1.0 KB), `disable-wifi.dtbo` (387 B), `dwc2.dtbo` (801 B), `bcm2710-rpi-zero-2.dtb` (33.7 KB), `boot.scr` (1.3 KB).
 - **Flashing Procedures**:
+  - Direct raw flasher: `./scripts/flash-sd.sh build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic <target_device>`.
   - Direct streaming flasher: `./scripts/flash-sd.sh build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2 <target_device>`.
   - Fast block map copy: `sudo bmaptool copy --bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic <target_device>`.
 
@@ -39,9 +41,9 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 | Subsystem | Branch | Commit | Key Additions |
 | :--- | :--- | :--- | :--- |
-| **Air-Gapped OS** (`rpi-z2w-yocto-hsm`) | `main` | [`91428c8`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | Fix U-Boot device tree handoff (`${fdt_addr}`), VideoCore `bootargs` extraction, and dual-slot WIC layout (`sdimage-dual-raspberrypi.wks.in`). Packaging conflicts resolved (`053bf75`, `cb4e8ca`). Complete Yocto 5.0 layer (`1ce95a1`). |
-| **Workspace Root** (`nrf52840-hsm`) | `master` | Working Tree | Added `rpi-z2w-yocto-hsm` to `SUBREPOS` in root `Makefile`; added `yocto-build-dev`, `yocto-build-prod`, `yocto-bundle`, `yocto-shell`, and `yocto-clean` targets; updated root `AGENTS.md`. |
-| **Obsidian Vault** (`nrf52840-hsm-obsidian`) | `master` | [`5f9834a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | Authored `Architecture/07 - Air-Gapped RPi HSM OS Architecture.md`, `Hardware/Waveshare USB HAT (B) Integration.md`, `Development/Yocto Build and RAUC Update Guide.md`, updated `00 - Index.md`, `git-status.md`, and `Changelog.md`. |
+| **Air-Gapped OS** (`rpi-z2w-yocto-hsm`) | `main` | [`b99899f`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | Uncompressed `.wic` image emission (`IMAGE_FSTYPES = "tar.bz2 wic wic.bz2 wic.bmap"`), deploy path alignment (`build/deploy/images/...`), and Darwin/Linux `dd` flag detection in `scripts/flash-sd.sh` (merged from `feature/uncompressed-wic-image`). Previous: Fix U-Boot device tree handoff (`91428c8`), packaging conflicts (`053bf75`, `cb4e8ca`), Yocto 5.0 layer (`1ce95a1`). |
+| **Workspace Root** (`nrf52840-hsm`) | `master` | [`3713c98`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | Added `rpi-z2w-yocto-hsm` to `SUBREPOS` in root `Makefile`; added `yocto-build-dev`, `yocto-build-prod`, `yocto-bundle`, `yocto-shell`, and `yocto-clean` targets; updated root `AGENTS.md`. |
+| **Obsidian Vault** (`nrf52840-hsm-obsidian`) | `master` | [`edf62cd`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | Authored `Architecture/07 - Air-Gapped RPi HSM OS Architecture.md`, `Hardware/Waveshare USB HAT (B) Integration.md`, `Development/Yocto Build and RAUC Update Guide.md`, `features/uncompressed-wic-image-and-sd-flash-tooling.md`, updated `00 - Index.md`, `git-status.md`, and `Changelog.md`. |
 
 ---
 

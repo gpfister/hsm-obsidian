@@ -9,7 +9,7 @@ tags:
   - updates
   - rpi
 created: 2026-11-01
-updated: 2026-11-02
+updated: 2026-11-05
 status: Approved
 repository: rpi-z2w-yocto-hsm
 ---
@@ -28,9 +28,9 @@ The build pipeline leverages **Kas** (`ghcr.io/siemens/kas/kas:latest`) running 
 flowchart LR
     HOST["Host Machine\n(Docker / Podman)"] --> KAS["Kas Build Container\n(ghcr.io/siemens/kas)"]
     KAS --> LAYERS["Yocto 5.0 (Scarthgap)\npoky, meta-raspberrypi, meta-rauc, meta-hsm-os"]
-    LAYERS --> WIC["Rootfs WIC Image\n(.wic.bz2)"]
+    LAYERS --> WIC["Rootfs WIC Images\n(.wic, .wic.bz2, .wic.bmap)"]
     LAYERS --> RAUCB["Signed Update Bundle\n(.raucb)"]
-    WIC --> SD["MicroSD Card\n(flash-sd.sh)"]
+    WIC --> SD["MicroSD Card\n(flash-sd.sh / bmaptool)"]
     RAUCB --> USB["USB Flash Drive\n(Offline Ingestion)"]
 ```
 
@@ -107,9 +107,10 @@ The development image build pipeline has been executed and verified in the conta
 
 | Artifact | Size | Description |
 | :--- | :--- | :--- |
-| `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2` | **95 MB** | Compressed raw bootable SD card disk image formatted with dual-slot A/B partition topology, U-Boot environment, and hardened Linux rootfs. |
-| `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap` | **4.0 KB** | Fast block map file enabling high-speed SD card flashing via `bmaptool copy` by writing only populated sectors. |
-| `hsm-image-dev-raspberrypi0-2w-64.rootfs.tar.bz2` | **73 MB** | Compressed root filesystem archive containing base packages, systemd configurations, and `hsmutil` user space. |
+| `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic` | **1.6 GB** | Uncompressed raw bootable SD card disk image formatted with dual-slot A/B partition topology, U-Boot environment, and hardened Linux rootfs (`IMAGE_FSTYPES += "wic"`). |
+| `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2` | **168 MB** | Bzip2-compressed raw bootable SD card disk image. |
+| `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap` | **8.0 KB** | Fast block map file enabling high-speed SD card flashing via `bmaptool copy` by writing only populated sectors. |
+| `hsm-image-dev-raspberrypi0-2w-64.rootfs.tar.bz2` | **73 MB** | Compressed root filesystem archive containing base packages, systemd configurations, and `hsmutil` user space (used by RAUC bundles). |
 | `disable-bt.dtbo` | **1.0 KB** | Kernel device tree overlay disabling onboard Broadcom Bluetooth controller at boot. |
 | `disable-wifi.dtbo` | **387 B** | Kernel device tree overlay disabling onboard Broadcom SDIO WiFi interface at boot. |
 | `dwc2.dtbo` | **801 B** | Kernel device tree overlay forcing DWC2 USB controller host mode for Waveshare USB HAT (B). |
@@ -140,40 +141,42 @@ Once the build finishes, the raw partitioned image and fast block map are availa
   # Identify target SD card (e.g., /dev/sdb or /dev/mmcblk0)
   ```
 
-### 3.2 Method A: Built-in Streaming Flasher (`scripts/flash-sd.sh`)
+### 3.2 Method A: Built-in Raw / Streaming Flasher (`scripts/flash-sd.sh`)
 
-Use the workspace flasher script [`scripts/flash-sd.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/scripts/flash-sd.sh):
+Use the workspace flasher script [`scripts/flash-sd.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/scripts/flash-sd.sh), which supports both uncompressed `.wic` images and compressed `.wic.bz2` archives on macOS (`Darwin`) and Linux:
 
 ```bash
-# Syntax: ./scripts/flash-sd.sh <image_path> <target_device>
+# Syntax: ./scripts/flash-sd.sh <image.wic | image.wic.bz2> <target_device>
 
-# Example (macOS):
+# Example 1: Flash uncompressed .wic image directly (macOS):
+./scripts/flash-sd.sh \
+  build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic \
+  /dev/rdisk4
+
+# Example 2: Stream compressed .wic.bz2 image on the fly (macOS):
 ./scripts/flash-sd.sh \
   build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2 \
   /dev/rdisk4
 
-# Example (Linux):
+# Example 3: Flash on Linux:
 ./scripts/flash-sd.sh \
-  build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2 \
+  build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic \
   /dev/sdb
 ```
 
-The script performs safety checks:
-1. Confirms the source compressed image exists.
+The script performs safety and platform compatibility checks:
+1. Confirms the source `.wic` or `.wic.bz2` image exists.
 2. Displays source and target device path.
 3. Requires explicit interactive typing of `"yes"` before invoking `dd`.
-4. Streams decompression via `bzip2 -dc` directly to the raw block device with `bs=4M status=progress conv=fsync`.
-5. Executes `sync` to ensure buffered blocks are flushed to physical flash.
+4. Automatically selects platform-appropriate `dd` flags via `uname -s` (`bs=4m status=progress` on macOS BSD `dd`; `bs=4M status=progress conv=fsync` on Linux GNU `dd`).
+5. Writes the raw `.wic` directly or streams decompression via `bzip2 -dc` / `pbzip2 -dc`, followed by `sync` to flush buffered blocks to physical flash.
 
 ### 3.3 Method B: High-Speed Flashing via Block Map (`bmaptool copy`)
 
-Using `bmaptool` is up to 5 times faster than standard `dd` because it skips unallocated image sectors:
+Using `bmaptool` is up to 5 times faster than standard `dd` because it skips unallocated image sectors. Because BitBake emits both the uncompressed `.wic` and `.wic.bmap` directly in `build/deploy/images/raspberrypi0-2w-64/`, no manual decompression step is required:
 
 ```bash
-# Decompress WIC image (keep compressed original with -k)
-bzip2 -dk build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2
-
-# Flash with bmaptool:
+# Flash uncompressed .wic directly with bmaptool:
 sudo bmaptool copy \
   --bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap \
   build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic \
