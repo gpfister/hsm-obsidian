@@ -7,11 +7,13 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-05
-lifecycle_phase: Phase 6 Post-Merge Complete — HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence
-feature: "[[features/cli-restructuring-bubbletea-pkcs11|HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence]]"
-plan: "[[Plan/HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS11 Equivalence Implementation Plan|Implementation Plan: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence]]"
-adr: "[[Architecture/Decisions/ADR-0015 - HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|ADR-0015: HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]]"
-specification: "[[Specification/HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|Technical Specification: HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]]"
+lifecycle_phase: Phase 3 Plan Approved — HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm)
+feature: "[[features/dual-mode-auth-gphsm-and-libgphsm-refactoring|HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm)]]"
+plan: "[[Plan/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring Implementation Plan|Implementation Plan: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring]]"
+adrs:
+  - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
+  - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
+specification: "[[Specification/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring|Technical Specification: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
 
@@ -34,7 +36,27 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 ---
 
-## 1.0 Merged Milestone: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence (Phase 6 Post-Merge Complete)
+## 1.0 Active Lifecycle Phase: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm) (Phase 3 Plan Approved)
+
+> [!NOTE]
+> **Active Milestone**: Coordinated multi-repository implementation plan and architecture formalization approved. Ready for Phase 4 implementation across firmware, host CLI, PKCS#11 provider, mock PTY, and root automation.
+>
+> - **Architecture Decision Records**:
+>   - [[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]
+>   - [[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]
+> - **Implementation Plan**: [[Plan/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring Implementation Plan|HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring Implementation Plan]]
+> - **Technical Specification**: [[Specification/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring|HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring]]
+> - **Feature Specification**: [[features/dual-mode-auth-gphsm-and-libgphsm-refactoring|Dual-Mode Authentication, CLI Rebranding (gphsm) & PKCS#11 Refactoring (libgphsm)]]
+> - **Target Working Branches**:
+>   - Workspace Root: `task/dual-mode-workspace-alignment`
+>   - [`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware): `feature/dual-mode-auth`
+>   - [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli): `feature/gphsm-dual-mode`
+>   - [`libgphsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11) (renamed from `hsm-libpkcs11`): `task/rename-libgphsm-dual-mode`
+>   - [`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian): `main`
+
+---
+
+## 1.1 Merged Milestone: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
 > **Post-Merge Milestone**: Comprehensive restructuring of `hsmutil` host management CLI successfully merged into `main` in [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli).
