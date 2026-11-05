@@ -7,7 +7,7 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-05
-lifecycle_phase: Phase 3 Plan Approved — HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm)
+lifecycle_phase: Phase 5 Pre-Merge Review Complete — HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm)
 feature: "[[features/dual-mode-auth-gphsm-and-libgphsm-refactoring|HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm)]]"
 plan: "[[Plan/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring Implementation Plan|Implementation Plan: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring]]"
 adrs:
@@ -27,19 +27,19 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Ahead of `origin/main` (`+2`) | `58b82c0` (*docs: align root README and AGENTS.md with hsmutil command restructuring*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Ahead of `origin/main` (`+1`) | `e03c9bb` (*docs(firmware): generalize title and clarify PCA10059 hardware target support*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Ahead of `origin/main` (`+2`) | `6c8781c` (*feat(cli): restructure commands under device, add static build, bubble tea UX, and pkcs11 parity*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **PKCS#11 Provider** | [hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11) | `main` | Ahead of `origin/main` (`+1`) | `9c54759` (*docs: generalize terminology in README.md*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `task/dual-mode-workspace-alignment` | Ahead of `origin/main` (`+4`) | `2848d50` (*docs(workspace): update root README and AGENTS.md for gphsm, libgphsm, and dual-mode auth*) | **Clean** | **Phase 5 Pre-Merge Review Complete** |
+| **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `feature/dual-mode-auth` | Ahead of `origin/main` (`+3`) | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Phase 5 Pre-Merge Review Complete** |
+| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `feature/gphsm-dual-mode` | Ahead of `origin/main` (`+3`) | `14ea65f` (*feat(cli): rebrand to gphsm, add dual-mode auth, pwquality PIN validation, and purge p11*) | **Clean** | **Phase 5 Pre-Merge Review Complete** |
+| **PKCS#11 Provider** | [libgphsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/libgphsm) | `task/rename-libgphsm-dual-mode` | Ahead of `origin/main` (`+3`) | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Phase 5 Pre-Merge Review Complete** |
 | **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Ahead of `origin/main` (`+1`) | `28925aa` (*docs: generalize README terminology to HSM USB key and appliance*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+7`) | `159a8af` (*docs(vault): update git status, branch tracking, and changelog for hsmutil restructuring merge*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+1`) | Current (`HEAD`) (*docs: pre-merge documentation tidy-up and synchronization*) | **Clean** | **Pre-Merge Synchronized** |
 
 ---
 
-## 1.0 Active Lifecycle Phase: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm) (Phase 3 Plan Approved)
+## 1.0 Active Lifecycle Phase: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm) (Phase 5 Pre-Merge Review Complete)
 
 > [!NOTE]
-> **Active Milestone**: Coordinated multi-repository implementation plan and architecture formalization approved. Ready for Phase 4 implementation across firmware, host CLI, PKCS#11 provider, mock PTY, and root automation.
+> **Active Milestone**: Coordinated multi-repository implementation, testing, and pre-merge documentation tidy-up complete across all 4 work branches.
 >
 > - **Architecture Decision Records**:
 >   - [[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]
@@ -47,12 +47,39 @@ This document tracks real-time Git branch topologies, commit records, working di
 > - **Implementation Plan**: [[Plan/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring Implementation Plan|HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring Implementation Plan]]
 > - **Technical Specification**: [[Specification/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring|HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring]]
 > - **Feature Specification**: [[features/dual-mode-auth-gphsm-and-libgphsm-refactoring|Dual-Mode Authentication, CLI Rebranding (gphsm) & PKCS#11 Refactoring (libgphsm)]]
-> - **Target Working Branches**:
->   - Workspace Root: `task/dual-mode-workspace-alignment`
->   - [`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware): `feature/dual-mode-auth`
->   - [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli): `feature/gphsm-dual-mode`
->   - [`libgphsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11) (renamed from `hsm-libpkcs11`): `task/rename-libgphsm-dual-mode`
->   - [`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian): `main`
+> - **Work Branches & Commits Ready for Merge**:
+>   - **Workspace Root**: `task/dual-mode-workspace-alignment` &rarr; [`2848d50`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (*docs(workspace): update root README and AGENTS.md for gphsm, libgphsm, and dual-mode auth*)
+>   - **Firmware ([`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware))**: `feature/dual-mode-auth` &rarr; [`7f516bd`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) (*docs(firmware): document dual-mode authentication in README*)
+>   - **CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**: `feature/gphsm-dual-mode` &rarr; [`14ea65f`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (*feat(cli): rebrand to gphsm, add dual-mode auth, pwquality PIN validation, and purge p11*)
+>   - **PKCS#11 Provider ([`libgphsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/libgphsm))**: `task/rename-libgphsm-dual-mode` &rarr; [`d25adea`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/libgphsm) (*docs(p11): align protocol ID reference with ADR-0013 in README*)
+>   - **Obsidian Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: `main`
+>
+> ### 1.0.1 Subsystem Delivery Summary
+>
+> 1. **Firmware (`hsm-ncs-firmware`)**:
+>    - Implemented `auth_method_t` (`NONE`, `PIN`, `SHAMIR`) with persistent NVS storage.
+>    - Up to 64-byte PINs with 16-byte random salt and SHA-256 hash storage.
+>    - Dedicated initialization endpoints: `AT+INIT=PIN,<pin>` and `AT+INIT=SHAMIR` with re-initialization guards (`+CME ERROR: 41`).
+>    - Comprehensive status output via `AT+STATUS?` (`CONFIGURED`, `AUTH`, `METHOD`, `RETRIES`, `KEYCOUNT`).
+>    - Mutual exclusivity enforcement between `AT+AUTH` and `AT+SHARE` (`+CME ERROR: 42`).
+>    - Zeroization in `AT+RESET` / `AT+FACTORYRESET` resetting salt, hash, keys, and restoring unconfigured state.
+> 2. **PKCS#11 Provider Library (`libgphsm`)**:
+>    - Renamed from `hsm-libpkcs11` / `libnrf52840_pkcs11` to `libgphsm` emitting `libgphsm.{dylib,so,dll}`.
+>    - Added dual-mode token flags: sets `CKF_PROTECTED_AUTHENTICATION_PATH` in Shamir mode.
+>    - Adapted `C_Login` to recognize external pre-authentication (`AUTH == 1`) in Shamir mode.
+>    - Clean CMake and Makefile integration with updated CTest mock suite.
+> 3. **Host CLI (`hsm-cli`)**:
+>    - Rebranded to `gphsm` with backward-compatible `hsmutil` and `hsmutils` symlinks.
+>    - Dual-mode initialization wizard with interactive TTY prompts.
+>    - Pure-Go `pam_pwquality` validation enforcing Yocto appliance password complexity.
+>    - Auto-detecting `gphsm unlock` (alias `auth`) handling PIN prompts and custodian share ceremonies.
+>    - Purged internal `p11` diagnostic commands and dynamic PKCS#11 loaders.
+>    - Homogeneous migration validation ensuring `source.METHOD == target.METHOD`.
+> 4. **Root Workspace & Test Harness**:
+>    - Makefile targets aligned (`cli-build`, `libpkcs11-build`, `libpkcs11-test`).
+>    - `scripts/mock_hsm_pty.py` updated to support dual-mode initialization and mutual exclusivity.
+>    - `scripts/run_integration_tests.sh` and `scripts/test_at_client.py` updated to test dual-mode auth paths across all components.
+>    - End-to-end integration test suite passing 100% (16/16 AT checks, PKCS#11 mock runner, and `gphsm` CLI tests).
 
 ---
 

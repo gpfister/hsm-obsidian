@@ -13,7 +13,7 @@ tags:
   - protocol
 created: 2026-11-05
 updated: 2026-11-05
-status: Approved (Phase 3 Complete)
+status: Approved (Phase 5 Pre-Merge Complete)
 adrs:
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture]]"
   - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
@@ -76,11 +76,11 @@ struct hsm_keystore_header {
 - **Request**: `AT+STATUS?\r\n`
 - **Response**:
   ```text
-  \r\n+STATUS: AUTH=<auth>,CONFIGURED=<conf>,METHOD=<method>,RETRIES=<retries>,KEYCOUNT=<count>\r\nOK\r\n
+  \r\n+STATUS: CONFIGURED=<conf>,AUTH=<auth>,METHOD=<method>,RETRIES=<retries>,KEYCOUNT=<count>\r\nOK\r\n
   ```
 - **Fields**:
-  - `auth`: `1` if authenticated, `0` if locked.
   - `conf`: `1` if configured (`METHOD != NONE`), `0` if unconfigured.
+  - `auth`: `1` if authenticated, `0` if locked.
   - `method`: `NONE`, `PIN`, or `SHAMIR`.
   - `retries`: Integer $\ge 0$ (remaining attempts).
   - `count`: Integer $\ge 0$ (number of occupied key slots).
@@ -93,7 +93,7 @@ struct hsm_keystore_header {
   - Keystore must have `configured == 0`.
 - **Response**:
   - Success: `\r\nOK\r\n` (Sets `configured = 1`, `auth_method = AUTH_METHOD_PIN`, `retries_remaining = 3`, `auth = 0`).
-  - Already Configured: `\r\n+CME ERROR: 4\r\n`
+  - Already Configured: `\r\n+CME ERROR: 41\r\n`
   - Invalid Parameters / Length: `\r\n+CME ERROR: 5\r\n`
 
 ### 2.3 `AT+INIT=SHAMIR`
@@ -112,12 +112,13 @@ struct hsm_keystore_header {
   +INIT: 5,<hex_share_5>\r\n
   OK\r\n
   ```
+  - Already Configured: `\r\n+CME ERROR: 41\r\n`
 
 ### 2.4 `AT+AUTH=<pin>`
 
 - **Request**: `AT+AUTH=<pin>\r\n`
 - **Enforcement**:
-  - If `auth_method != AUTH_METHOD_PIN`: Returns `\r\n+CME ERROR: 5\r\n` immediately.
+  - If `auth_method != AUTH_METHOD_PIN`: Returns `\r\n+CME ERROR: 42\r\n` (Invalid Auth Mode) immediately.
   - If `retries_remaining <= 0`: Returns `\r\n+CME ERROR: 3\r\n` (PIN Blocked).
   - If `<pin>` matches stored PIN: Sets `auth = 1`, `retries_remaining = 3`, returns `\r\nOK\r\n`.
   - If `<pin>` does not match: Decrements `retries_remaining`. If 0, returns `\r\n+CME ERROR: 3\r\n`, else `\r\n+CME ERROR: 2\r\n`.
@@ -126,7 +127,7 @@ struct hsm_keystore_header {
 
 - **Request**: `AT+SHARE=<idx>,<share>\r\n`
 - **Enforcement**:
-  - If `auth_method != AUTH_METHOD_SHAMIR`: Returns `\r\n+CME ERROR: 5\r\n` immediately.
+  - If `auth_method != AUTH_METHOD_SHAMIR`: Returns `\r\n+CME ERROR: 42\r\n` (Invalid Auth Mode) immediately.
   - `<idx>` must be 1 to 5.
   - `<share>` must be 64 hexadecimal characters.
 - **Response**:

@@ -13,7 +13,7 @@ tags:
   - pwquality
 created: 2026-11-05
 updated: 2026-11-05
-status: "Phase 3 (Plan Approved — Ready for Development)"
+status: "Phase 5 (Pre-Merge Review Complete)"
 target_branches:
   root: task/dual-mode-workspace-alignment
   firmware: feature/dual-mode-auth
@@ -36,16 +36,16 @@ references:
 # Feature Specification: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm)
 
 > [!NOTE]
-> **Lifecycle Phase**: Phase 3 (Plan Approved & Architecture Formalized).  
+> **Lifecycle Phase**: Phase 5 (Pre-Merge Review Complete & Synchronized).  
 > **Related Architecture Decision Records**:
 > - [[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]
 > - [[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]  
-> **Target Repositories**:
-> - [`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) (`feature/dual-mode-auth`)
-> - [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`feature/gphsm-dual-mode`)
-> - [`libgphsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11) (`task/rename-libgphsm-dual-mode`)
-> - Root Workspace: `task/dual-mode-workspace-alignment`  
-> **Target Branches**: Work branches approved; ready for Phase 4 implementation handoff.
+> **Target Repositories & Commits**:
+> - [`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) (`feature/dual-mode-auth`, commit `7f516bd`)
+> - [`libgphsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/libgphsm) (`task/rename-libgphsm-dual-mode`, commit `d25adea`)
+> - [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`feature/gphsm-dual-mode`, commit `14ea65f`)
+> - Root Workspace: `task/dual-mode-workspace-alignment`, commit `2848d50`  
+> **Verification**: All unit tests and end-to-end integration test suites (`make integration-test`) passing 100%. Ready for merge.
 
 ---
 
