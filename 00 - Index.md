@@ -1,17 +1,15 @@
 ---
-title: nRF52840 HSM Dongle Knowledge Vault
+title: Hardware Security Module (HSM) USB Key Knowledge Vault
 tags:
   - hsm
-  - nrf52840
-  - zephyr
   - security
   - index
 created: 2026-10-29
 ---
 
-# nRF52840 HSM Dongle Documentation Vault
+# Hardware Security Module (HSM) USB Key Documentation Vault
 
-Welcome to the central engineering documentation vault for the **nRF52840 Hardware Security Module (HSM) USB Dongle** project (`ncs-nrf52840dongle-kms`).
+Welcome to the central engineering documentation vault for the **Hardware Security Module (HSM) USB Key / Dongle** project (`ncs-nrf52840dongle-kms`).
 
 ---
 
@@ -38,6 +36,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 - [[Architecture/Decisions/ADR-0011 - Silent Non-Interactive U-Boot Bootloader Hardening|ADR-0011: Silent Non-Interactive U-Boot Bootloader Hardening]] — Production non-interactive boot (`CONFIG_BOOTDELAY=-2`), silent console, and modular Kconfig fragments.
 - [[Architecture/Decisions/ADR-0012 - PAM pwquality Password Complexity and Expiration Policy|ADR-0012: PAM pwquality Password Complexity & Expiration Policy]] — Dual-layer defense via `pam_pwquality.so`, 90-day password aging, and wizard validation.
 - [[Architecture/Decisions/ADR-0013 - Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration|ADR-0013: Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration]] — Standardization of Interface 2 and IAD protocol to `0x01` (ITU-T V.250) restoring dual CDC-ACM device enumeration on macOS.
+- [[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014: Documentation Terminology Generalization to Generic HSM USB Key]] — Standardizes workspace documentation, READMEs, and vault index on generic HSM USB key terminology while preserving firmware-specific scoping and machine-readable identifiers.
 
 ### 🧩 Feature Specifications
 - [[features/fix-macos-cdc-acm-enumeration|Fix macOS CDC-ACM Enumeration for Interface 2]] — Restoration of dual `/dev/cu.usbmodem*` enumeration on Darwin by aligning protocol codes with `AppleUSBACMControl`.
@@ -95,6 +94,7 @@ Welcome to the central engineering documentation vault for the **nRF52840 Hardwa
 
 ### 🎯 Roadmap & Planning
 - [[Plan/Project Roadmap|Project Roadmap]] — Milestones, future cryptographic extensions, and security certification targets.
+- [[Plan/Documentation Terminology Generalization Implementation Plan|Implementation Plan: Workspace Documentation Terminology Generalization]] — Work breakdown, terminology taxonomy, and verification matrix for generalizing documentation across all workspace READMEs, AGENTS.md, and Obsidian vault index.
 - [[Plan/Fix macOS CDC-ACM Enumeration for Interface 2 Implementation Plan|Implementation Plan: Fix macOS CDC-ACM Enumeration for Interface 2]] — Multi-repository implementation plan, descriptor patching, J-Link flashing, and `hsmutil` verification.
 - [[Plan/AT-Protocol DFU Support Implementation Plan|Implementation Plan: AT-Protocol DFU Support]] — Multi-repository implementation plan across `nrf52840-hsm-firmware`, `nrf52840-hsm-cli`, and `ncs-nrf52840dongle-kms` (`scripts/mock_hsm_pty.py`).
 - [[Plan/Uncompressed Disk Image img Output Implementation Plan|Implementation Plan: Uncompressed Disk Image .img Output]] — Repository work breakdown and BitBake `IMAGE_CMD:img` pipeline plan for `rpi-z2w-yocto-hsm`.
