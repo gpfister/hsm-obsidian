@@ -9,7 +9,7 @@ tags:
   - multi-repo
 created: 2026-11-05
 updated: 2026-11-05
-status: Pre-Merge Verified (Phase 5 Pre-Merge Complete)
+status: Merged into main (Phase 6 Post-Merge Complete)
 adrs:
   - "[[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014: Documentation Terminology Generalization to Generic HSM USB Key]]"
 references:
@@ -17,27 +17,27 @@ references:
   - "[[Architecture/System Architecture|System Architecture]]"
   - "[[00 - Index|Vault Index]]"
 branches:
-  root: "task/generalize-doc-terminology"
-  hsm-ncs-firmware: "task/generalize-doc-terminology"
-  hsm-cli: "task/generalize-doc-terminology"
-  hsm-libpkcs11: "task/generalize-doc-terminology"
-  hsm-obsidian: "task/generalize-doc-terminology"
-  hsm-yocto-offgrid-rpi: "task/generalize-doc-terminology"
+  root: "main"
+  hsm-ncs-firmware: "main"
+  hsm-cli: "main"
+  hsm-libpkcs11: "main"
+  hsm-obsidian: "main"
+  hsm-yocto-offgrid-rpi: "main"
 commits:
   root: "af2d24e"
   hsm-ncs-firmware: "e03c9bb"
   hsm-cli: "189c7fd"
   hsm-libpkcs11: "9c54759"
-  hsm-obsidian: "682fbfc"
+  hsm-obsidian: "e91555a"
   hsm-yocto-offgrid-rpi: "28925aa"
 ---
 
 # Feature: Documentation Terminology Generalization to Generic HSM USB Key
 
 > [!NOTE]
-> **Lifecycle Phase**: Phase 5 (Pre-Merge Complete — Ready for Merge into `main` across all repositories).  
-> **Workspace Branch**: `task/generalize-doc-terminology` across all 6 repositories.  
-> **Working Tree Status**: Clean across all sub-repositories.  
+> **Lifecycle Phase**: Phase 6 (Post-Merge Complete — Merged into `main` across all repositories).  
+> **Workspace Branch**: `main` across all 6 repositories (source branch `task/generalize-doc-terminology` merged and local task branches pruned).  
+> **Working Tree Status**: Clean across all repositories.  
 > **Key Architecture Decision**: [[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014]].  
 > **Implementation Plan**: [[Plan/Documentation Terminology Generalization Implementation Plan|Documentation Terminology Generalization Implementation Plan]].
 
