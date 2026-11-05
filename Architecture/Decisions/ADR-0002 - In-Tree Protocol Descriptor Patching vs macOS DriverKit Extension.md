@@ -1,6 +1,6 @@
 ---
 title: "ADR-0002: In-Tree Protocol Descriptor Patching vs macOS DriverKit Extension"
-status: Accepted
+status: Accepted (Updated by ADR-0013)
 date: 2026-10-31
 tags:
   - adr
@@ -16,9 +16,13 @@ references:
   - "[[features/usb-descriptors-ble-address|USB Descriptors & Device Identification Feature Spec]]"
   - "[[Architecture/USB Composite Stack|USB Composite Stack Architecture]]"
   - "[[Plan/USB Descriptors and BLE Identification Implementation Plan|Implementation Plan: USB Descriptors & BLE Device Identification]]"
+  - "[[Architecture/Decisions/ADR-0013 - Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration|ADR-0013: Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration]]"
 ---
 
 # ADR-0002: In-Tree Protocol Descriptor Patching vs macOS DriverKit Extension
+
+> [!NOTE]
+> **Update (2026-11-05)**: The protocol assignment in Option 3 was updated by [[Architecture/Decisions/ADR-0013 - Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration|ADR-0013]]. Interface 2 protocol is standardized to `0x01` (ITU-T V.250) rather than `0x02` because macOS `AppleUSBACMControl` rejects `0x02`, preventing virtual COM port instantiation.
 
 ## Context & Problem Statement
 

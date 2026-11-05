@@ -9,14 +9,14 @@ tags:
   - rauc
   - rpi
 created: 2026-11-01
-updated: 2026-11-01
+updated: 2026-11-05
 status: Approved
 repository: rpi-z2w-yocto-hsm
 ---
 
 # Air-Gapped RPi HSM OS Architecture
 
-The **`rpi-z2w-yocto-hsm`** sub-repository provides an ultra-hardened, air-gapped, 64-bit embedded Linux operating system built with the **Yocto Project 5.0 LTS (`scarthgap`)** and **Linux Kernel 6.6 LTS**. It transforms a Raspberry Pi appliance into a dedicated cryptographic workstation for the nRF52840 HSM Dongle (`PCA10059`), ensuring absolute physical and network isolation during root key generation, key ceremony signing, firmware provisioning, and PKCS#11 operations.
+The **`rpi-z2w-yocto-hsm`** sub-repository provides an ultra-hardened, air-gapped, 64-bit embedded Linux operating system built with the **Yocto Project 6.1 (`blacksail`)**, **BitBake 2.20**, and **Linux Kernel 6.12+**. It transforms a Raspberry Pi appliance into a dedicated cryptographic workstation for the nRF52840 HSM Dongle (`PCA10059`), ensuring absolute physical and network isolation during root key generation, key ceremony signing, firmware provisioning, and PKCS#11 operations.
 
 ---
 
@@ -96,25 +96,35 @@ The custom layer [`meta-hsm-os/`](file:///Users/gpfister/Development/Projects/gp
 ```text
 meta-hsm-os/
 ├── conf/
-│   └── layer.conf                          # Layer configuration (Scarthgap 5.0 compatibility)
+│   └── layer.conf                          # Layer configuration (Blacksail 6.1 compatibility)
+├── classes/
+│   └── rauc-integration.bbclass           # Internalized Raspberry Pi RAUC A/B integration
 ├── recipes-bsp/
 │   ├── bootfiles/
+│   │   ├── rpi-cmdline.bbappend            # Boot visibility cmdline (dual console dev vs quiet prod)
 │   │   └── rpi-config_%.bbappend          # config.txt: dwc2 host mode, hdmi force hotplug, no wifi/bt
-│   └── rpi-u-boot-scr/
-│       ├── files/boot.cmd.in               # Dual-slot A/B U-Boot boot script template
-│       └── rpi-u-boot-scr.bbappend         # Generates boot.scr with RAUC fallback logic
+│   ├── rpi-u-boot-scr/
+│   │   ├── files/boot.cmd.in               # Dual-slot A/B U-Boot boot script template
+│   │   └── rpi-u-boot-scr.bbappend         # Generates boot.scr with RAUC fallback logic & prod silence
+│   └── u-boot/
+│       ├── files/silent-boot.cfg           # Hardened non-interactive silent boot (CONFIG_BOOTDELAY=-2)
+│       ├── files/squashfs.cfg              # SquashFS support Kconfig fragment
+│       └── u-boot_%.bbappend               # Injects modular Kconfig fragments conditionally
 ├── recipes-connectivity/
 │   └── nftables/
 │       ├── files/nftables.conf             # 100% total-drop ingress/egress/forward firewall rules
 │       ├── files/nftables-load.service     # Systemd boot service loading nftables rules
 │       └── nftables-rules.bb               # Rules installation recipe
 ├── recipes-core/
+│   ├── base-files/
+│   │   ├── files/fstab                     # Persistent /data partition mount (/dev/mmcblk0p4)
+│   │   └── base-files_%.bbappend           # Injects custom fstab
 │   ├── images/
-│   │   ├── hsm-image-base.bb               # Base image definition (read-only-rootfs, common pkgs)
-│   │   ├── hsm-image-dev.bb                # Dev image (root login, sudo, debug-tweaks, strace)
+│   │   ├── hsm-image-base.bb               # Base image definition (read-only-rootfs, libpwquality)
+│   │   ├── hsm-image-dev.bb                # Dev image (root login, sudo, allow-root-login, strace)
 │   │   └── hsm-image-prod.bb               # Prod image (locked root, quiet kernel, strict lockdown)
 │   ├── init-wizard/
-│   │   ├── files/first-login-wizard.sh     # Interactive first-login setup (pwd, loadkeys, locale)
+│   │   ├── files/first-login-wizard.sh     # Interactive first-login setup (pwd pre-check, loadkeys)
 │   │   ├── files/clock-setup.sh            # Interactive every-login UTC timestamp synchronization
 │   │   ├── files/hsm-set-date.c            # Setuid root C helper for unprivileged date updates
 │   │   ├── files/hsm-profile.sh            # /etc/profile.d/hsm-login.sh shell hook
@@ -123,40 +133,58 @@ meta-hsm-os/
 │   │   ├── files/journald-dev.conf         # Storage=volatile (64M RAM buffer)
 │   │   ├── files/journald-prod.conf        # Storage=none (zero log retention)
 │   │   └── systemd-journald-airgap.bb      # Journald drop-in configuration recipe
+│   ├── udev/
+│   │   ├── files/raspberrypi-rauc.rules    # Custom RAUC rootfs symlink rules
+│   │   └── udev-extraconf_%.bbappend       # Injects RAUC udev rules
 │   ├── users/
-│   │   └── hsmutil-user.bb                 # Creates hsmutil account, assigns groups, dev sudoers
+│   │   └── hsmutil-user.bb                 # Creates hsmutil account (default: password), groups, dev sudoers
 │   └── volatile-storage/
 │       ├── files/hsm-setup-volatile.sh     # Mounts /media tmpfs, /etc overlayfs, /home/hsmutil tmpfs
 │       ├── files/hsm-volatile-storage.service # Early boot service running setup script
 │       └── volatile-storage.bb             # Volatile storage unit recipe
+├── recipes-extended/
+│   ├── libpwquality/
+│   │   ├── files/common-password           # PAM common-password with pam_pwquality.so enforcement
+│   │   ├── files/pwquality.conf            # Complexity rules (minlen=10, credits, maxrepeat, maxsequence)
+│   │   └── libpwquality_%.bbappend         # Installs PAM configuration and security parameters
+│   ├── pam/
+│   │   └── libpam_%.bbappend               # PAM subsystem tuning
+│   ├── shadow/
+│   │   ├── shadow_%.bbappend               # Enforces PASS_MAX_DAYS 90 in target /etc/login.defs
+│   │   └── shadow-sysroot_%.bbappend       # Enforces PASS_MAX_DAYS 90 in sysroot /etc/login.defs
+│   └── sudo/
+│       └── sudo_%.bbappend                 # Sudoers configuration for dev image
 ├── recipes-kernel/
 │   ├── linux/
 │   │   ├── files/hardened.cfg              # Kernel defconfig fragment (no net, security hardening)
-│   │   └── linux-raspberrypi_%.bbappend    # Kernel append injecting hardened.cfg
+│   │   ├── files/rauc.cfg                  # RAUC kernel support (loop, squashfs)
+│   │   └── linux-raspberrypi_%.bbappend    # Kernel append injecting hardened.cfg and rauc.cfg
 │   └── nrf52840-hsm-kmod/
-│       ├── files/nrf52840_hsm.c            # Out-of-tree kernel driver for USB 0x1209:0x0001
+│       ├── files/nrf52840_hsm.c            # Out-of-tree kernel driver for USB 0x1209:0x0001 (6.12+ llseek)
 │       ├── files/blacklist-cdc-acm.conf    # Modprobe blacklist preventing cdc_acm driver binding
 │       ├── files/99-nrf52840-hsm.rules     # Udev rules for /dev/tty.hsm* permissions & symlink
 │       ├── files/Makefile                  # Kernel module build Makefile
-│       └── nrf52840-hsm-kmod.bb            # Kernel module bitbake recipe
+│       └── nrf52840-hsm-kmod.bb            # Kernel module bitbake recipe (${UNPACKDIR} migration)
 ├── recipes-rauc/
 │   └── bundles/
 │       └── update-bundle.bb                # RAUC update bundle recipe (.raucb)
-└── recipes-support/
-    ├── hsmutil/
-    │   ├── files/hsmutil-arm64             # Pre-compiled Go 1.24+ ARM64 binary
-    │   └── hsmutil.bb                      # Installs binary to /usr/local/bin/hsmutil
-    ├── rauc/
-    │   ├── files/rauc-ca.cert.pem          # Embedded Root CA public certificate
-    │   ├── files/system.conf               # RAUC slot configuration (A/B mmcblk0p2/p3)
-    │   ├── files/rauc-usb-autoinstall.sh   # Background script checking USB for .raucb bundles
-    │   ├── files/rauc-usb-autoinstall.service # Systemd service for USB auto-update
-    │   └── rauc_%.bbappend                 # Injects config, certificate, and services
-    └── usb-mount/
-        ├── files/usb-mount.sh              # Auto-mount script for FAT32/ext4 USB storage
-        ├── files/usb-mount@.service        # Instantiated systemd service for udev mounts
-        ├── files/99-usb-storage-mount.rules# Udev rule triggering usb-mount@.service
-        └── usb-mount.bb                    # Packaging recipe for automount infrastructure
+├── recipes-support/
+│   ├── hsmutil/
+│   │   ├── files/hsmutil-arm64             # Pre-compiled Go 1.24+ ARM64 binary
+│   │   └── hsmutil.bb                      # Installs binary to /usr/local/bin/hsmutil
+│   ├── rauc/
+│   │   ├── files/rauc-ca.cert.pem          # Embedded Root CA public certificate
+│   │   ├── files/system.conf               # RAUC slot configuration (A/B mmcblk0p2/p3)
+│   │   ├── files/rauc-usb-autoinstall.sh   # Background script checking USB for .raucb bundles
+│   │   ├── files/rauc-usb-autoinstall.service # Systemd service for USB auto-update
+│   │   └── rauc_%.bbappend                 # Injects config, certificate, and services
+│   └── usb-mount/
+│       ├── files/usb-mount.sh              # Auto-mount script for FAT32/ext4 USB storage
+│       ├── files/usb-mount@.service        # Instantiated systemd service for udev mounts
+│       ├── files/99-usb-storage-mount.rules# Udev rule triggering usb-mount@.service
+│       └── usb-mount.bb                    # Packaging recipe for automount infrastructure
+└── wic/
+    └── sdimage-dual-raspberrypi.wks.in     # Dual-slot A/B partition layout definition
 ```
 
 ---
@@ -167,7 +195,7 @@ meta-hsm-os/
 flowchart TD
     subgraph Bootloader ["Boot & Update Stage"]
         ROM["Broadcom VideoCore Boot ROM"]
-        UBOOT["U-Boot Dual-Slot Bootloader (rpi-u-boot-scr)"]
+        UBOOT["U-Boot Dual-Slot Bootloader (rpi-u-boot-scr)\nDev: Interactive console & RAUC echo\nProd: Silent bootloader (CONFIG_BOOTDELAY=-2, silent=1)"]
         SLOT_A["Slot A: /dev/mmcblk0p2 (RO ext4)"]
         SLOT_B["Slot B: /dev/mmcblk0p3 (RO ext4)"]
         ENV["U-Boot Environment (bootcount, upgrade_available)"]
@@ -178,11 +206,12 @@ flowchart TD
         UBOOT -. Boots Active Slot .-> SLOT_B
     end
 
-    subgraph KernelSpace ["Linux Kernel 6.6 LTS (Hardened)"]
+    subgraph KernelSpace ["Linux Kernel 6.12+ (Hardened)"]
         KCONFIG["Hardened Defconfig (No Net, No BT, No WiFi)"]
         DTB["Device Tree Overlays (dwc2 host, no-wifi, no-bt)"]
-        KMOD["nrf52840-hsm-kmod (Out-of-tree Driver)"]
+        KMOD["nrf52840-hsm-kmod (Out-of-tree Driver, Linux 6.12+ llseek compat)"]
         NFT["nftables Total Drop Hook"]
+        CMDLINE["Kernel Boot Console Multiplexing\nDev: console=serial0,115200 console=tty1 loglevel=7 debug earlyprintk\nProd: quiet loglevel=0 console=tty1 fsck.mode=skip"]
         
         KMOD --> DEV_NODES["/dev/tty.hsm<ble_address><number>"]
         DEV_NODES --> SYMLINK["/dev/tty.hsm (Symlink)"]
@@ -191,14 +220,16 @@ flowchart TD
     subgraph UserSpace ["User Space (Read-Only Rootfs + RAM Overlays)"]
         VOLATILE["volatile-storage.service\n(/media tmpfs, /etc overlayfs, /home tmpfs)"]
         INIT["System Init & Login Service"]
-        WIZARD["Mandatory Login Wizard (PWD / Loadkeys / Locale)"]
-        DATE_PROMPT["Login Clock Prompt (UTC Date Synchronization via hsm-set-date)"]
+        WIZARD["Mandatory Login Wizard\nInitial PWD 'password'\nPre-checks 6 complexity rules\nloadkeys layout selection\nUTC timezone standard"]
+        PAM["PAM & Security Subsystem\npam_pwquality.so complexity rules\nPASS_MAX_DAYS=90 password aging"]
+        DATE_PROMPT["Login Clock Prompt (UTC Date Synchronization via setuid hsm-set-date)"]
         AUTOMOUNT["Automount Manager (usb-mount.sh -> /media/usb-*)"]
         RAUC_SRV["RAUC Update Service (rauc-usb-autoinstall)"]
         HSMUTIL["/usr/local/bin/hsmutil (CLI / TUI)"]
         
         VOLATILE --> INIT
         INIT --> WIZARD
+        WIZARD <--> PAM
         WIZARD --> DATE_PROMPT
         DATE_PROMPT --> HSMUTIL
         AUTOMOUNT --> HSMUTIL
@@ -250,6 +281,9 @@ The dedicated kernel module [`meta-hsm-os/recipes-kernel/nrf52840-hsm-kmod/files
 3. **Production Port Filtering**:
    - In **Production Mode** (`hsm_dev_mode=0`): Interfaces 0 and 1 (Zephyr debug logger console) are deliberately rejected during USB probe (`return -ENODEV`). Only Interfaces 2 and 3 (HSM AT crypto channel) are bound.
    - In **Development Mode** (`hsm_dev_mode=1`): Both debug console and AT channels are registered.
+4. **Linux 6.12+ Compatibility & Recipe Modernization**:
+   - `file_operations.llseek` assignment is guarded via `#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 12, 0)` because Linux 6.12+ removed `noop_llseek` (defaulting `NULL` to `no_llseek`).
+   - Recipe [`nrf52840-hsm-kmod.bb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-kernel/nrf52840-hsm-kmod/nrf52840-hsm-kmod.bb) migrated from legacy `${WORKDIR}` to `${UNPACKDIR}` per Yocto Project 6.1 (`blacksail`) standards.
 
 ### 5.4 Volatile Storage & RAM Overlays
 Implemented via [`meta-hsm-os/recipes-core/volatile-storage/files/hsm-setup-volatile.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/volatile-storage/files/hsm-setup-volatile.sh):
@@ -278,14 +312,26 @@ Implemented via [`meta-hsm-os/recipes-core/systemd-journald-airgap/`](file:///Us
   RuntimeMaxUse=64M
   ```
 
-### 5.6 User Management & Login Wizard
-Configured via [`recipes-core/users/hsmutil-user.bb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/users/hsmutil-user.bb) and [`recipes-core/init-wizard/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/init-wizard/):
-- **User `hsmutil`**: Standard unprivileged operator belonging to `users`, `dialout`, `tty`, and `storage`. Initial default password set to `hsmutil` (SHA-512 crypt).
+### 5.6 User Management, Authentication & Password Security Policy
+Configured via [`recipes-core/users/hsmutil-user.bb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/users/hsmutil-user.bb), [`recipes-extended/shadow/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-extended/shadow/), [`recipes-extended/libpwquality/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-extended/libpwquality/), and [`recipes-core/init-wizard/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/init-wizard/):
+- **User `hsmutil`**: Standard unprivileged operator belonging to `users`, `dialout`, `tty`, and `storage`. Initial default password set to `password` (SHA-512 crypt hash `$6$saltsalt$qFmFH.bQmmtXzyBY0s9v7Oicd2z4XSIecDzlB5KiA2/jctKu9YterLp8wwnSq.qc.eoxqOmSuNp2xS0ktL3nh/`).
 - **Superuser Security**: In production (`hsm-image-prod.bb`), `extrausers` executes `usermod -L root;` locking the root password. In development (`hsm-image-dev.bb`), root password is set to `root`.
+- **System-Wide PAM `pam_pwquality` Enforcement**:
+  - Distro feature `pam` enabled in `kas-project.yml`.
+  - `/etc/security/pwquality.conf` and `/etc/pam.d/common-password` enforce:
+    - Minimum length 10 (`minlen = 10`)
+    - At least 1 digit, 1 uppercase, 1 special char (`dcredit = -1`, `ucredit = -1`, `ocredit = -1`)
+    - No adjacent repeated identical characters (`maxrepeat = 1`, rejects `aa`, `11`)
+    - No monotonic 3-character sequences (`maxsequence = 2`, rejects `abc`, `123`, `cba`)
+    - Strict enforcement for root (`enforce_for_root`)
+- **90-Day Password Expiration Policy**:
+  - `/etc/login.defs` sets `PASS_MAX_DAYS 90`.
+  - `/etc/shadow` configures `hsmutil` with a maximum password age of `90` days (field 5).
 - **First-Login Wizard (`first-login-wizard.sh`)**:
   - Triggers on console login via `/etc/profile.d/hsm-login.sh`.
   - Checks for marker file `~/.wizard_completed`.
-  - Enforces mandatory password change for `hsmutil` via `passwd`.
+  - Pre-validates password complexity with detailed rule violation feedback prior to invoking PAM.
+  - Enforces mandatory password change for `hsmutil` on initial login.
   - Prompts operator to select physical keyboard layout (US, FR, DE, UK, fr_CH, sg) using `loadkeys` and persists selection to `~/.keymap`.
   - Exports standard UTC timezone (`export TZ=UTC`).
 - **Login Clock Calibration (`clock-setup.sh` & `hsm-set-date.c`)**:
@@ -299,6 +345,25 @@ Implemented in [`meta-hsm-os/recipes-support/usb-mount/`](file:///Users/gpfister
 - Udev detects partition insertions and instantiates `usb-mount@<dev>.service`.
 - Mounts FAT32 or ext4 filesystem under `/media/usb-<devname>` with ownership `hsmutil:storage` and mode `0770`.
 - **Automatic RAUC Ingestion**: If any `*.raucb` file is present in the root directory of the mounted drive, `usb-mount.sh` automatically launches `rauc-usb-autoinstall.service`.
+
+### 5.8 Kernel Boot Console Multiplexing & U-Boot Bootloader Hardening
+Configured via [`recipes-bsp/bootfiles/rpi-cmdline.bbappend`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/bootfiles/rpi-cmdline.bbappend), [`recipes-bsp/u-boot/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/u-boot/), and [`recipes-bsp/rpi-u-boot-scr/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/rpi-u-boot-scr/):
+1. **Kernel Boot Console Multiplexing**:
+   - `meta-raspberrypi` builds `/boot/cmdline.txt` purely from `CMDLINE` variables, ignoring BitBake `APPEND`.
+   - `rpi-cmdline.bbappend` specializes `CMDLINE` based on `HSM_DEV_MODE`:
+     - **Development (`HSM_DEV_MODE="1"`)**: `CMDLINE_DEV = "console=serial0,115200 console=tty1 loglevel=7 debug earlyprintk"`. Kernel `printk` broadcasts to both the physical HDMI monitor (`tty1`) and UART serial console (`serial0`), attaching `/dev/console` to the foreground monitor (`tty1`).
+     - **Production (`HSM_DEV_MODE="0"`)**: `CMDLINE_PROD = "quiet loglevel=0 console=tty1 fsck.mode=skip"`. Suppresses UART output completely and silences HDMI boot logs.
+2. **U-Boot Hardening & Non-Interactivity**:
+   - Production images include [`silent-boot.cfg`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/u-boot/files/silent-boot.cfg) via `u-boot_%.bbappend`: sets `CONFIG_BOOTDELAY=-2` (disabling autoboot abort window), `CONFIG_SILENT_CONSOLE=y`, `CONFIG_SYS_DEVICE_NULLDEV=y`, and `CONFIG_SILENT_U_BOOT_ONLY=y`.
+   - In production, `rpi-u-boot-scr.bbappend` injects `setenv silent 1` and replaces verbose `echo` statements in `boot.cmd.in` with `#` comments, ensuring zero diagnostic emission over serial lines.
+   - Development images retain `CONFIG_BOOTDELAY=2` and diagnostic RAUC slot echo messages.
+
+### 5.9 Automated Security Configuration & Validator Verification
+The repository provides standalone test suites in [`scripts/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/scripts/):
+1. **Password Complexity Validator Suite** ([`scripts/test-password-validator.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/scripts/test-password-validator.sh)):
+   - Evaluates 14 test cases covering minimum length, uppercase, digits, symbols, adjacent identical repetitions (`maxrepeat=1`), and monotonic sequential characters (`maxsequence=2`).
+2. **Security Configuration Verifier** ([`scripts/verify-security-configs.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/scripts/verify-security-configs.sh)):
+   - Runs 19 automated assertions validating `kas-dev.yml`, `kas-prod.yml`, `kas-project.yml`, `rpi-cmdline.bbappend`, `silent-boot.cfg`, `squashfs.cfg`, `rpi-u-boot-scr.bbappend`, `hsmutil-user.bb`, `shadow_%.bbappend`, and `libpwquality_%.bbappend`.
 
 ---
 
@@ -317,6 +382,10 @@ Implemented in [`meta-hsm-os/recipes-support/usb-mount/`](file:///Users/gpfister
 | **Clock Setup** | Timestamp Sync Helper | Setuid root `hsm-set-date` helper | Setuid `hsm-set-date` or `sudo date` |
 | **Logging** | Syslog / Journald / Dmesg | Disabled (`Storage=none`, silent console) | Active in RAM (`Storage=volatile`, 64M) |
 | **Dongle Port Binding** | Serial Node Exposure | Only AT command port `/dev/tty.hsm<ble>0` | Both AT command port and debug console |
+| **U-Boot Interactivity** | Autoboot Wait & Abort | Non-interactive (`CONFIG_BOOTDELAY=-2`, abort disabled) | Interactive prompt (`CONFIG_BOOTDELAY=2`, abort enabled) |
+| **U-Boot Console Output** | Bootloader Serial Output | Completely silent (`CONFIG_SILENT_CONSOLE=y`, `silent=1`) | Diagnostic banners & RAUC slot `echo` messages |
+| **Kernel Log Visibility** | Early Boot Console Sinks | Silent monitor (`console=tty1 quiet loglevel=0 fsck.mode=skip`) | Multiplexed (`console=serial0,115200 console=tty1 loglevel=7 debug earlyprintk`) |
+| **Password Policy** | Initial Password & Expiration | Initial `password`, `pam_pwquality` enforced, 90-day max age | Same (`password`, `pam_pwquality`, 90-day max age) |
 | **Remote Terminal** | SSH (`sshd` / `dropbear`) | Completely absent | Completely absent |
 
 ---
@@ -369,5 +438,17 @@ sequenceDiagram
 - **Dongle USB Interfaces**: [[Architecture/USB Composite Stack|USB Composite Stack Architecture]]
 - **Dongle Serial Identification**: [[Architecture/Decisions/ADR-0001 - Hardware BLE Address for Deterministic USB Serial Number|ADR-0001: BLE Address Serial Number]]
 - **Host Port Targeting**: [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery]]
+- **Disk Image `.img` Output Strategy**: [[Architecture/Decisions/ADR-0005 - Custom BitBake img Image Type via WIC Rename|ADR-0005: Custom BitBake img Image Type via WIC Rename]]
+- **Yocto 6.1 Layer Decomposition**: [[Architecture/Decisions/ADR-0007 - Decompose Poky into openembedded-core meta-yocto and bitbake|ADR-0007: Decompose Poky into openembedded-core, meta-yocto and bitbake]]
+- **Internalized RAUC A/B Integration**: [[Architecture/Decisions/ADR-0008 - Internalize RPi RAUC Integration into meta-hsm-os|ADR-0008: Internalize RPi RAUC Integration into meta-hsm-os]]
+- **Kernel Driver llseek Guard & UNPACKDIR Migration**: [[Architecture/Decisions/ADR-0009 - Kernel Driver llseek Version Guard and UNPACKDIR Migration|ADR-0009: Kernel Driver llseek Version Guard and UNPACKDIR Migration]]
+- **Kernel Boot Console Multiplexing**: [[Architecture/Decisions/ADR-0010 - Kernel Boot Console Multiplexing and Command Line Specialization|ADR-0010: Kernel Boot Console Multiplexing & Command Line Specialization]]
+- **Silent Non-Interactive U-Boot Bootloader**: [[Architecture/Decisions/ADR-0011 - Silent Non-Interactive U-Boot Bootloader Hardening|ADR-0011: Silent Non-Interactive U-Boot Bootloader Hardening]]
+- **PAM Password Complexity & Expiration Policy**: [[Architecture/Decisions/ADR-0012 - PAM pwquality Password Complexity and Expiration Policy|ADR-0012: PAM pwquality Password Complexity & Expiration Policy]]
+- **Feature Specification**: [[features/yocto-boot-visibility-and-password-policy|Feature: Yocto Boot Visibility & Password Policy]]
+- **Technical Specification**: [[Specification/Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy|Specification: Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy]]
+- **Implementation Plan**: [[Plan/Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy Implementation Plan|Implementation Plan: Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy]]
+- **Yocto 6.1 Upgrade Specification**: [[Specification/Yocto 6.1 Blacksail Upgrade|Specification: Yocto 6.1 Blacksail Upgrade]]
+- **Yocto 6.1 Upgrade Plan**: [[Plan/Yocto 6.1 Blacksail Upgrade Implementation Plan|Implementation Plan: Yocto 6.1 Blacksail Upgrade]]
 - **Operational Guide**: [[Development/Yocto Build and RAUC Update Guide|Yocto Build and RAUC Update Guide]]
 - **Source Code**: [`rpi-z2w-yocto-hsm/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm)

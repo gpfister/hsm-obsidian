@@ -27,8 +27,8 @@ The build pipeline leverages **Kas** (`ghcr.io/siemens/kas/kas:latest`) running 
 ```mermaid
 flowchart LR
     HOST["Host Machine\n(Docker / Podman)"] --> KAS["Kas Build Container\n(ghcr.io/siemens/kas)"]
-    KAS --> LAYERS["Yocto 5.0 (Scarthgap)\npoky, meta-raspberrypi, meta-rauc, meta-hsm-os"]
-    LAYERS --> WIC["Rootfs WIC Images\n(.wic, .wic.bz2, .wic.bmap)"]
+    KAS --> LAYERS["Yocto 6.1 (Blacksail)\nopenembedded-core, bitbake, meta-yocto, meta-raspberrypi, meta-rauc, meta-hsm-os"]
+    LAYERS --> WIC["Rootfs Disk Images\n(.img, .wic.bz2, .wic.bmap)"]
     LAYERS --> RAUCB["Signed Update Bundle\n(.raucb)"]
     WIC --> SD["MicroSD Card\n(flash-sd.sh / bmaptool)"]
     RAUCB --> USB["USB Flash Drive\n(Offline Ingestion)"]
@@ -91,8 +91,8 @@ make shell
 ### 2.3 Kas Configuration Hierarchy
 
 Kas configurations are organized hierarchically:
-- [`kas-project.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/kas-project.yml): Declares upstream Scarthgap repositories (`poky`, `meta-raspberrypi`, `meta-openembedded`, `meta-rauc`), machine defaults (`raspberrypi0-2w-64`), and base distro configurations.
-- [`kas-dev.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/kas-dev.yml): Inherits `kas-project.yml`, builds target `hsm-image-dev`, sets `HSM_DEV_MODE=1`, enables `debug-tweaks`, root password `root`, sudo escalation for user `hsmutil`, and RAM-only logging (`Storage=volatile`).
+- [`kas-project.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/kas-project.yml): Declares upstream Blacksail 6.1 repositories (`openembedded-core`, `bitbake`, `meta-yocto`, `meta-raspberrypi`, `meta-openembedded`, `meta-rauc`), machine defaults (`raspberrypi0-2w-64`), and base distro configurations with PAM enabled.
+- [`kas-dev.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/kas-dev.yml): Inherits `kas-project.yml`, builds target `hsm-image-dev`, sets `HSM_DEV_MODE=1`, enables `allow-root-login post-install-logging`, root password `root`, sudo escalation for user `hsmutil`, and RAM-only logging (`Storage=volatile`).
 - [`kas-prod.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/kas-prod.yml): Inherits `kas-project.yml`, builds target `hsm-image-prod`, sets `HSM_DEV_MODE=0`, enforces quiet kernel, locks root account (`usermod -L root`), and enables silent journald (`Storage=none`).
 
 ### 2.4 Verified Build Execution & Benchmark
@@ -107,7 +107,7 @@ The development image build pipeline has been executed and verified in the conta
 
 | Artifact | Size | Description |
 | :--- | :--- | :--- |
-| `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic` | **1.6 GB** | Uncompressed raw bootable SD card disk image formatted with dual-slot A/B partition topology, U-Boot environment, and hardened Linux rootfs (`IMAGE_FSTYPES += "wic"`). |
+| `hsm-image-dev-raspberrypi0-2w-64.rootfs.img` | **1.6 GB** | Uncompressed raw bootable SD card disk image formatted with dual-slot A/B partition topology, U-Boot environment, and hardened Linux rootfs (`IMAGE_FSTYPES += "img"`, `IMAGE_TYPEDEP:img = "wic"`, symlink to `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105103859.img`). |
 | `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2` | **168 MB** | Bzip2-compressed raw bootable SD card disk image. |
 | `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap` | **8.0 KB** | Fast block map file enabling high-speed SD card flashing via `bmaptool copy` by writing only populated sectors. |
 | `hsm-image-dev-raspberrypi0-2w-64.rootfs.tar.bz2` | **73 MB** | Compressed root filesystem archive containing base packages, systemd configurations, and `hsmutil` user space (used by RAUC bundles). |
@@ -143,14 +143,14 @@ Once the build finishes, the raw partitioned image and fast block map are availa
 
 ### 3.2 Method A: Built-in Raw / Streaming Flasher (`scripts/flash-sd.sh`)
 
-Use the workspace flasher script [`scripts/flash-sd.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/scripts/flash-sd.sh), which supports both uncompressed `.wic` images and compressed `.wic.bz2` archives on macOS (`Darwin`) and Linux:
+Use the workspace flasher script [`scripts/flash-sd.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/scripts/flash-sd.sh), which supports both uncompressed `.img` images and compressed `.wic.bz2` archives on macOS (`Darwin`) and Linux:
 
 ```bash
-# Syntax: ./scripts/flash-sd.sh <image.wic | image.wic.bz2> <target_device>
+# Syntax: ./scripts/flash-sd.sh <image.img | image.wic.bz2> <target_device>
 
-# Example 1: Flash uncompressed .wic image directly (macOS):
+# Example 1: Flash uncompressed .img image directly (macOS):
 ./scripts/flash-sd.sh \
-  build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic \
+  build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.img \
   /dev/rdisk4
 
 # Example 2: Stream compressed .wic.bz2 image on the fly (macOS):
@@ -160,26 +160,26 @@ Use the workspace flasher script [`scripts/flash-sd.sh`](file:///Users/gpfister/
 
 # Example 3: Flash on Linux:
 ./scripts/flash-sd.sh \
-  build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic \
+  build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.img \
   /dev/sdb
 ```
 
 The script performs safety and platform compatibility checks:
-1. Confirms the source `.wic` or `.wic.bz2` image exists.
+1. Confirms the source `.img` or `.wic.bz2` image exists.
 2. Displays source and target device path.
 3. Requires explicit interactive typing of `"yes"` before invoking `dd`.
 4. Automatically selects platform-appropriate `dd` flags via `uname -s` (`bs=4m status=progress` on macOS BSD `dd`; `bs=4M status=progress conv=fsync` on Linux GNU `dd`).
-5. Writes the raw `.wic` directly or streams decompression via `bzip2 -dc` / `pbzip2 -dc`, followed by `sync` to flush buffered blocks to physical flash.
+5. Writes the raw `.img` directly or streams decompression via `bzip2 -dc` / `pbzip2 -dc`, followed by `sync` to flush buffered blocks to physical flash.
 
 ### 3.3 Method B: High-Speed Flashing via Block Map (`bmaptool copy`)
 
-Using `bmaptool` is up to 5 times faster than standard `dd` because it skips unallocated image sectors. Because BitBake emits both the uncompressed `.wic` and `.wic.bmap` directly in `build/deploy/images/raspberrypi0-2w-64/`, no manual decompression step is required:
+Using `bmaptool` is up to 5 times faster than standard `dd` because it skips unallocated image sectors. Because BitBake emits both the uncompressed `.img` and `.wic.bmap` directly in `build/deploy/images/raspberrypi0-2w-64/`, no manual decompression step is required:
 
 ```bash
-# Flash uncompressed .wic directly with bmaptool:
+# Flash uncompressed .img directly with bmaptool:
 sudo bmaptool copy \
   --bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap \
-  build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic \
+  build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.img \
   /dev/rdisk4  # or /dev/sdb on Linux
 ```
 
@@ -216,16 +216,22 @@ graph TD
 ### 5.1 First-Login Setup Wizard
 1. At the login prompt, enter default operator credentials:
    - **Login**: `hsmutil`
-   - **Password**: `hsmutil`
+   - **Password**: `password`
 2. [`first-login-wizard.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/init-wizard/files/first-login-wizard.sh) executes automatically:
-   - **Step 1: Forced Password Change**:
+   - **Step 1: Forced Password Change with Complexity Enforcement**:
      ```text
      You must now change the default password for account 'hsmutil'.
+     Password requirements:
+       - At least 10 characters
+       - At least 1 digit, 1 uppercase letter, 1 special character
+       - No adjacent repeated identical characters (e.g. 'aa', '11')
+       - No monotonic sequences of 3+ characters (e.g. 'abc', '123')
      Current password:
      New password:
      Retype new password:
      ```
-     Password update applies to `/etc/shadow` residing in volatile RAM overlay (`/run/overlay/etc-upper`), preserving the underlying immutable root filesystem.
+     Candidate passwords are pre-validated by `first-login-wizard.sh` and enforced system-wide by `pam_pwquality.so` in `/etc/pam.d/common-password`.
+     Password update applies to `/etc/shadow` residing in volatile RAM overlay (`/run/overlay/etc-upper`), preserving the underlying immutable root filesystem while enforcing a 90-day password aging limit (`PASS_MAX_DAYS 90`).
    - **Step 2: Keyboard Layout Selection**:
      ```text
      Select your physical keyboard layout:
@@ -373,6 +379,10 @@ cat /etc/systemd/journald.conf.d/airgap-logging.conf
 # 7. Test unprivileged clock calibration:
 hsm-set-date "2026-11-01 20:00:00"
 date -u
+
+# 8. Verify host-side configuration and password validator test suites:
+./scripts/test-password-validator.sh
+./scripts/verify-security-configs.sh
 ```
 
 ---
@@ -383,4 +393,10 @@ date -u
 - **Hardware Integration**: [[Hardware/Waveshare USB HAT (B) Integration|Waveshare USB HAT (B) Integration]]
 - **Dongle Specifications**: [[Hardware/nRF52840 Dongle PCA10059|nRF52840 Dongle PCA10059]]
 - **CLI Reference**: [[Development/CLI Reference|CLI Reference]]
+- **Feature Specification**: [[features/yocto-boot-visibility-and-password-policy|Feature: Yocto Boot Visibility & Password Policy]]
+- **Technical Specification**: [[Specification/Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy|Specification: Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy]]
+- **Implementation Plan**: [[Plan/Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy Implementation Plan|Implementation Plan: Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy]]
+- **ADR-0010: Boot Console Multiplexing**: [[Architecture/Decisions/ADR-0010 - Kernel Boot Console Multiplexing and Command Line Specialization|ADR-0010]]
+- **ADR-0011: Silent U-Boot Hardening**: [[Architecture/Decisions/ADR-0011 - Silent Non-Interactive U-Boot Bootloader Hardening|ADR-0011]]
+- **ADR-0012: PAM Password Policy**: [[Architecture/Decisions/ADR-0012 - PAM pwquality Password Complexity and Expiration Policy|ADR-0012]]
 - **Root Orchestration**: [`Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/Makefile)

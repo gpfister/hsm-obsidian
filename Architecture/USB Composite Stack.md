@@ -12,6 +12,7 @@ adrs:
   - "[[Architecture/Decisions/ADR-0001 - Hardware BLE Address for Deterministic USB Serial Number|ADR-0001: Hardware BLE Address for Deterministic USB Serial Number]]"
   - "[[Architecture/Decisions/ADR-0002 - In-Tree Protocol Descriptor Patching vs macOS DriverKit Extension|ADR-0002: In-Tree Protocol Descriptor Patching vs macOS DriverKit Extension]]"
   - "[[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]]"
+  - "[[Architecture/Decisions/ADR-0013 - Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration|ADR-0013: Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration]]"
 ---
 
 # USB Composite Stack Architecture
@@ -36,7 +37,7 @@ graph TD
             IF1["Interface 1: CDC Data (Payload)\nEndpoints: Bulk OUT (EP2 OUT), Bulk IN (EP2 IN)"]
         end
         subgraph IAD1 ["Interface Association: AT / HSM API"]
-            IF2["Interface 2: CDC Communication (Management)\nEndpoints: Interrupt IN (EP3 IN)\nProtocol: 0x0002 (HSM AT API)"]
+            IF2["Interface 2: CDC Communication (Management)\nEndpoints: Interrupt IN (EP3 IN)\nProtocol: 0x0001 (ITU-T V.250 AT Commands)"]
             IF3["Interface 3: CDC Data (Payload)\nEndpoints: Bulk OUT (EP4 OUT), Bulk IN (EP4 IN)"]
         end
     end
@@ -71,11 +72,12 @@ In Zephyr's USB CDC-ACM implementation, each CDC-ACM function requires a pair of
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Console / Logs** | `cdc_acm_uart0` | `0` | CDC Management | EP1 IN (Interrupt) | `0x0001` (Zephyr Console) | *Control Plane* |
 | **Console / Logs** | `cdc_acm_uart0` | `1` | CDC Data | EP2 OUT / EP2 IN (Bulk) | `0x0000` | `/dev/tty.usbmodem<BLE_ADDR>1` |
-| **HSM AT Protocol** | `cdc_acm_uart1` | `2` | CDC Management | EP3 IN (Interrupt) | `0x0002` (HSM AT API) | *Control Plane* |
+| **HSM AT Protocol** | `cdc_acm_uart1` | `2` | CDC Management | EP3 IN (Interrupt) | `0x0001` (ITU-T V.250 AT) | *Control Plane* |
 | **HSM AT Protocol** | `cdc_acm_uart1` | `3` | CDC Data | EP4 OUT / EP4 IN (Bulk) | `0x0000` | `/dev/tty.usbmodem<BLE_ADDR>3` |
 
 > [!NOTE]
 > macOS's `AppleUSBCDCACMData` driver attaches BSD device nodes (`/dev/tty.*` and `/dev/cu.*`) strictly to **data** interfaces. Consequently, the assigned suffix digits are `1` (Console) and `3` (AT API), rather than `0` and `1`.
+> Furthermore, as formalized in [[Architecture/Decisions/ADR-0013 - Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration|ADR-0013]], Interface 2 is set to protocol `0x0001` (ITU-T V.250). Setting protocol to `0x0002` causes macOS's native `AppleUSBACMControl` driver to reject the interface, failing to instantiate the `/dev/cu.usbmodem*3` device node.
 
 ---
 

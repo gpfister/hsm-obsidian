@@ -7,8 +7,10 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-05
-lifecycle_phase: Phase 6 Post-Merge Complete — Uncompressed WIC Image Generation & SD Flash Tooling Alignment
-feature: "[[features/uncompressed-wic-image-and-sd-flash-tooling|Uncompressed WIC Image Generation & SD Flash Tooling Alignment]]"
+lifecycle_phase: Phase 6 Post-Merge — Fix macOS CDC-ACM Enumeration Merged into feature/at-dfu-support
+feature: "[[features/fix-macos-cdc-acm-enumeration|Fix macOS CDC-ACM Enumeration for Interface 2]]"
+plan: "[[Plan/Fix macOS CDC-ACM Enumeration for Interface 2 Implementation Plan|Fix macOS CDC-ACM Enumeration for Interface 2 Implementation Plan]]"
+adr: "[[Architecture/Decisions/ADR-0013 - Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration|ADR-0013: Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration]]"
 investigation: "[[investigations/01 - RPi Zero 2 W First Boot Device Tree Failure|01 - RPi Zero 2 W First Boot Device Tree Failure]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
@@ -23,30 +25,61 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `master` | Clean | `3713c98` (*feat: register rpi-z2w-yocto-hsm sub-repository and root build targets*) | **Clean** | **Merged (`master`) / Root Makefile & AGENTS.md updated** |
-| **Firmware** | [nrf52840-hsm-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `main` | Clean | `ae087c1` (*docs(firmware): update README with CC310 factory reset and AT+RESET*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0 Released** |
-| **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `main` | Clean | `ceb18d7` (*feat(serial): add native support for /dev/tty.hsm* nodes*) | **Clean** | **Merged (Fast-Forward to `main`) / v0.3.0+ Released** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `task/upgrade-yocto-6.1-blacksail` | Clean | `01e8a68` (*docs: document macOS zero-driver protocol tagging and AT DFU streaming support*) | **Clean** | **Work-in-Progress / Synchronized** |
+| **Firmware** | [nrf52840-hsm-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `feature/at-dfu-support` | Merged `bugfix/macos-cdc-acm-enumeration` (`7aa1d2b..1d76b0d`) | `1d76b0d` (*docs(firmware): update README with CDC-ACM AT protocol descriptor standardization (ADR-0013)*) | **Clean** | **Post-Merge Synchronized (`feature/at-dfu-support`)** |
+| **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `feature/at-dfu-support` | Ahead of `main` (`+1`) | `7613d43` (*feat(dfu): add AT-protocol DFU support (DFUInfo, DFUChunk, DFUApply)*) | **Clean** | **Pre-Merge Verified (`feature/at-dfu-support`)** |
 | **PKCS#11 Provider** | [nrf52840-hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) | `main` | Clean | `4673116` (*docs(p11): update README with AT port prioritization and serial targeting*) | **Clean** | Up to date (`main`) |
-| **Air-Gapped OS** | [rpi-z2w-yocto-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | `main` | Clean | `b99899f` (*feat(image): generate uncompressed .wic disk image and align SD flash script*) | **Clean** | **Merged (`feature/uncompressed-wic-image` $\rightarrow$ `main`, pruned) / v0.4.0-alpha** |
-| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | `edf62cd` (*docs(vault): archive RPi Zero 2 W first-boot device tree failure investigation and remediation*) | **Updated** | Post-Merge Vault Synchronization (`master`) |
+| **Air-Gapped OS** | [rpi-z2w-yocto-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | `main` | Clean | `3f067b9` (*Merge branch 'task/upgrade-yocto-6.1-blacksail' into main (messy branch)*) | **Clean** | **Merged (Messy/Exploratory Branch `task/upgrade-yocto-6.1-blacksail` $\rightarrow$ `main`)** |
+| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | Current | **Updated** | Post-Merge Documentation Synchronization (`master`) |
 
 ---
 
 ## 1.1 Sub-Repository: `rpi-z2w-yocto-hsm`
 
 - **Repository Path**: [`rpi-z2w-yocto-hsm/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm)
-- **Active Branch**: `main` (feature branch `feature/uncompressed-wic-image` fast-forward merged and deleted)
-- **Latest Commit**: [`b99899f`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *feat(image): generate uncompressed .wic disk image and align SD flash script*
-- **Previous Commit**: [`91428c8`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *fix(yocto): fix device tree handoff and enable dual-slot wic partition layout*
-- **Base Scaffolding Commit**: [`580b452`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *feat: initial scaffolding of rpi-z2w-yocto-hsm air-gapped embedded OS*
-- **Feature Note**: [[features/uncompressed-wic-image-and-sd-flash-tooling|Uncompressed WIC Image Generation & SD Flash Tooling Alignment]]
-- **Investigation Note**: [[investigations/01 - RPi Zero 2 W First Boot Device Tree Failure|01 - RPi Zero 2 W First Boot Device Tree Failure]]
+- **Active Branch**: `main` (Merged from `task/upgrade-yocto-6.1-blacksail`)
+- **Latest Commit**: [`3f067b9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) (`3f067b901231e3c643c32c44418ac35be4d5d968`) — *Merge branch 'task/upgrade-yocto-6.1-blacksail' into main (messy branch)*
+- **Merge Status**: **Phase 6 Post-Merge Complete (v0.5.0-alpha)**
+- **Cumulative Diff**: 43 files changed, 785 insertions(+), 83 deletions(-)
+- **Branch Commits (Merged)**:
+  - [`3f067b9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *Merge branch 'task/upgrade-yocto-6.1-blacksail' into main (messy branch)*
+  - [`65762cb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *fix(scripts): add cache sanity guard for corrupted git bare clones in run-kas.sh*
+  - [`aee860a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *docs: synchronize README directory layout, verification suites, and ADR cross-references*
+  - [`5155f4c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *feat(yocto): implement boot visibility, u-boot hardening, and hsmutil password security policy*
+  - [`3634d7a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *docs: update for Yocto 6.1 blacksail*
+  - [`7d52c9b`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *nrf52840-hsm-kmod: Linux 6.12 llseek compatibility*
+  - [`fc8259a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *meta-hsm-os: migrate to UNPACKDIR, drop debug-tweaks*
+  - [`d15e5c5`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *meta-hsm-os: internalize RPi RAUC A/B integration, layer compat blacksail*
+  - [`515ff0c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *build: move kas layers to Yocto 6.1 blacksail (openembedded-core/bitbake/meta-yocto)*
+- **Feature Notes**:
+  - [[features/yocto-boot-visibility-and-password-policy|Yocto Boot Visibility & Password Policy]]
+  - [[features/uncompressed-img-disk-image-output|Uncompressed Disk Image .img Output]]
+  - [[features/uncompressed-wic-image-and-sd-flash-tooling|Uncompressed WIC Image Generation & SD Flash Tooling Alignment]]
+- **Specifications & Implementation Plans**:
+  - [[Specification/Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy|Specification: Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy]]
+  - [[Plan/Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy Implementation Plan|Plan: Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy]]
+  - [[Specification/Yocto 6.1 Blacksail Upgrade|Specification: Yocto 6.1 Blacksail Upgrade]]
+  - [[Plan/Yocto 6.1 Blacksail Upgrade Implementation Plan|Plan: Yocto 6.1 Blacksail Upgrade]]
+- **Architecture Decision Records (ADRs)**:
+  - [[Architecture/Decisions/ADR-0007 - Decompose Poky into openembedded-core meta-yocto and bitbake|ADR-0007: Decompose Poky into openembedded-core, meta-yocto and bitbake]]
+  - [[Architecture/Decisions/ADR-0008 - Internalize RPi RAUC Integration into meta-hsm-os|ADR-0008: Internalize RPi RAUC Integration into meta-hsm-os]]
+  - [[Architecture/Decisions/ADR-0009 - Kernel Driver llseek Version Guard and UNPACKDIR Migration|ADR-0009: Kernel Driver llseek Guard & UNPACKDIR Migration]]
+  - [[Architecture/Decisions/ADR-0010 - Kernel Boot Console Multiplexing and Command Line Specialization|ADR-0010: Kernel Boot Console Multiplexing & Command Line Specialization]]
+  - [[Architecture/Decisions/ADR-0011 - Silent Non-Interactive U-Boot Bootloader Hardening|ADR-0011: Silent Non-Interactive U-Boot Bootloader Hardening]]
+  - [[Architecture/Decisions/ADR-0012 - PAM pwquality Password Complexity and Expiration Policy|ADR-0012: PAM pwquality Password Complexity & Expiration Policy]]
 - **Architecture Note**: [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|07 - Air-Gapped RPi HSM OS Architecture]]
-- **Hardware Integration Note**: [[Hardware/Waveshare USB HAT (B) Integration|Waveshare USB HAT (B) Integration]]
 - **Operational Guide**: [[Development/Yocto Build and RAUC Update Guide|Yocto Build and RAUC Update Guide]]
+- **Verification Status (PASSED)**:
+  - Acceptance criteria AC-1 through AC-6: 100% satisfied.
+  - Password validator test suite (`./scripts/test-password-validator.sh`): **14/14 tests passed**.
+  - Security configuration verifier (`./scripts/verify-security-configs.sh`): **19/19 checks passed**.
+  - BitBake recipe syntax: **0 parse errors** across all recipes.
 - **Implemented Components & Remediation**:
+  - **Uncompressed Disk Image `.img` Output (`f4adf0b`)**:
+    - Replaced `wic` with `img` in `IMAGE_FSTYPES = "tar.bz2 img wic.bz2 wic.bmap"` in `kas-project.yml`.
+    - Defined `IMAGE_TYPEDEP:img = "wic"` and `IMAGE_CMD:img` in `kas-project.yml` and `hsm-image-base.bb` to rename the generated `.wic` output to `.img` and remove the `.wic` symlink, leaving zero stale `.wic` files in `DEPLOY_DIR_IMAGE`.
+    - Added `*.img` to `.gitignore` and updated `scripts/flash-sd.sh` and `README.md` to reference `.img`.
   - **Uncompressed WIC Image Generation & SD Flash Tooling Alignment (`b99899f`)**:
-    - Updated `IMAGE_FSTYPES = "tar.bz2 wic wic.bz2 wic.bmap"` in `kas-project.yml` so BitBake emits and retains the standalone uncompressed `.wic` disk image alongside `.wic.bz2`, `.wic.bmap`, and `.tar.bz2`.
     - Updated `scripts/flash-sd.sh` and `README.md` to reference `build/deploy/images/raspberrypi0-2w-64/` instead of `build/tmp/deploy/images/...`.
     - Added host OS detection (`uname -s`) in `scripts/flash-sd.sh` to select macOS BSD `dd` flags (`bs=4m status=progress`) on `Darwin` and GNU coreutils `dd` flags (`bs=4M status=progress conv=fsync`) on `Linux`.
   - **U-Boot Device Tree Handoff & Bootargs Fix**:
@@ -96,10 +129,10 @@ The containerized Kas build workflow for the development image has been executed
 - **Build Target**: `hsm-image-dev` for machine `raspberrypi0-2w-64`
 - **BitBake Execution**: **5,844 tasks attempted and succeeded** (zero build errors, zero task failures)
 - **Deployed Artifacts** in [`rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/build/deploy/images/raspberrypi0-2w-64):
-  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic` $\rightarrow$ `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105101217.wic` (**1.6 GB**): Uncompressed raw bootable SD image with dual-slot A/B partition topology and U-Boot.
-  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2` $\rightarrow$ `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105101217.wic.bz2` (**168 MB**): Compressed raw bootable SD image with dual-slot A/B partition topology and U-Boot.
-  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap` $\rightarrow$ `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105101217.wic.bmap` (**8.0 KB**): Fast block map file for accelerated flashing.
-  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.tar.bz2` $\rightarrow$ `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105101217.tar.bz2` (**73 MB**): Rootfs compressed tarball with hardened configs and `hsmutil`.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.img` $\rightarrow$ `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105103859.img` (**1.6 GB**): Uncompressed raw bootable SD image with dual-slot A/B partition topology and U-Boot (`noStaleWicFiles: true`).
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2` $\rightarrow$ `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105103859.wic.bz2` (**168 MB**): Compressed raw bootable SD image with dual-slot A/B partition topology and U-Boot.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap` $\rightarrow$ `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105103859.wic.bmap` (**8.0 KB**): Fast block map file for accelerated flashing.
+  - `hsm-image-dev-raspberrypi0-2w-64.rootfs.tar.bz2` $\rightarrow$ `hsm-image-dev-raspberrypi0-2w-64.rootfs-20261105103859.tar.bz2` (**73 MB**): Rootfs compressed tarball with hardened configs and `hsmutil`.
   - Kernel Device Tree Overlays & Boot Files:
     - `disable-bt.dtbo` (**1.0 KB**): Disables onboard Broadcom Bluetooth controller at boot.
     - `disable-wifi.dtbo` (**387 B**): Disables onboard Broadcom SDIO WiFi interface at boot.
@@ -107,13 +140,104 @@ The containerized Kas build workflow for the development image has been executed
     - `bcm2710-rpi-zero-2.dtb` (**33.7 KB**): Compiled device tree blob for Raspberry Pi Zero 2 W SoC.
     - `boot.scr` (**1.3 KB**): U-Boot boot script for A/B slot selection and fallback.
 - **Flashing Procedures**:
-  - Direct raw flasher: `./scripts/flash-sd.sh build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic <target_device>`
+  - Direct raw flasher: `./scripts/flash-sd.sh build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.img <target_device>`
   - Direct streaming flasher: `./scripts/flash-sd.sh build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bz2 <target_device>`
-  - High-speed block copy: `sudo bmaptool copy --bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic <target_device>`
+  - High-speed block copy: `sudo bmaptool copy --bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.wic.bmap build/deploy/images/raspberrypi0-2w-64/hsm-image-dev-raspberrypi0-2w-64.rootfs.img <target_device>`
 
 ---
 
-## 2. Merged Feature Release: Reset Confirmation & Multi-Device Disambiguation (v0.3.0)
+## 1.2 Sub-Repository: `nrf52840-hsm-firmware`
+
+- **Repository Path**: [`nrf52840-hsm-firmware/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware)
+- **Active Branch**: `feature/at-dfu-support`
+- **Source Branch (Merged)**: `bugfix/macos-cdc-acm-enumeration`
+- **Merge Status**: **Phase 6 Post-Merge Complete** (Fast-forward merged: `7aa1d2b..1d76b0d`)
+- **HEAD Commit**: [`1d76b0d`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) (`1d76b0db6ff676b763ecaa82a20ca8817343468d`) — *docs(firmware): update README with CDC-ACM AT protocol descriptor standardization (ADR-0013)*
+- **Merged Commits**:
+  - [`1d76b0d`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) (`1d76b0db6ff676b763ecaa82a20ca8817343468d`) — *docs(firmware): update README with CDC-ACM AT protocol descriptor standardization (ADR-0013)*
+  - [`0e7361b`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) (`0e7361b269f56090f981bfbd786a9bdd92a6e00e`) — *fix(usb): standard CDC-ACM AT protocol descriptors for macOS dual enumeration (ADR-0013)*
+  - [`7aa1d2b`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) (`7aa1d2beff9ba524479bd7c70eb4f9cfb27490a9`) — *feat(dfu): add AT+DFU_INFO?, AT+DFU_CHUNK, and AT+DFU_APPLY firmware handlers*
+- **Lifecycle Phase**: **Phase 6 Post-Merge Complete**
+- **Working Tree**: **Clean**
+- **Delivered Changes**:
+  - [`firmware/app/src/usb_serial.c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/firmware/app/src/usb_serial.c): Standardized Interface 2 descriptor `bInterfaceProtocol` and IAD `bFunctionProtocol` to `0x01` (ITU-T V.250 AT command protocol), restoring simultaneous `/dev/cu.usbmodem*1` and `/dev/cu.usbmodem*3` enumeration on macOS. Formatted descriptor patching log cleanly (`proto=0x%02x`).
+  - [`firmware/app/src/dfu_service.c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/firmware/app/src/dfu_service.c): Implemented 4-byte flash word boundary alignment with `0xFF` padding for DFU chunk writes, satisfying internal flash controller alignment.
+  - [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/README.md): Synchronized protocol ID documentation with ADR-0013.
+- **Physical Hardware Verification**:
+  - Successfully programmed production firmware to PCA10059 dongle via J-Link probe `802007333`.
+  - macOS instantiated both character device nodes: `/dev/cu.usbmodemF7820A1E3B161` (Console) and `/dev/cu.usbmodemF7820A1E3B163` (HSM AT).
+  - Validated with `hsmutil --port /dev/cu.usbmodemF7820A1E3B163 firmware info` and DFU streaming upgrade.
+
+---
+
+## 2. Merged Feature Release: Yocto 6.1 (Blacksail) Upgrade & Password Policy (v0.5.0-alpha)
+
+> [!NOTE]
+> **Status**: Phase 6 (Merge & Release) Complete. Feature branch `task/upgrade-yocto-6.1-blacksail` was fast-forward merged into `main` at head commit [`aee860a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) (`aee860a39385cb71554f2243e94621a843d411b4`). Cumulative diff across 7 commits: **42 files changed, 767 insertions(+), 83 deletions(-)**. Post-merge quality audit and automated test suites achieved **100% compliance** across all verification gates.  
+> Detailed feature note: [[features/yocto-boot-visibility-and-password-policy|Yocto Boot Visibility & Password Policy]].  
+> Implementation Plans: [[Plan/Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy Implementation Plan|Implementation Plan: Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy]], [[Plan/Yocto 6.1 Blacksail Upgrade Implementation Plan|Implementation Plan: Yocto 6.1 Blacksail Upgrade]].  
+> Specifications: [[Specification/Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy|Specification: Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy]], [[Specification/Yocto 6.1 Blacksail Upgrade|Specification: Yocto 6.1 Blacksail Upgrade]].  
+> Architecture Decision Records: [[Architecture/Decisions/ADR-0007 - Decompose Poky into openembedded-core meta-yocto and bitbake|ADR-0007]], [[Architecture/Decisions/ADR-0008 - Internalize RPi RAUC Integration into meta-hsm-os|ADR-0008]], [[Architecture/Decisions/ADR-0009 - Kernel Driver llseek Version Guard and UNPACKDIR Migration|ADR-0009]], [[Architecture/Decisions/ADR-0010 - Kernel Boot Console Multiplexing and Command Line Specialization|ADR-0010]], [[Architecture/Decisions/ADR-0011 - Silent Non-Interactive U-Boot Bootloader Hardening|ADR-0011]], [[Architecture/Decisions/ADR-0012 - PAM pwquality Password Complexity and Expiration Policy|ADR-0012]].  
+> Release Changelog: [[Changelog#v050-alpha-2026-11-05-yocto-61-blacksail-upgrade-boot-visibility-u-boot-hardening-password-policy|Workspace Release Changelog v0.5.0-alpha]].
+
+### 2.0 Post-Merge Quality Audit & Verification Summary
+
+| Verification Gate | Target Subsystem | Command / Evidence | Result | Audit Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **Acceptance Criteria (AC-1..6)** | Air-Gapped OS (`rpi-z2w-yocto-hsm`) | Formal specification verification | All 6 acceptance criteria verified and satisfied | **100% Passed** |
+| **Password Validator Test Suite** | Air-Gapped OS (`rpi-z2w-yocto-hsm`) | `./scripts/test-password-validator.sh` | **14/14 tests passed** (4 valid passwords accepted, 10 invalid properly rejected with rule violation messages) | **100% Passed** |
+| **Security Configuration Verifier** | Air-Gapped OS (`rpi-z2w-yocto-hsm`) | `./scripts/verify-security-configs.sh` | **19/19 checks passed** (0 errors across YAML kas configs, bbappends, Kconfigs, PAM rules, and shadow settings) | **100% Passed** |
+| **BitBake Recipe Syntax Check** | Kas Container (`rpi-z2w-yocto-hsm`) | BitBake recipe parser | **0 parse errors** across all recipes and layer configurations | **100% Passed** |
+| **Kernel Driver Compatibility** | Kernel Module (`nrf52840-hsm-kmod`) | `.llseek = noop_llseek` version guard | Linux 6.12+ ABI compatibility verified | **100% Passed** |
+| **Boot Visibility & Console Multiplexing** | U-Boot / Kernel Command Line | `rpi-cmdline.bbappend` & `silent-boot.cfg` | Dev dual-console broadcast (HDMI + UART) vs Prod silent non-interactive boot verified | **100% Passed** |
+
+### 2.1 Multi-Repository Git Topology
+
+```mermaid
+gitGraph
+    commit id: "v0.4.0-alpha"
+    commit id: "f4adf0b (img output)"
+    branch "task/upgrade-yocto-6.1-blacksail" order: 1
+    checkout "task/upgrade-yocto-6.1-blacksail"
+    commit id: "515ff0c (layers)"
+    commit id: "d15e5c5 (rauc)"
+    commit id: "fc8259a (unpackdir)"
+    commit id: "7d52c9b (llseek)"
+    commit id: "3634d7a (docs)"
+    commit id: "5155f4c (pwquality)"
+    commit id: "aee860a (verify)"
+    checkout main
+    merge "task/upgrade-yocto-6.1-blacksail" id: "aee860a (fast-forward)"
+    commit id: "v0.5.0-alpha"
+```
+
+### 2.2 Subsystem Development Commits & File Inventory
+
+- **Repository**: [`rpi-z2w-yocto-hsm/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm)
+- **Active Branch**: `main` (Fast-forward merged from `task/upgrade-yocto-6.1-blacksail`)
+- **Head Commit**: [`aee860a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) (`aee860a39385cb71554f2243e94621a843d411b4`)
+- **Cumulative Diff**: 42 files changed, 767 insertions(+), 83 deletions(-)
+- **Delivered Commits**:
+  - [`aee860a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *docs: synchronize README directory layout, verification suites, and ADR cross-references*
+  - [`5155f4c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *feat(yocto): implement boot visibility, u-boot hardening, and hsmutil password security policy*
+  - [`3634d7a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *docs: update for Yocto 6.1 blacksail*
+  - [`7d52c9b`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *nrf52840-hsm-kmod: Linux 6.12 llseek compatibility*
+  - [`fc8259a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *meta-hsm-os: migrate to UNPACKDIR, drop debug-tweaks*
+  - [`d15e5c5`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *meta-hsm-os: internalize RPi RAUC A/B integration, layer compat blacksail*
+  - [`515ff0c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) — *build: move kas layers to Yocto 6.1 blacksail (openembedded-core/bitbake/meta-yocto)*
+- **Key Modified & Added Files**:
+  - Declarative Layer Specs: [`kas-project.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/kas-project.yml), [`kas-dev.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/kas-dev.yml), [`kas-prod.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/kas-prod.yml), [`meta-hsm-os/conf/layer.conf`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/conf/layer.conf).
+  - Boot Visibility & Console Multiplexing: [`meta-hsm-os/recipes-bsp/bootfiles/rpi-cmdline.bbappend`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/bootfiles/rpi-cmdline.bbappend).
+  - Hardened Non-Interactive U-Boot: [`meta-hsm-os/recipes-bsp/u-boot/files/silent-boot.cfg`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/u-boot/files/silent-boot.cfg), [`meta-hsm-os/recipes-bsp/u-boot/files/squashfs.cfg`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/u-boot/files/squashfs.cfg), [`meta-hsm-os/recipes-bsp/u-boot/u-boot_%.bbappend`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/u-boot/u-boot_%.bbappend), [`meta-hsm-os/recipes-bsp/rpi-u-boot-scr/files/boot.cmd.in`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/rpi-u-boot-scr/files/boot.cmd.in), [`meta-hsm-os/recipes-bsp/rpi-u-boot-scr/rpi-u-boot-scr.bbappend`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/rpi-u-boot-scr/rpi-u-boot-scr.bbappend).
+  - Operator Identity & Password Policy: [`meta-hsm-os/recipes-core/users/hsmutil-user.bb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/users/hsmutil-user.bb), [`meta-hsm-os/recipes-core/init-wizard/files/first-login-wizard.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/init-wizard/files/first-login-wizard.sh), [`meta-hsm-os/recipes-extended/libpwquality/libpwquality_%.bbappend`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-extended/libpwquality/libpwquality_%.bbappend), [`meta-hsm-os/recipes-extended/libpwquality/files/pwquality.conf`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-extended/libpwquality/files/pwquality.conf), [`meta-hsm-os/recipes-extended/shadow/shadow_%.bbappend`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-extended/shadow/shadow_%.bbappend), [`meta-hsm-os/recipes-extended/shadow/shadow-sysroot_%.bbappend`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-extended/shadow/shadow-sysroot_%.bbappend).
+  - Out-of-Tree Driver: [`meta-hsm-os/recipes-kernel/nrf52840-hsm-kmod/files/nrf52840_hsm.c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-kernel/nrf52840-hsm-kmod/files/nrf52840_hsm.c), [`meta-hsm-os/recipes-kernel/nrf52840-hsm-kmod/nrf52840-hsm-kmod.bb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-kernel/nrf52840-hsm-kmod/nrf52840-hsm-kmod.bb).
+  - Internalized RAUC Integration: [`meta-hsm-os/classes/rauc-integration.bbclass`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/classes/rauc-integration.bbclass), [`meta-hsm-os/recipes-core/udev/files/raspberrypi-rauc.rules`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-core/udev/files/raspberrypi-rauc.rules), [`meta-hsm-os/recipes-kernel/linux/files/rauc.cfg`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-kernel/linux/files/rauc.cfg).
+  - Automated Test Suites: [`scripts/test-password-validator.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/scripts/test-password-validator.sh), [`scripts/verify-security-configs.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/scripts/verify-security-configs.sh).
+  - Root Documentation: [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/README.md), [`Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/Makefile).
+
+---
+
+## 3. Merged Feature Release: Reset Confirmation & Multi-Device Disambiguation (v0.3.0)
 
 > [!NOTE]
 > **Status**: Phase 6 (Merge & Release) Complete. Feature branches were fast-forward merged into base branches (`master` / `main`) and pruned. Comprehensive Quality Audit and post-merge regression test suites achieved **100% compliance** across all repositories.  
@@ -288,7 +412,7 @@ gitGraph
 
 ---
 
-## 3. Physical Hardware Topologies & Validation
+## 4. Physical Hardware Topologies & Validation
 
 Connected hardware dongles detected and verified via `hsmutil devices`:
 
@@ -304,7 +428,7 @@ Connected hardware dongles detected and verified via `hsmutil devices`:
     USB ID:        1209:0001 (nRF52840 HSM Dongle)
 ```
 
-### 3.1 Validation Matrix (100% Passed)
+### 4.1 Validation Matrix (100% Passed)
 - **USB Descriptors**: Validated on physical PCA10059 dongles with dynamic 12-digit hex BLE serial numbers (`%04X%08X`).
 - **Protocol Identifiers**: Dynamic runtime descriptor patching sets Protocol `0x0001` (Console) on Interface 0 and `0x0002` (HSM AT API) on Interface 2.
 - **macOS TTY Mapping**: Suffix `1` attached to Zephyr console logging; Suffix `3` attached to HSM AT data stream.
@@ -312,16 +436,55 @@ Connected hardware dongles detected and verified via `hsmutil devices`:
 
 ---
 
-## 4. Architecture Decision Records (ADRs)
+## 5. Architecture Decision Records (ADRs)
 
 - [[Architecture/Decisions/ADR-0001 - Hardware BLE Address for Deterministic USB Serial Number|ADR-0001: Hardware BLE Address for Deterministic USB Serial Number]]
 - [[Architecture/Decisions/ADR-0002 - In-Tree Protocol Descriptor Patching vs macOS DriverKit Extension|ADR-0002: In-Tree Protocol Descriptor Patching vs macOS DriverKit Extension]]
 - [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery and Serial Targeting Strategy]]
 - [[Architecture/Decisions/ADR-0004 - Factory Reset Semantics and Safeguards|ADR-0004: Factory Reset Semantics and Safe Erasure Safeguards]]
+- [[Architecture/Decisions/ADR-0005 - Custom BitBake img Image Type via WIC Rename|ADR-0005: Custom BitBake img Image Type via WIC Rename]]
+- [[Architecture/Decisions/ADR-0006 - AT-Protocol DFU Chunk Streaming and Deferred MCUboot Swap|ADR-0006: AT-Protocol DFU Chunk Streaming & Deferred MCUboot Swap Architecture]]
+- [[Architecture/Decisions/ADR-0007 - Decompose Poky into openembedded-core meta-yocto and bitbake|ADR-0007: Decompose Poky into openembedded-core, meta-yocto and bitbake]]
+- [[Architecture/Decisions/ADR-0008 - Internalize RPi RAUC Integration into meta-hsm-os|ADR-0008: Internalize RPi RAUC Integration into meta-hsm-os]]
+- [[Architecture/Decisions/ADR-0009 - Kernel Driver llseek Version Guard and UNPACKDIR Migration|ADR-0009: Kernel Driver llseek Guard & UNPACKDIR Migration]]
+- [[Architecture/Decisions/ADR-0010 - Kernel Boot Console Multiplexing and Command Line Specialization|ADR-0010: Kernel Boot Console Multiplexing & Command Line Specialization]]
+- [[Architecture/Decisions/ADR-0011 - Silent Non-Interactive U-Boot Bootloader Hardening|ADR-0011: Silent Non-Interactive U-Boot Bootloader Hardening]]
+- [[Architecture/Decisions/ADR-0012 - PAM pwquality Password Complexity and Expiration Policy|ADR-0012: PAM pwquality Password Complexity & Expiration Policy]]
+- [[Architecture/Decisions/ADR-0013 - Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration|ADR-0013: Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration]]
 
 ---
 
-## 5. Upcoming & In-Flight Features
+## 6. Upcoming & In-Flight Features
+
+- **[[features/fix-macos-cdc-acm-enumeration|Fix macOS CDC-ACM Enumeration for Interface 2 (HSM AT Channel)]]**:
+  - **Status**: **Merged into `feature/at-dfu-support` (Phase 6 Post-Merge Complete)**.
+  - **Merge Type**: Fast-forward merge (`7aa1d2b..1d76b0d`) into `feature/at-dfu-support`.
+  - **Active Branch**: `feature/at-dfu-support` (working tree clean, HEAD: [`1d76b0d`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware)).
+  - **Formal Spec**: [[Specification/Fix macOS CDC-ACM Enumeration for Interface 2|Fix macOS CDC-ACM Enumeration for Interface 2 Specification]]
+  - **Implementation Plan**: [[Plan/Fix macOS CDC-ACM Enumeration for Interface 2 Implementation Plan|Fix macOS CDC-ACM Enumeration for Interface 2 Implementation Plan]]
+  - **Architecture Decision Record**: [[Architecture/Decisions/ADR-0013 - Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration|ADR-0013: Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration]]
+  - **Merged Commits (`bugfix/macos-cdc-acm-enumeration` $\rightarrow$ `feature/at-dfu-support`)**:
+    - [`1d76b0d`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) — *docs(firmware): update README with CDC-ACM AT protocol descriptor standardization (ADR-0013)*
+    - [`0e7361b`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) — *fix(usb): standard CDC-ACM AT protocol descriptors for macOS dual enumeration (ADR-0013)*
+  - **Modified Files**:
+    - [`firmware/app/src/usb_serial.c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/firmware/app/src/usb_serial.c): Standardized Interface 2 descriptor and IAD to Protocol `0x01` (ITU-T V.250).
+    - [`firmware/app/src/dfu_service.c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/firmware/app/src/dfu_service.c): Added 4-byte flash word boundary alignment with `0xFF` padding for DFU chunk writes.
+    - [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware/README.md): Updated protocol documentation.
+  - **Hardware Verification**:
+    - Programmed via Segger J-Link probe `802007333` onto physical PCA10059 dongle (`F7:82:0A:1E:3B:16`).
+    - Both device nodes enumerated cleanly on macOS: `/dev/cu.usbmodemF7820A1E3B161` (Console) and `/dev/cu.usbmodemF7820A1E3B163` (HSM AT).
+    - Validated with `hsmutil --port /dev/cu.usbmodemF7820A1E3B163 firmware info` and DFU chunk stream. 100% Passed.
+
+- **[[features/at-protocol-dfu-support|AT-Protocol DFU Support (`AT+DFU_INFO?`, `AT+DFU_CHUNK`, `AT+DFU_APPLY`)]]**:
+  - **Status**: Implemented & Hardware Verified (Phase 5 Pre-Merge Review Complete — Ready for Base Branch Merge).
+  - **Formal Spec**: [[Specification/AT-Protocol DFU Support|AT-Protocol DFU Support Specification]]
+  - **Implementation Plan**: [[Plan/AT-Protocol DFU Support Implementation Plan|AT-Protocol DFU Support Implementation Plan]]
+  - **Architecture Decision Record**: [[Architecture/Decisions/ADR-0006 - AT-Protocol DFU Chunk Streaming and Deferred MCUboot Swap|ADR-0006: AT-Protocol DFU Chunk Streaming & Deferred MCUboot Swap Architecture]]
+  - **Feature Branch Commits (`feature/at-dfu-support`)**:
+    - Firmware: [`1d76b0d`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) (HEAD of `feature/at-dfu-support`, includes `7aa1d2b`, `0e7361b`, `1d76b0d`)
+    - CLI: [`7613d43`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) — *feat(dfu): add AT-protocol DFU support (DFUInfo, DFUChunk, DFUApply)*
+    - Root: [`2a2a9ce`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) — *feat(scripts): add AT DFU simulation and end-to-end integration tests*
+  - **Verification Status**: 100% passing across firmware build, CLI unit tests (`go test ./...`), and root end-to-end integration test harness (`make integration-test`).
 
 - **[[features/hsmutil-reset-and-multi-device-disambiguation|Reset Confirmation & Multi-Device Disambiguation]]**:
   - **Status**: Completed & Released (v0.3.0) — Phase 6 Post-Merge Complete.
@@ -337,11 +500,15 @@ Connected hardware dongles detected and verified via `hsmutil devices`:
 
 ---
 
-## 6. Related Documentation
+## 7. Related Documentation
 
 - [[00 - Index|Vault Index]]
 - [[Changelog|Workspace Release Changelog]]
+- [[features/yocto-boot-visibility-and-password-policy|Yocto Boot Visibility & Password Policy Feature Specification]]
+- [[features/uncompressed-img-disk-image-output|Uncompressed Disk Image .img Output Feature Specification]]
 - [[features/usb-descriptors-ble-address|USB Descriptors & Device Identification Feature Specification & Implementation]]
 - [[features/hsmutil-reset-and-multi-device-disambiguation|Reset Confirmation & Multi-Device Disambiguation Feature Specification]]
+- [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|07 - Air-Gapped RPi HSM OS Architecture]]
+- [[Development/Yocto Build and RAUC Update Guide|Yocto Build & RAUC Update Guide]]
 - [[Architecture/USB Composite Stack|USB Composite Stack Architecture]]
 - [[Development/CLI Reference|hsmutil CLI Reference]]

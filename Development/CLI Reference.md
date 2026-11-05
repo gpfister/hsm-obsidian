@@ -99,13 +99,13 @@ Sends an echo packet to verify round-trip latency and communication integrity.
 
 ---
 
-### 3. Firmware Management
+### 3. Firmware Management (AT-Protocol DFU)
 
 #### `hsmutil firmware info`
-Queries the dongle for active firmware metadata, partition slot (Primary vs Secondary candidate), image size, and SHA-256 digest.
+Queries the dongle via `AT+DFU_INFO?` for active firmware metadata (`VER`), active MCUboot partition slot (`SLOT=0` Primary vs `SLOT=1` Secondary candidate), image size (`SIZE`), and 32-byte PSA SHA-256 digest (`SHA256`). Automatically falls back to `AT+INFO?` if connected to legacy firmware that returns `+CME ERROR: 8`.
 
 #### `hsmutil firmware update --file <path>`
-Streams a signed MCUboot application binary (`zephyr.signed.bin`) in chunked packets to the secondary candidate slot, validates the payload checksum, marks the slot for test upgrade, and requests a device reboot into MCUboot.
+Streams a signed MCUboot application binary (`zephyr.signed.bin`) over the ASCII AT command channel (`cdc_acm_uart1`) in 256-byte chunks (`AT+DFU_CHUNK=<offset>,<512-hex-chars>`, `10s` timeout per chunk to accommodate `FLASH_AREA_ID(image_1)` erase at `offset=0`), triggers a deferred MCUboot test swap via `AT+DFU_APPLY` (`boot_request_upgrade(BOOT_UPGRADE_TEST)` + `200 ms` `k_work_delayable` reboot), and confirms the swapped slot permanently via `boot_write_img_confirmed()` on next startup. Requires an authenticated session (`hsmutil auth`).
 
 ---
 
