@@ -7,10 +7,10 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-05
-lifecycle_phase: Phase 6 Post-Merge — Fix macOS CDC-ACM Enumeration Merged into feature/at-dfu-support
-feature: "[[features/fix-macos-cdc-acm-enumeration|Fix macOS CDC-ACM Enumeration for Interface 2]]"
-plan: "[[Plan/Fix macOS CDC-ACM Enumeration for Interface 2 Implementation Plan|Fix macOS CDC-ACM Enumeration for Interface 2 Implementation Plan]]"
-adr: "[[Architecture/Decisions/ADR-0013 - Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration|ADR-0013: Standard CDC-ACM AT Protocol Descriptors for macOS Dual Enumeration]]"
+lifecycle_phase: Phase 5 Pre-Merge Documentation Tidy-Up — Documentation Terminology Generalization (Branch: task/generalize-doc-terminology)
+feature: "[[features/documentation-terminology-generalization|Documentation Terminology Generalization]]"
+plan: "[[Plan/Documentation Terminology Generalization Implementation Plan|Documentation Terminology Generalization Implementation Plan]]"
+adr: "[[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014: Documentation Terminology Generalization to Generic HSM USB Key]]"
 investigation: "[[investigations/01 - RPi Zero 2 W First Boot Device Tree Failure|01 - RPi Zero 2 W First Boot Device Tree Failure]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
@@ -25,12 +25,56 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `task/upgrade-yocto-6.1-blacksail` | Clean | `01e8a68` (*docs: document macOS zero-driver protocol tagging and AT DFU streaming support*) | **Clean** | **Work-in-Progress / Synchronized** |
-| **Firmware** | [nrf52840-hsm-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-firmware) | `feature/at-dfu-support` | Merged `bugfix/macos-cdc-acm-enumeration` (`7aa1d2b..1d76b0d`) | `1d76b0d` (*docs(firmware): update README with CDC-ACM AT protocol descriptor standardization (ADR-0013)*) | **Clean** | **Post-Merge Synchronized (`feature/at-dfu-support`)** |
-| **CLI** | [nrf52840-hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-cli) | `feature/at-dfu-support` | Ahead of `main` (`+1`) | `7613d43` (*feat(dfu): add AT-protocol DFU support (DFUInfo, DFUChunk, DFUApply)*) | **Clean** | **Pre-Merge Verified (`feature/at-dfu-support`)** |
-| **PKCS#11 Provider** | [nrf52840-hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-libpkcs11) | `main` | Clean | `4673116` (*docs(p11): update README with AT port prioritization and serial targeting*) | **Clean** | Up to date (`main`) |
-| **Air-Gapped OS** | [rpi-z2w-yocto-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm) | `main` | Clean | `3f067b9` (*Merge branch 'task/upgrade-yocto-6.1-blacksail' into main (messy branch)*) | **Clean** | **Merged (Messy/Exploratory Branch `task/upgrade-yocto-6.1-blacksail` $\rightarrow$ `main`)** |
-| **Obsidian Vault** | [nrf52840-hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/nrf52840-hsm-obsidian) | `master` | Clean | Current | **Updated** | Post-Merge Documentation Synchronization (`master`) |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `task/generalize-doc-terminology` | Diverged from `main` (`+1`) | `af2d24e` (*docs: generalize root documentation terminology*) | **Clean** | **Phase 5 Pre-Merge Verified** |
+| **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `task/generalize-doc-terminology` | Diverged from `main` (`+1`) | `e03c9bb` (*docs(firmware): generalize title and clarify PCA10059 hardware target support*) | **Clean** | **Phase 5 Pre-Merge Verified** |
+| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `task/generalize-doc-terminology` | Diverged from `main` (`+1`) | `189c7fd` (*docs: generalize HSM device terminology and update utility title*) | **Clean** | **Phase 5 Pre-Merge Verified** |
+| **PKCS#11 Provider** | [hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11) | `task/generalize-doc-terminology` | Diverged from `main` (`+1`) | `9c54759` (*docs: generalize terminology in README.md*) | **Clean** | **Phase 5 Pre-Merge Verified** |
+| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `task/generalize-doc-terminology` | Diverged from `main` (`+1`) | `28925aa` (*docs: generalize README terminology to HSM USB key and appliance*) | **Clean** | **Phase 5 Pre-Merge Verified** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `task/generalize-doc-terminology` | Diverged from `main` (`+1`) | `682fbfc` (*docs: generalize documentation terminology and add README*) | **Clean / Synchronizing** | **Phase 5 Pre-Merge Documentation Tidy-Up** |
+
+---
+
+## 1.0 Active Task: `task/generalize-doc-terminology` (Phase 5 Pre-Merge Documentation Tidy-Up)
+
+> [!NOTE]
+> **Active Milestone**: All 6 repositories have been updated on branch `task/generalize-doc-terminology` to generalize documentation terminology to generic **Hardware Security Module (HSM)** and **HSM USB Key / Dongle** per [[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014]]. Working trees are clean across all repositories. Pre-merge tidy-up synchronizes cross-references, feature specification notes, and changelog records prior to merging into `main`.
+>
+> - **Feature Note**: [[features/documentation-terminology-generalization|Documentation Terminology Generalization]]
+> - **Implementation Plan**: [[Plan/Documentation Terminology Generalization Implementation Plan|Documentation Terminology Generalization Implementation Plan]]
+> - **Architecture Decision Record**: [[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014: Documentation Terminology Generalization to Generic HSM USB Key]]
+> - **Changelog Entry**: [[Changelog#pre-merge-verified-2026-11-05-documentation-terminology-generalization-to-generic-hsm-usb-key-branch-taskgeneralize-doc-terminology|Workspace Release Changelog]]
+
+### Verified Commits Across All 6 Repositories:
+
+1. **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**:
+   - **Commit**: [`af2d24e`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`af2d24e`) — *docs: generalize root documentation terminology*
+   - **Files**: [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/README.md), [`AGENTS.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/AGENTS.md)
+   - **Status**: Clean, ready for merge into `main` (`3140149..af2d24e`)
+
+2. **Firmware Subsystem ([`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware))**:
+   - **Commit**: [`e03c9bb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) (`e03c9bb`) — *docs(firmware): generalize title and clarify PCA10059 hardware target support*
+   - **Files**: [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware/README.md)
+   - **Status**: Clean, ready for merge into `main` (`1d76b0d..e03c9bb`)
+
+3. **Host CLI & TUI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**:
+   - **Commit**: [`189c7fd`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`189c7fd`) — *docs: generalize HSM device terminology and update utility title*
+   - **Files**: [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli/README.md)
+   - **Status**: Clean, ready for merge into `main` (`89a4989..189c7fd`)
+
+4. **PKCS#11 Provider Library ([`hsm-libpkcs11`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11))**:
+   - **Commit**: [`9c54759`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11) (`9c54759`) — *docs: generalize terminology in README.md*
+   - **Files**: [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11/README.md)
+   - **Status**: Clean, ready for merge into `main` (`4673116..9c54759`)
+
+5. **Air-Gapped OS Appliance ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**:
+   - **Commit**: [`28925aa`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`28925aa`) — *docs: generalize README terminology to HSM USB key and appliance*
+   - **Files**: [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/README.md)
+   - **Status**: Clean, ready for merge into `main` (`3f067b9..28925aa`)
+
+6. **Central Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**:
+   - **Commit**: [`682fbfc`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) (`682fbfc`) — *docs: generalize documentation terminology and add README*
+   - **Files**: [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian/README.md), [`00 - Index.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian/00%20-%20Index.md), [`Architecture/System Architecture.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian/Architecture/System%20Architecture.md), [`Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian/Architecture/Decisions/ADR-0014%20-%20Documentation%20Terminology%20Generalization%20to%20Generic%20HSM%20USB%20Key.md), [`Plan/Documentation Terminology Generalization Implementation Plan.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian/Plan/Documentation%20Terminology%20Generalization%20Implementation%20Plan.md)
+   - **Pre-Merge Synchronization**: Added [[features/documentation-terminology-generalization|Feature Specification]], updated index, changelog, and git-status notes.
 
 ---
 
@@ -504,6 +548,8 @@ Connected hardware dongles detected and verified via `hsmutil devices`:
 
 - [[00 - Index|Vault Index]]
 - [[Changelog|Workspace Release Changelog]]
+- [[features/documentation-terminology-generalization|Documentation Terminology Generalization Feature Specification]]
+- [[features/fix-macos-cdc-acm-enumeration|Fix macOS CDC-ACM Enumeration for Interface 2 Feature Specification]]
 - [[features/yocto-boot-visibility-and-password-policy|Yocto Boot Visibility & Password Policy Feature Specification]]
 - [[features/uncompressed-img-disk-image-output|Uncompressed Disk Image .img Output Feature Specification]]
 - [[features/usb-descriptors-ble-address|USB Descriptors & Device Identification Feature Specification & Implementation]]

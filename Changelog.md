@@ -15,6 +15,23 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 ---
 
+## [Pre-Merge Verified] — 2026-11-05: Documentation Terminology Generalization to Generic HSM USB Key (Branch: task/generalize-doc-terminology)
+
+> [!NOTE]
+> **Pre-Merge Milestone**: Documentation terminology generalization verified across all 6 repositories on branch `task/generalize-doc-terminology`. Working trees clean across all sub-repositories. All titles and high-level prose standardized on generic **Hardware Security Module (HSM)** and **HSM USB Key / Dongle** terminology per [[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014]], while explicitly preserving firmware target hardware scoping in [`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) (Nordic Semiconductor nRF52840 USB Dongle `PCA10059`) and non-breaking machine-readable identifiers (`libnrf52840_pkcs11.*`, `NRF52840_HSM_*`, `nrf52840-hsm-kmod`).
+>
+> **Lifecycle Phase**: Phase 5 Pre-Merge Documentation Tidy-Up Complete.
+>
+> **Verified Deliverables Across All 6 Repositories**:
+> 1. **Root Workspace ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Commit [`af2d24e`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`af2d24e`) — Generalized root [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/README.md) and [`AGENTS.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/AGENTS.md).
+> 2. **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: Commit [`28925aa`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`28925aa`) — Generalized [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/README.md) to HSM USB key and appliance, retained driver name `nrf52840-hsm-kmod`.
+> 3. **Host CLI & TUI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**: Commit [`189c7fd`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`189c7fd`) — Generalized [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli/README.md) to `hsm-cli (hsmutil)` for interacting with HSM USB key, retained environment variables.
+> 4. **PKCS#11 Provider ([`hsm-libpkcs11`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11))**: Commit [`9c54759`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11) (`9c54759`) — Generalized [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11/README.md) description, retained library names and environment variables.
+> 5. **Central Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Commit [`682fbfc`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) (`682fbfc`) — Authored [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian/README.md), generalized [`00 - Index.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian/00%20-%20Index.md), updated [`Architecture/System Architecture.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian/Architecture/System%20Architecture.md), recorded [[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014]], [[Plan/Documentation Terminology Generalization Implementation Plan|Implementation Plan]], and [[features/documentation-terminology-generalization|Feature Specification]].
+> 6. **Microcontroller Firmware ([`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware))**: Commit [`e03c9bb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) (`e03c9bb`) — Updated [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware/README.md) with explicit scope note that firmware currently exclusively supports the nRF52840 USB Dongle (`PCA10059`).
+>
+> ---
+>
 ## [Merged] — 2026-11-05: Fix macOS CDC-ACM Enumeration for Interface 2 (Merged into feature/at-dfu-support)
 
 > [!NOTE]

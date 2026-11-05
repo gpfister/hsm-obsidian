@@ -39,6 +39,7 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 - [[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014: Documentation Terminology Generalization to Generic HSM USB Key]] — Standardizes workspace documentation, READMEs, and vault index on generic HSM USB key terminology while preserving firmware-specific scoping and machine-readable identifiers.
 
 ### 🧩 Feature Specifications
+- [[features/documentation-terminology-generalization|Documentation Terminology Generalization]] — Standardization of workspace documentation, READMEs, and vault index on generic HSM USB key terminology while preserving firmware-specific scoping and machine-readable identifiers.
 - [[features/fix-macos-cdc-acm-enumeration|Fix macOS CDC-ACM Enumeration for Interface 2]] — Restoration of dual `/dev/cu.usbmodem*` enumeration on Darwin by aligning protocol codes with `AppleUSBACMControl`.
 - [[features/at-protocol-dfu-support|AT-Protocol DFU Support]] — End-to-end Device Firmware Upgrade (`AT+DFU_INFO?`, `AT+DFU_CHUNK`, `AT+DFU_APPLY`) across Zephyr firmware, Go CLI (`hsmutil`), and mock HSM PTY.
 - [[features/uncompressed-img-disk-image-output|Uncompressed Disk Image .img Output]] — Custom BitBake `img` image type (`IMAGE_TYPEDEP:img = "wic"`), `.img` output retention, and SD flash tooling alignment.
