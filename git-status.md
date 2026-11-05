@@ -7,11 +7,11 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-05
-lifecycle_phase: Phase 6 Post-Merge Complete — Documentation Terminology Generalization Merged into main
-feature: "[[features/documentation-terminology-generalization|Documentation Terminology Generalization]]"
-plan: "[[Plan/Documentation Terminology Generalization Implementation Plan|Documentation Terminology Generalization Implementation Plan]]"
-adr: "[[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014: Documentation Terminology Generalization to Generic HSM USB Key]]"
-investigation: "[[investigations/01 - RPi Zero 2 W First Boot Device Tree Failure|01 - RPi Zero 2 W First Boot Device Tree Failure]]"
+lifecycle_phase: Phase 5 Pre-Merge Review — HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence
+feature: "[[features/cli-restructuring-bubbletea-pkcs11|HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence]]"
+plan: "[[Plan/HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS11 Equivalence Implementation Plan|Implementation Plan: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence]]"
+adr: "[[Architecture/Decisions/ADR-0015 - HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|ADR-0015: HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]]"
+specification: "[[Specification/HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|Technical Specification: HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
 
@@ -25,12 +25,36 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Ahead of `origin/main` (`+1`) | `af2d24e` (*docs: generalize root documentation terminology*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Ahead of `origin/main` (`+1`) | `af2d24e` (*docs: generalize root documentation terminology*) | Staged/Modified | **Phase 5 Pre-Merge Review** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Ahead of `origin/main` (`+1`) | `e03c9bb` (*docs(firmware): generalize title and clarify PCA10059 hardware target support*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Ahead of `origin/main` (`+1`) | `189c7fd` (*docs: generalize HSM device terminology and update utility title*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `feature/cli-restructuring-bubbletea-pkcs11` | Local feature branch | `6c8781c` (*feat(cli): restructure commands under device, add static build, bubble tea UX, and pkcs11 parity*) | **Clean** | **Phase 5 Pre-Merge Review** |
 | **PKCS#11 Provider** | [hsm-libpkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-libpkcs11) | `main` | Ahead of `origin/main` (`+1`) | `9c54759` (*docs: generalize terminology in README.md*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Ahead of `origin/main` (`+1`) | `28925aa` (*docs: generalize README terminology to HSM USB key and appliance*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+3`) | `e91555a` (*docs(vault): update git status, branch tracking, and changelog for post-merge*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+4`) | `8fa4243` (*docs(vault): formalize ADR-0015, implementation plan, and CLI reference*) | Modified | **Phase 5 Pre-Merge Tidy-Up** |
+
+---
+
+## 1.0 Active Feature: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence (Phase 5 Pre-Merge Review)
+
+> [!NOTE]
+> **Active Milestone**: Development completed on `hsm-cli` branch `feature/cli-restructuring-bubbletea-pkcs11` at commit [`6c8781c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli). Pre-merge documentation synchronization underway across `hsm-obsidian` and root documentation.
+>
+> - **Feature Note**: [[features/cli-restructuring-bubbletea-pkcs11|HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence]]
+> - **Technical Specification**: [[Specification/HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|Technical Specification: HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]]
+> - **Implementation Plan**: [[Plan/HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS11 Equivalence Implementation Plan|Implementation Plan: HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence]]
+> - **Architecture Decision Record**: [[Architecture/Decisions/ADR-0015 - HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|ADR-0015: HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]]
+> - **CLI Reference**: [[Development/CLI Reference|CLI Reference (hsmutil)]]
+>
+> ### Key Deliverables in `hsm-cli` (Commit `6c8781c`):
+> 1. **Resource Command Hierarchy**: Reorganized commands under `hsmutil device <list|info|init|lock|reset|status|migrate|firmware>` and `hsmutil key <list|generate|pubkey|sign|migrate>`.
+> 2. **Backward Compatibility**: Preserved legacy root commands (`info`, `reset`, `lock`, `init`, `status`, `firmware`, `auth`) as hidden aliases on `rootCmd`.
+> 3. **Ergonomic Aliases**: Added visible alias `hsmutil devices -> hsmutil device list` and build-time symlink `bin/hsmutils -> bin/hsmutil`.
+> 4. **Pruned Dead Code**: Removed unmaintained `hsmutil tui`, `hsmutil test`, and `internal/ui/tui/`.
+> 5. **Renamed Auth**: Renamed `auth` to `unlock` with `auth` as convenience alias.
+> 6. **Terminology Neutrality**: Replaced `nrf52840` references with generic HSM USB Key / device across all user-facing CLI text and help messages.
+> 7. **Bubble Tea Micro-Components**: Integrated `bubbles/textinput` (masked password bullets `••••••`) and `bubbles/progress` (gradient DFU transfer bar) with automatic TTY detection and clean headless fallback.
+> 8. **Static Binary Compilation**: Enforced `CGO_ENABLED=0` across all Makefile targets for zero-dependency portability.
+> 9. **PKCS#11 Parity**: Full equivalence matrix and GAP analysis against OpenSC `pkcs11-tool`.
 
 ---
 

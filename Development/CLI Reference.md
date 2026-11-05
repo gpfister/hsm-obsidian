@@ -138,6 +138,22 @@ Are you sure you want to proceed? (yes/no):
 
 ---
 
+### `hsmutil device status` (Legacy Alias: `hsmutil status`)
+Queries device authentication state, remaining PIN retry attempts, and stored key count (`AT+STATUS?`):
+
+```bash
+$ hsmutil device status
+==================================================
+                    HSM Status                    
+==================================================
+ Authentication: Unlocked (Authenticated)
+ PIN Retries:    3 / 3
+ Keys Stored:    2 / 16
+==================================================
+```
+
+---
+
 ### `hsmutil device firmware <subcommand>` (Legacy Alias: `hsmutil firmware`)
 
 #### `hsmutil device firmware info`
@@ -176,25 +192,33 @@ Performs an atomic, whole-device cryptographic migration from a source HSM to a 
 
 ## 2. Key Management (`hsmutil key`)
 
-### `hsmutil key generate --slot <0-31>`
-Generates a hardware-backed SECP256R1 (prime256v1) ECDSA keypair in the specified storage slot.
-
 ### `hsmutil key list`
-Lists all occupied key slots, displaying algorithm type, public key coordinates, and creation timestamps.
+Lists all occupied key slots, displaying algorithm type, bit length, and user labels (`AT+SLOTS?`).
 
-### `hsmutil key export --slot <0-31>`
-Exports the public key (or wrapped private key, if exportable) in PEM or hex format.
+### `hsmutil key generate --slot <1-16> [--algo EC_P256]`
+Generates a hardware-backed SECP256R1 (`prime256v1`) ECDSA keypair in the specified storage slot using the CryptoCell CC310 TRNG (`AT+KEYGEN`).
 
-### `hsmutil key import --slot <0-31> --file <path>`
-Imports an externally generated or wrapped SECP256R1 private key into the specified slot.
+**Flags**:
+- `--slot <int>`: Target key slot identifier (1..16, required).
+- `--algo <string>`: Key algorithm (default: `EC_P256`).
 
-### `hsmutil key delete --slot <0-31>`
-Zeroizes the cryptographic material in the specified slot.
+### `hsmutil key pubkey --slot <1-16>`
+Displays the uncompressed 65-byte public key point in hex format from the specified slot (`AT+PUBKEY`).
 
-### `hsmutil key migrate --slot <0-31> --target <serial>`
+**Flags**:
+- `--slot <int>`: Source key slot identifier (1..16, required).
+
+### `hsmutil key sign --slot <1-16> --hash <hex>`
+Computes a hardware ECDSA signature over a 32-byte SHA-256 hash digest using the on-chip accelerator (`AT+SIGN`).
+
+**Flags**:
+- `--slot <int>`: Key slot identifier for signing (1..16, required).
+- `--hash <string>`: SHA-256 digest in hex (64 hex characters / 32 bytes, required).
+
+### `hsmutil key migrate --slot <1-16> --target <serial> [--source <serial>]`
 Migrates a **single** key slot to another HSM device:
-- The single slot is wrapped and imported into the target device.
-- Source slot is preserved by default (use `--delete-source` to erase).
+- The single slot is wrapped under the target device's ephemeral public key and imported into the target slot.
+- Source slot is preserved on the source device.
 - Does not zeroize the source device.
 
 ---
@@ -215,9 +239,15 @@ Authenticates the operator session, unlocks the HSM hardware state machine (`HSM
 
 ## 4. Diagnostics & Utilities
 
-- **`hsmutil echo [message]`**: Sends a round-trip echo packet to verify serial communication integrity and latency.
-- **`hsmutil random [bytes]`**: Retrieves cryptographically secure random bytes from the on-chip True Random Number Generator (TRNG).
-- **`hsmutil p11 [subcommands]`**: Runs PKCS#11 provider self-tests and diagnostic checks against `libnrf52840_pkcs11.dylib`.
+- **`hsmutil echo [message]`**: Sends a round-trip echo packet to verify serial communication integrity and latency (`AT`).
+- **`hsmutil random [--len <bytes>]`**: Retrieves cryptographically secure random bytes from the on-chip True Random Number Generator (TRNG) (`AT+RANDOM=<len>`).
+- **`hsmutil pkcs11`** (Alias: `p11`): Diagnostic and testing suite for `hsm-libpkcs11`:
+  - `hsmutil pkcs11 info`: Display Cryptoki provider library version and manufacturer info.
+  - `hsmutil pkcs11 slots`: Enumerate PKCS#11 slots, token status, and supported mechanisms.
+  - `hsmutil pkcs11 init-token --slot <id> [--label <label>] [--pin <pin>]`: Initialize token via PKCS#11.
+  - `hsmutil pkcs11 keygen --slot <id> --key-id <id>`: Generate EC keypair via PKCS#11 interface.
+  - `hsmutil pkcs11 sign --slot <id> --key-id <id> --data <string>`: Test ECDSA signature via PKCS#11 interface.
+  - `hsmutil pkcs11 test`: Run automated end-to-end Cryptoki test suite.
 
 ---
 

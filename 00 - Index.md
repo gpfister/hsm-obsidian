@@ -40,6 +40,7 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 - [[Architecture/Decisions/ADR-0015 - HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|ADR-0015: HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]] — Resource-oriented command hierarchy (`hsmutil device`), backward-compatible hidden aliases, static CGO-free binaries, surgical Bubble Tea micro-components (progress/masked PIN), and PKCS#11 parity matrix.
 
 ### 🧩 Feature Specifications
+- [[features/cli-restructuring-bubbletea-pkcs11|HSM CLI Restructuring, Static Compilation, Bubble Tea UX & PKCS#11 Equivalence]] — Resource hierarchy under `hsmutil device`, backward-compatible hidden aliases, static `CGO_ENABLED=0` builds, Bubble Tea micro-components (masked PIN, DFU progress), and PKCS#11 parity.
 - [[features/documentation-terminology-generalization|Documentation Terminology Generalization]] — Standardization of workspace documentation, READMEs, and vault index on generic HSM USB key terminology while preserving firmware-specific scoping and machine-readable identifiers.
 - [[features/fix-macos-cdc-acm-enumeration|Fix macOS CDC-ACM Enumeration for Interface 2]] — Restoration of dual `/dev/cu.usbmodem*` enumeration on Darwin by aligning protocol codes with `AppleUSBACMControl`.
 - [[features/at-protocol-dfu-support|AT-Protocol DFU Support]] — End-to-end Device Firmware Upgrade (`AT+DFU_INFO?`, `AT+DFU_CHUNK`, `AT+DFU_APPLY`) across Zephyr firmware, Go CLI (`hsmutil`), and mock HSM PTY.
@@ -50,6 +51,7 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 - [[features/yocto-boot-visibility-and-password-policy|Yocto Boot Visibility & Password Policy]] — Dev/prod boot log multiplexing, silent U-Boot hardening, default password `password`, PAM pwquality complexity, and 90-day expiration.
 
 ### 📐 Specifications
+- [[Specification/HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]] — Technical specification for CLI command dispatch, TTY detection, Bubble Tea UX, migration protocol, and PKCS#11 parity mapping.
 - [[Specification/Fix macOS CDC-ACM Enumeration for Interface 2|Fix macOS CDC-ACM Enumeration for Interface 2]] — Technical specification for descriptor patch routines in `usb_serial.c`.
 - [[Specification/AT-Protocol DFU Support|AT-Protocol DFU Support]] — Technical specification for `AT+DFU_INFO?`, `AT+DFU_CHUNK`, and `AT+DFU_APPLY`, MCUboot slot confirmation, and `ATClient` integration.
 - [[Specification/Uncompressed Disk Image img Output in rpi-z2w-yocto-hsm|Uncompressed Disk Image .img Output in rpi-z2w-yocto-hsm]] — Technical specification for replacing uncompressed `.wic` output with `.img` via `IMAGE_CMD:img`.
@@ -69,7 +71,7 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 ### 💻 Development & Workflows
 - [[Development/Environment Setup|Environment Setup]] — Toolchain prerequisites (NCS v3.4.1, UV, Go 1.24+).
 - [[Development/Build and Flash|Build and Flash]] — Firmware compilation, sysbuild, and J-Link programming.
-- [[Development/CLI Reference|CLI Reference]] — Complete documentation for `hsmutil` CLI and BubbleTea TUI.
+- [[Development/CLI Reference|CLI Reference]] — Complete documentation for `hsmutil` CLI, resource hierarchy (`device`, `key`), Bubble Tea micro-components, and PKCS#11 equivalence.
 - [[Development/Yocto Build and RAUC Update Guide|Yocto Build & RAUC Update Guide]] — Kas containerized builds, SD card flashing, RAUC x509 PKI bundles, and offline update procedures.
 
 ### 📜 Sessions & Transcripts
