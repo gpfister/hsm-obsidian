@@ -15,11 +15,12 @@ tags:
   - dfu
   - cme-errors
 created: 2026-11-06
-status: Completed (Phase 5 Review / Pre-Merge Complete)
+updated: 2026-11-06
+status: Completed (Phase 6 Post-Merge Complete)
 target_branches:
-  root: bugfix/init-dual-mode-protocol-compat
-  cli: bugfix/init-dual-mode-protocol-compat
-  firmware: bugfix/init-dual-mode-protocol-compat
+  root: main
+  cli: main
+  firmware: main
   obsidian: main
 adrs:
   - "[[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
@@ -38,7 +39,13 @@ references:
 
 > [!NOTE]
 > **Implementation Plan Reference**: HSM Device Initialization and Dual-Mode Protocol Compatibility  
-> **Target Lifecycle Phase**: Phase 3 (Plan Approved & Formalized &rarr; Phase 4 Development Ready)  
+> **Lifecycle Phase**: Phase 6 (Post-Merge Complete)  
+> **Merged Pull Requests & Target Commits**:
+> - Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)): PR [#2](https://github.com/gpfister/hsm/pull/2) merged into `main` (`a9630231e5ba5009b4c5727e4370da03c5d0ead8`)
+> - Host CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli)): PR [#1](https://github.com/gpfister/hsm-cli/pull/1) merged into `main` (`7edc9ba9c0fa4c3bdba309f069c4f33baba0b4f9`)
+> - Embedded Firmware ([`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware)): Verified on `main` (`7f516bdd7bf080819e45e5bbbd2b39e58c80eca8`)
+> - Knowledge Vault: `hsm-obsidian` (`main`)
+> - Physical Dongle: PCA10059 upgraded via DFU with signed dual-mode firmware and validated on hardware  
 > **Related Architecture Decision Records**:
 > - [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
 > - [[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]
@@ -47,9 +54,9 @@ references:
 > **Source Issue Assessment**:
 > - [[investigations/2026-11-06 - HSM Device Initialization Failure|Issue Assessment: 2026-11-06 - HSM Device Initialization Failure (+CME ERROR: 8)]]  
 > **Target Repositories & Working Branches**:
-> - Workspace Root: `bugfix/init-dual-mode-protocol-compat`
-> - [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli): `bugfix/init-dual-mode-protocol-compat`
-> - [`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware): `bugfix/init-dual-mode-protocol-compat`
+> - Workspace Root: `main`
+> - [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli): `main`
+> - [`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware): `main`
 > - [`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian): `main`
 
 ---

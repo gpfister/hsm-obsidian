@@ -18,6 +18,7 @@ deciders:
   - Security Software Lead
   - Host Tooling Engineer
 references:
+  - "[[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery]]"
   - "[[Plan/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring Implementation Plan|Implementation Plan: Dual-Mode Auth, CLI Renaming & PKCS#11 Refactoring]]"
   - "[[Specification/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring|Technical Specification: Dual-Mode Auth, CLI Renaming & PKCS#11 Refactoring]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture]]"
@@ -89,10 +90,12 @@ As the open-source Hardware Security Module ecosystem reached maturity across fi
    - Target binary: `gphsm`.
    - Go module: `github.com/gpfister/gphsm` (or internal package equivalent `gphsm`).
    - Root command renamed from `hsmutil` to `gphsm` with usage string `gphsm [command] [flags]`.
-2. **Backward-Compatible Symlink**:
-   - Makefile builds `bin/gphsm` and automatically creates relative symlinks:
+2. **Backward-Compatible Symlinks (Transitional)**:
+   - Makefile originally built `bin/gphsm` and automatically created relative symlinks:
      - `bin/hsmutil -> gphsm`
      - `bin/hsmutils -> gphsm`
+   > [!NOTE]
+   > **Update (2026-11-06)**: As formalized in [[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020]], these transitional symlinks (`bin/hsmutil`, `bin/hsmutils`, `bin/gphsms`) have been retired. `gphsm` is now the single canonical binary executable in `bin/`. Muscle memory is preserved via in-process hidden root aliases and visible shortcuts (`gphsm devices`).
 3. **Purge of `p11` Command Group**:
    - Completely remove `internal/cmd/p11.go` and all subcommands (`p11 list-slots`, `p11 test-sign`).
    - Guide users to standard Cryptoki utilities:

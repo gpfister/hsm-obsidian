@@ -15,22 +15,49 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 ---
 
-## [Pre-Merge Candidate] — 2026-11-06: HSM Device Initialization and Dual-Mode Protocol Compatibility (Branch: bugfix/init-dual-mode-protocol-compat)
+## [Implemented] — 2026-11-06: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery
 
 > [!NOTE]
-> **Pre-Merge Milestone**: Synchronization and hardening of HSM device initialization across modern and legacy firmware builds, line parser prefix unification, typed CME error code translations, end-to-end CLI integration testing, and in-place physical dongle DFU deployment.
+> **Host Tooling & Build Hardening**: Formal retirement of transitional build-time binary symlinks (`bin/gphsms`, `bin/hsmutil`, `bin/hsmutils`) in `hsm-cli/bin`, establishing `gphsm` as the sole canonical binary executable across the workspace. Introduction of platform-tailored compilation: macOS builds with `CGO_ENABLED=1` linking Apple IOKit/CoreFoundation for native hardware USB discovery, while Linux and Windows builds remain 100% hermetic static binaries (`CGO_ENABLED=0`).
 >
-> **Lifecycle Phase**: Phase 5 Review / Pre-Merge Complete (Ready for Fast-Forward Merge).
+> **Deliverable Scope & Changes**:
+> 1. **Retirement of Build-Time Symlinks**:
+>    - Removed `ln -sf` symlink creation (`gphsms`, `hsmutil`, `hsmutils`) from [`hsm-cli/Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli/Makefile).
+>    - Updated `make clean` to remove compiled binaries cleanly.
+> 2. **Native macOS USB Discovery & Platform Compilation Matrix**:
+>    - macOS (Darwin): Built with `CGO_ENABLED=1` and `-ldflags="-w"` for dynamic linkage to `libSystem`, `IOKit`, and `CoreFoundation`. Enables direct, native USB hardware device filtering (`0x1209:0x0001`) and BLE serial number extraction via `go.bug.st/serial/enumerator`.
+>    - Linux & Windows: Built with `CGO_ENABLED=0` and `-ldflags="-s -w"` guaranteeing 100% hermetic static binaries with zero external C dynamic library dependencies.
+> 3. **Obsolete Serial Fallback Pruning**:
+>    - Deleted heuristic serial fallback (`internal/infra/serial/discovery_fallback.go`) in `hsm-cli`, unifying enumeration through `discovery_enumerator.go`.
+> 4. **In-Process Ergonomic Aliases**:
+>    - Preserved operator muscle memory within `gphsm`: `gphsm devices`, `gphsm ls`, `gphsm auth`, and hidden root-level commands (`info`, `reset`, `lock`, `init`, `status`, `firmware`, `auth`).
+> 5. **Root Integration Test & Documentation Alignment**:
+>    - Updated [`scripts/run_integration_tests.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/run_integration_tests.sh) to invoke `CLI_BIN="${CLI_DIR}/bin/gphsm"` exclusively, removing obsolete fallback checks for `bin/hsmutil`.
+>    - Synchronized workspace root [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/README.md), [`AGENTS.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/AGENTS.md), and `hsm-cli` documentation.
 >
-> **Pull Request & Working Commits**:
-> - **Host Administration CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**: Branch `bugfix/init-dual-mode-protocol-compat`
->   - Commit: [`f46351a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) — *fix(cli): add AT+INIT=1 fallback, dual-prefix parsing, and CME errors 41/42/103*
-> - **Root Workspace Orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Branch `bugfix/init-dual-mode-protocol-compat`
->   - Commit: [`52114b4`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) — *test(scripts): add end-to-end CLI dual-mode init, status, and exclusivity tests to Phase C*
-> - **Embedded Firmware ([`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware))**: Branch `bugfix/init-dual-mode-protocol-compat`
+> **Associated Architecture & Decision Artifacts**:
+> - [[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery]]
+> - [[Development/CLI Reference|CLI Reference: gphsm]]
+
+---
+
+## [Merged] — 2026-11-06: HSM Device Initialization and Dual-Mode Protocol Compatibility (Merged into main via CLI PR #1 & Root PR #2)
+
+> [!NOTE]
+> **Post-Merge Milestone**: Interoperability hardening and protocol compatibility across the dual-mode HSM ecosystem successfully merged into `main`. Enables reliable device initialization in both modern and legacy firmware builds, line parser prefix unification (`+INIT:` and `+SHARE:`), typed hardware CME error code translations (41, 42, 103), end-to-end CLI integration testing in Phase C, and verified in-place streaming DFU deployment on physical hardware.
+>
+> **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+>
+> **Pull Requests & Merged Commits**:
+> - **Host Administration CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**: Merged PR [#1 (https://github.com/gpfister/hsm-cli/pull/1)](https://github.com/gpfister/hsm-cli/pull/1) into `main`
+>   - Commit: [`7edc9ba`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`7edc9ba9c0fa4c3bdba309f069c4f33baba0b4f9`) — *fix(cli): add AT+INIT=1 fallback, dual-prefix parsing, and CME errors 41/42/103 (#1)*
+> - **Root Workspace Orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Merged PR [#2 (https://github.com/gpfister/hsm/pull/2)](https://github.com/gpfister/hsm/pull/2) into `main`
+>   - Commit: [`a963023`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`a9630231e5ba5009b4c5727e4370da03c5d0ead8`) — *test(scripts): add end-to-end CLI dual-mode init, status, and exclusivity tests to Phase C (#2)*
+> - **Embedded Firmware ([`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware))**: Verified on `main`
+>   - Commit: [`7f516bd`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) (`7f516bdd7bf080819e45e5bbbd2b39e58c80eca8`) — *docs(firmware): document dual-mode authentication in README*
 >   - Production signed firmware rebuilt ([`zephyr.signed.bin`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware/build-prod/app/zephyr/zephyr.signed.bin)) and verified via in-place DFU streaming upgrade against connected physical PCA10059 dongle.
 > - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Branch `main`
->   - Formalized [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019]], [[Plan/HSM Device Initialization and Dual-Mode Protocol Compatibility Implementation Plan|Implementation Plan]], [[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|Technical Specification]], and [[features/hsm-device-initialization-and-dual-mode-protocol-compatibility|Feature Specification]].
+>   - Synchronized [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019]], [[Plan/HSM Device Initialization and Dual-Mode Protocol Compatibility Implementation Plan|Implementation Plan]], [[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|Technical Specification]], and [[features/hsm-device-initialization-and-dual-mode-protocol-compatibility|Feature Specification]].
 >
 > **Deliverable Scope & Changes**:
 > 1. **Unsupported Command Fallback**:
@@ -45,8 +72,9 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 >    - Code 103 (`CME_ERR_DUPLICATE_SHARE`) &rarr; `ErrDuplicateShare`.
 > 4. **End-to-End Test Suite Automation**:
 >    - Added comprehensive Phase C CLI execution steps in `scripts/run_integration_tests.sh`: PIN init, duplicate init rejection, unlock, factory reset, Shamir init with share parsing, PIN unlock rejection in Shamir mode, and reset restoration.
+>    - Test suite passing 100% across Phase A (16/16 AT checks), Phase B (PKCS#11 mock runner), and Phase C (CLI test suite).
 > 5. **Physical Hardware Verification**:
->    - Verified physical PCA10059 dongle streaming DFU upgrade via `gphsm device firmware update --file ...` and confirmed dual-mode readiness.
+>    - Verified physical PCA10059 dongle streaming DFU upgrade via `gphsm device firmware update --file ...` and confirmed dual-mode readiness on hardware.
 >
 > **Associated Architecture & Specification Artifacts**:
 > - [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]

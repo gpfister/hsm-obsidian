@@ -1,17 +1,19 @@
 ---
-title: "CLI Reference (gphsm / hsmutil)"
+title: "CLI Reference (gphsm)"
 tags:
   - cli
   - development
   - gphsm
-  - hsmutil
   - bubbletea
   - pkcs11
   - dual-mode-auth
   - pwquality
+  - iokit
+  - static-compilation
 created: 2026-10-29
 updated: 2026-11-06
 references:
+  - "[[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery]]"
   - "[[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
   - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
@@ -21,9 +23,9 @@ references:
   - "[[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|Technical Specification: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
 ---
 
-# `gphsm` (hsmutil) CLI Reference
+# `gphsm` CLI Reference
 
-`gphsm` is the canonical cross-platform command-line administration utility for the **Hardware Security Module (HSM) USB Key** ecosystem. Built in Go using Clean Architecture, it compiles to a 100% hermetic static binary (`CGO_ENABLED=0`) with zero external shared library dependencies.
+`gphsm` is the canonical cross-platform command-line administration utility for the **Hardware Security Module (HSM) USB Key** ecosystem. Built in Go using Clean Architecture, it compiles natively on macOS (`CGO_ENABLED=1` linking Apple IOKit and CoreFoundation for hardware USB enumeration) and as 100% hermetic static binaries on Linux and Windows (`CGO_ENABLED=0`) with zero external shared library dependencies.
 
 ---
 
@@ -33,14 +35,26 @@ references:
 gphsm [command] [subcommand] [flags]
 ```
 
-### Backward-Compatible Symlinks
-Building `gphsm` automatically establishes relative symlinks to guarantee 100% backward compatibility:
-```bash
-bin/gphsms  -> gphsm
-bin/hsmutil -> gphsm
-bin/hsmutils -> gphsm
-```
-Operators, existing scripts, and CI/CD pipelines can invoke `hsmutil` or `hsmutils` interchangeably.
+### Canonical Binary & Retired Symlinks
+
+As formalized in [[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020]], previous transitional filesystem symlinks (`bin/gphsms`, `bin/hsmutil`, `bin/hsmutils`) have been retired. Build automation in [`hsm-cli/Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli/Makefile) exclusively produces the canonical executable `bin/gphsm`.
+
+### In-Process Command Aliases & Ergonomic Shortcuts
+
+While external binary symlinks have been retired, operator ergonomics and muscle memory are fully preserved through in-process command aliases:
+
+- `gphsm devices`: Visible convenience alias for `gphsm device list`.
+- `gphsm ls`: Visible convenience alias for `gphsm device list`.
+- `gphsm auth`: Visible convenience alias for `gphsm unlock`.
+- **Hidden Root Aliases**: Legacy root-level commands (`gphsm info`, `gphsm reset`, `gphsm lock`, `gphsm init`, `gphsm firmware`, `gphsm status`, `gphsm auth`) remain registered on `rootCmd` as hidden aliases for script and muscle memory continuity.
+
+### Build & Compilation Matrix
+
+| Operating System | Toolchain / Flags | Linkage | Hardware Discovery Engine |
+| :--- | :--- | :--- | :--- |
+| **macOS (Darwin)** | `CGO_ENABLED=1 go build -ldflags="-w"` | Dynamic (`libSystem`, `IOKit`, `CoreFoundation`) | Native Apple `IOKit` via `go.bug.st/serial/enumerator` |
+| **Linux (`arm64`, `amd64`)** | `CGO_ENABLED=0 go build -ldflags="-s -w"` | 100% Hermetic Static | Pure-Go sysfs / `/dev/serial/by-id/` discovery |
+| **Windows (`arm64`, `amd64`)** | `CGO_ENABLED=0 go build -ldflags="-s -w"` | 100% Hermetic Static | Pure-Go SetupAPI / Registry discovery |
 
 ### Global Flags
 
@@ -284,6 +298,8 @@ Standard OpenSC `pkcs11-tool` invocations map to `gphsm` and `libgphsm` commands
 
 ## Cross-References
 
+- [[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery]]
+- [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
 - [[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]
 - [[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]
 - [[Architecture/Decisions/ADR-0015 - HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|ADR-0015: HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]]

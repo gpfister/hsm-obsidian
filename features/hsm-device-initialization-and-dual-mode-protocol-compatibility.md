@@ -14,11 +14,11 @@ tags:
   - dfu
 created: 2026-11-06
 updated: 2026-11-06
-status: "Phase 5 (Review / Pre-Merge Complete)"
+status: "Phase 6 (Post-Merge Complete)"
 target_branches:
-  root: bugfix/init-dual-mode-protocol-compat
-  cli: bugfix/init-dual-mode-protocol-compat
-  firmware: bugfix/init-dual-mode-protocol-compat
+  root: main
+  cli: main
+  firmware: main
   obsidian: main
 adrs:
   - "[[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
@@ -35,8 +35,8 @@ references:
 # Feature Specification: HSM Device Initialization and Dual-Mode Protocol Compatibility
 
 > [!NOTE]
-> **Lifecycle Phase**: Phase 5 (Review / Pre-Merge Complete & Verified)  
-> **Working Branch**: `bugfix/init-dual-mode-protocol-compat` across Root, `hsm-cli`, and `hsm-ncs-firmware`  
+> **Lifecycle Phase**: Phase 6 (Post-Merge Complete)  
+> **Merged Source Branch**: `bugfix/init-dual-mode-protocol-compat` &rarr; `main`  
 > **Related Architecture Decision Records**:
 > - [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]  
 > - [[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]  
@@ -44,13 +44,11 @@ references:
 > - [[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|Technical Specification: HSM Device Initialization and Dual-Mode Protocol Compatibility]]  
 > **Source Issue Assessment**:
 > - [[investigations/2026-11-06 - HSM Device Initialization Failure|Issue Assessment: 2026-11-06 - HSM Device Initialization Failure (+CME ERROR: 8)]]  
-> **Target Repositories & Working Branches**:
-> - Root Workspace: `bugfix/init-dual-mode-protocol-compat` (`52114b4`)
-> - [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli): `bugfix/init-dual-mode-protocol-compat` (`f46351a`)
-> - [`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware): `bugfix/init-dual-mode-protocol-compat` (`7f516bd`)
-> - Knowledge Vault: `hsm-obsidian` (`main`)
-> - [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli): `bugfix/init-dual-mode-protocol-compat`
-> - [`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware): `bugfix/init-dual-mode-protocol-compat`
+> **Target Repositories & Merged Commits**:
+> - Root Workspace ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)): PR [#2](https://github.com/gpfister/hsm/pull/2) merged into `main` (`a9630231e5ba5009b4c5727e4370da03c5d0ead8`)
+> - Host CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli)): PR [#1](https://github.com/gpfister/hsm-cli/pull/1) merged into `main` (`7edc9ba9c0fa4c3bdba309f069c4f33baba0b4f9`)
+> - Embedded Firmware ([`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware)): Verified on `main` (`7f516bdd7bf080819e45e5bbbd2b39e58c80eca8`)
+> - Hardware Dongle: In-place streaming DFU update applied to connected physical PCA10059 with signed dual-mode firmware
 > - Knowledge Vault: `hsm-obsidian` (`main`)
 
 ---
@@ -131,10 +129,11 @@ stateDiagram-v2
 
 ---
 
-## 5. Pre-Merge Verification Results (Phase 5 Complete)
+## 5. Merged Delivery & Verification Results (Phase 6 Complete)
 
 ### 5.1 Host Management CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))
-- **Commit**: [`f46351a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) — *fix(cli): add AT+INIT=1 fallback, dual-prefix parsing, and CME errors 41/42/103*
+- **Status**: Merged into `main` via PR [#1](https://github.com/gpfister/hsm-cli/pull/1)
+- **Commit**: [`7edc9ba`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`7edc9ba9c0fa4c3bdba309f069c4f33baba0b4f9`) — *fix(cli): add AT+INIT=1 fallback, dual-prefix parsing, and CME errors 41/42/103 (#1)*
 - **Unit Test Coverage**:
   - `TestATClient_InitShamir`: Verified modern `+INIT:` prefix parsing and legacy `+SHARE:` compatibility.
   - `TestATClient_InitShamir_FallbackToLegacy`: Verified immediate fallback from `AT+INIT=SHAMIR` to `AT+INIT=1` when encountering `ErrCommandUnsupported` (`+CME ERROR: 8`).
@@ -143,7 +142,8 @@ stateDiagram-v2
   - 100% test pass rate across `go test -v ./internal/domain/...`.
 
 ### 5.2 Root Integration Test Automation ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))
-- **Commit**: [`52114b4`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) — *test(scripts): add end-to-end CLI dual-mode init, status, and exclusivity tests to Phase C*
+- **Status**: Merged into `main` via PR [#2](https://github.com/gpfister/hsm/pull/2)
+- **Commit**: [`a963023`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`a9630231e5ba5009b4c5727e4370da03c5d0ead8`) — *test(scripts): add end-to-end CLI dual-mode init, status, and exclusivity tests to Phase C (#2)*
 - **Integration Test Execution (`make integration-test`)**:
   - **Phase A (AT Command Test Harness)**: 16/16 steps verified.
   - **Phase B (PKCS#11 Test Harness)**: 100% verified.
@@ -159,6 +159,7 @@ stateDiagram-v2
     9. State restore: Factory reset and standard PIN restore.
 
 ### 5.3 Embedded Firmware Rebuild & Hardware DFU Upgrade ([`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware))
+- **Status**: Verified on `main` at commit [`7f516bd`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) (`7f516bdd7bf080819e45e5bbbd2b39e58c80eca8`).
 - **Build Status**: Built with NCS v3.4.1 / Zephyr RTOS with sysbuild and MCUboot signature chain (`make firmware-build`).
 - **Binary Output**: Signed production binary [`build-prod/app/zephyr/zephyr.signed.bin`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware/build-prod/app/zephyr/zephyr.signed.bin).
-- **Physical Dongle DFU Upgrade**: In-place upgrade applied to connected physical dongle (PCA10059) via `gphsm device firmware update --file ...`. Verified 100% chunk transfer, MCUboot image swap, reboot, and dual CDC-ACM device re-enumeration.
+- **Physical Dongle DFU Upgrade**: In-place upgrade applied to connected physical dongle (PCA10059) via `gphsm device firmware update --file ...`. Verified 100% chunk transfer, MCUboot image swap, reboot, dual CDC-ACM device re-enumeration, and complete hardware ceremony operations.

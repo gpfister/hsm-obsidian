@@ -62,7 +62,7 @@ This feature delivers end-to-end architectural alignment across all layers of th
    - Strict mutual exclusivity between `AT+AUTH` and `AT+SHARE`.
 2. **Host CLI Rebranding to `gphsm`**:
    - Executable, package, and Cobra command hierarchy rebranded to `gphsm`.
-   - Preserves `bin/hsmutil` and `bin/hsmutils` relative symlinks for 100% backward compatibility.
+   - Transitional `bin/hsmutil` and `bin/hsmutils` relative symlinks originally established, subsequently retired in favor of the canonical `bin/gphsm` executable per [[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020]]. Operator muscle memory preserved via in-process hidden root aliases and visible shortcuts.
    - Embeds a pure-Go Yocto-compliant `pam_pwquality` password validator.
    - Features an interactive Bubble Tea initialization wizard (`gphsm device init`) and auto-detecting unlock (`gphsm unlock`).
    - Enforces homogeneous migration verification (`source.METHOD == target.METHOD`).

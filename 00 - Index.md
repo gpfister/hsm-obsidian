@@ -42,6 +42,7 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 - [[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]] — Rebranding host CLI to `gphsm` (with `hsmutil` symlinks), Yocto-compliant `pam_pwquality` PIN validation, repository rename `hsm-libpkcs11` &rarr; `libgphsm`, shared library output `libgphsm.{dylib,so,dll}`, purge of CLI `p11` commands, and transport abstraction cleanup.
 - [[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]] — Harmonization of PKCS#11 sub-repository directory and GitHub remote to `hsm-pkcs11` while strictly preserving `libgphsm` ABI, CMake target definitions, and binary output names.
 - [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]] — Unsupported command fallback in InitShamir() (`AT+INIT=1`), multi-prefix parsing (`+INIT:` and `+SHARE:`), CME error code mapping (41, 42, 103), and physical dongle DFU deployment.
+- [[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery]] — Removal of transitional binary symlinks (`gphsms`, `hsmutil`, `hsmutils`) from `bin/`, `CGO_ENABLED=1` native IOKit discovery on Darwin, and hermetic static builds for Linux/Windows.
 
 ### 🧩 Feature Specifications
 - [[features/hsm-device-initialization-and-dual-mode-protocol-compatibility|HSM Device Initialization and Dual-Mode Protocol Compatibility]] — Resolution of initialization and ceremony protocol mismatches across `gphsm` CLI, PCA10059 firmware, and mock test harness.
@@ -81,7 +82,7 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 ### 💻 Development & Workflows
 - [[Development/Environment Setup|Environment Setup]] — Toolchain prerequisites (NCS v3.4.1, UV, Go 1.24+).
 - [[Development/Build and Flash|Build and Flash]] — Firmware compilation, sysbuild, and J-Link programming.
-- [[Development/CLI Reference|CLI Reference]] — Complete documentation for `hsmutil` CLI, resource hierarchy (`device`, `key`), Bubble Tea micro-components, and PKCS#11 equivalence.
+- [[Development/CLI Reference|CLI Reference]] — Complete documentation for `gphsm` CLI, resource hierarchy (`device`, `key`), Bubble Tea micro-components, native macOS USB discovery, and PKCS#11 equivalence.
 - [[Development/Yocto Build and RAUC Update Guide|Yocto Build & RAUC Update Guide]] — Kas containerized builds, SD card flashing, RAUC x509 PKI bundles, and offline update procedures.
 
 ### 📜 Sessions & Transcripts

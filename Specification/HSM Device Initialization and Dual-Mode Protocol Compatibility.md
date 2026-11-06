@@ -13,7 +13,7 @@ tags:
   - firmware
 created: 2026-11-06
 updated: 2026-11-06
-status: Approved (Phase 5 Pre-Merge Complete)
+status: Approved / Merged (Phase 6 Post-Merge Complete)
 adrs:
   - "[[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture]]"
