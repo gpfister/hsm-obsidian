@@ -7,7 +7,7 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-06
-lifecycle_phase: Phase 5 Pre-Merge Ready — Sub-Repository Renaming to hsm-pkcs11
+lifecycle_phase: Phase 6 Post-Merge Complete — Sub-Repository Renaming to hsm-pkcs11
 feature: "[[features/subrepo-rename-hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11]]"
 plan: "[[Plan/Sub-Repository Renaming to hsm-pkcs11 Implementation Plan|Implementation Plan: Sub-Repository Renaming to hsm-pkcs11]]"
 adrs:
@@ -28,28 +28,31 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `task/rename-subrepo-hsm-pkcs11` | Ahead of `origin/main` (`+3`) | `e53ab09` (*chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*) | **Clean** | **Phase 5 Pre-Merge Ready** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Up to date with `origin/main` | `81d2cb9` (*chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11 (#1)*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Ahead of `origin/main` (`+2`) | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `14ea65f` (*feat(cli): rebrand to gphsm, add dual-mode auth, pwquality PIN validation, and purge p11*) | In-flight dev | **Phase 6 Post-Merge Complete** |
-| **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Ahead of `origin/main` (`+2`) | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Phase 5 Pre-Merge Verified** |
+| **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Up to date with `origin/main` | `28925aa` (*docs: generalize README terminology to HSM USB key and appliance*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+2`) | Current (`HEAD`) (*docs(vault): pre-merge documentation tidy-up for sub-repository renaming to hsm-pkcs11*) | **Clean** | **Pre-Merge Synchronized** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+3`) | `HEAD` (*docs(vault): update git status, branch tracking, and release changelogs for subrepo rename post-merge*) | **Clean** | **Phase 6 Post-Merge Complete** |
 
 ---
 
-## 1.0 Pre-Merge Deliverable: Sub-Repository Renaming to hsm-pkcs11 (Phase 5 Pre-Merge Ready)
+## 1.0 Merged Milestone: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
-> **Pre-Merge Deliverable**: Standardization of the Cryptoki PKCS#11 provider sub-repository to `hsm-pkcs11` across directory structure, GitHub remote, and root automation tooling while strictly preserving the `libgphsm` runtime dynamic library ABI and symbol exports.
+> **Post-Merge Milestone**: Standardization and harmonization of the PKCS#11 sub-repository naming across the multi-repository workspace by renaming the repository to **`hsm-pkcs11`** (remote: `gpfister/hsm-pkcs11`) while strictly preserving dynamic provider library ABI compatibility (`libgphsm.dylib` / `.so` / `.dll`). Merged into `main` via PR #1 (squashed commit: `81d2cb9`), with working tree clean on `main` and all test suites passing 100%.
 >
-> - **Working Branch**: `task/rename-subrepo-hsm-pkcs11` &rarr; `main`
-> - **Root Commit**: [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`e53ab09`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*
+> - **Status**: Merged via Pull Request [#1 (https://github.com/gpfister/hsm/pull/1)](https://github.com/gpfister/hsm/pull/1)
+> - **Base Branch**: `main`
+> - **Merged Source Branch**: `task/rename-subrepo-hsm-pkcs11` (squashed commit: [`81d2cb9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))
+> - **Branch Cleanup**: Local and remote `task/rename-subrepo-hsm-pkcs11` deleted and pruned
+> - **Root Commit on main**: [`81d2cb9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`81d2cb9`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11 (#1)*
 > - **Architecture Decision Record**: [[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]
 > - **Implementation Plan**: [[Plan/Sub-Repository Renaming to hsm-pkcs11 Implementation Plan|Sub-Repository Renaming to hsm-pkcs11 Implementation Plan]]
 > - **Technical Specification**: [[Specification/Sub-Repository Renaming to hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11 Specification]]
 > - **Feature Specification**: [[features/subrepo-rename-hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11 Feature Note]]
 >
-> ### Deliverable Components & Actions
+> ### Deliverable Components & Post-Merge Actions
 > 1. **GitHub Remote Rename**:
 >    - Renamed repository on GitHub from `gpfister/hsm-libpkcs11` to `gpfister/hsm-pkcs11`.
 >    - Reconfigured origin remote URL in [`hsm-pkcs11`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) to `git@github.com:gpfister/hsm-pkcs11.git`.
@@ -66,7 +69,7 @@ This document tracks real-time Git branch topologies, commit records, working di
 > 5. **Strict ABI Invariance Maintained**:
 >    - Output dynamic library remains `libgphsm.dylib` (macOS), `libgphsm.so` (Linux), `libgphsm.dll` (Windows).
 >    - CMake project definition `project(libgphsm C)` and target properties (`OUTPUT_NAME "gphsm"`, `PREFIX "lib"`) completely untouched.
->    - 100% test pass rate across `make libpkcs11-build`, `make libpkcs11-test`, and `make integration-test`. Ready for merge into `main`.
+>    - 100% test pass rate across `make libpkcs11-build`, `make libpkcs11-test`, and `make integration-test`. Fast-forward merged into `main`. Clean working trees.
 
 ---
 
@@ -666,16 +669,16 @@ Connected hardware dongles detected and verified via `hsmutil devices`:
 ## 6. Upcoming & In-Flight Features
 
 - **[[features/subrepo-rename-hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]**:
-  - **Status**: **Phase 5 Pre-Merge Ready (Review Approved — Ready for Merge into main)**.
-  - **Active Branch**: `task/rename-subrepo-hsm-pkcs11` (Commit [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) on workspace root).
+  - **Status**: **Phase 6 Post-Merge Complete (Merged into main via PR #1)**.
+  - **Pull Request**: [#1 (https://github.com/gpfister/hsm/pull/1)](https://github.com/gpfister/hsm/pull/1)
+  - **Merged Root Commit**: [`81d2cb9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`81d2cb9`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11 (#1)*
+  - **Branch Cleanup**: `task/rename-subrepo-hsm-pkcs11` deleted locally and remotely. Local `main` fast-forwarded and up to date with `origin/main`.
   - **Sub-Repo Path**: [`hsm-pkcs11/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) (moved from `libgphsm/`).
   - **GitHub Remote**: `gpfister/hsm-pkcs11` (renamed from `gpfister/hsm-libpkcs11`).
   - **Formal Spec**: [[Specification/Sub-Repository Renaming to hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11 Specification]]
   - **Implementation Plan**: [[Plan/Sub-Repository Renaming to hsm-pkcs11 Implementation Plan|Sub-Repository Renaming to hsm-pkcs11 Implementation Plan]]
   - **Architecture Decision Record**: [[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]
-  - **Deliverable Commits**:
-    - Root: [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*
-  - **Verification Status**: 100% passing across `make status`, `make libpkcs11-build`, `make libpkcs11-test`, and `make integration-test`. Working tree clean on branch. Ready for merge.
+  - **Verification Status**: 100% passing across `make status`, `make libpkcs11-build`, `make libpkcs11-test`, and `make integration-test`. Working trees clean on `main`.
 
 - **[[features/fix-macos-cdc-acm-enumeration|Fix macOS CDC-ACM Enumeration for Interface 2 (HSM AT Channel)]]**:
   - **Status**: **Merged into `feature/at-dfu-support` (Phase 6 Post-Merge Complete)**.

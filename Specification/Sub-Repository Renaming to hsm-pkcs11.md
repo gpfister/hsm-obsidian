@@ -11,7 +11,7 @@ tags:
   - abi-compatibility
 created: 2026-11-06
 updated: 2026-11-06
-status: Phase 5 (Review Approved / Pre-Merge Verified)
+status: Phase 6 (Post-Merge Complete)
 adrs:
   - "[[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]"
   - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
@@ -176,9 +176,12 @@ Harmonize the repository naming convention by renaming both the local workspace 
 
 ---
 
-## 7. Implementation & Pre-Merge Verification Status
+## 7. Implementation & Post-Merge Verification Status
 
-- **Status**: Implemented and verified (Phase 5 Review Approved / Pre-Merge Ready)
-- **Branch**: `task/rename-subrepo-hsm-pkcs11`
-- **Root Commit**: [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`e53ab09`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*
-- **Acceptance Criteria Verification**: All acceptance criteria 1 through 4 have been validated and confirmed.
+- **Status**: Merged and verified (Phase 6 Post-Merge Complete)
+- **Pull Request**: [#1 (https://github.com/gpfister/hsm/pull/1)](https://github.com/gpfister/hsm/pull/1)
+- **Base Branch**: `main`
+- **Merged Source Branch**: `task/rename-subrepo-hsm-pkcs11` (squashed commit: [`81d2cb9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))
+- **Branch Cleanup**: `task/rename-subrepo-hsm-pkcs11` pruned and deleted locally and remotely.
+- **Root Commit on main**: [`81d2cb9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`81d2cb9`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11 (#1)*
+- **Acceptance Criteria Verification**: All acceptance criteria 1 through 4 have been validated and confirmed on `main`.

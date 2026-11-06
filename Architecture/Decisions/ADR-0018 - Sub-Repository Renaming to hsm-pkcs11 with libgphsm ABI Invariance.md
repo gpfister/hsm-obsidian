@@ -185,8 +185,11 @@ graph TD
 
 ## Validation & Implementation Status
 
-- **Status**: Implemented & Verified (Phase 5 Review Approved / Pre-Merge Ready)
-- **Branch**: `task/rename-subrepo-hsm-pkcs11`
-- **Root Commit**: [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`e53ab09`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*
+- **Status**: Merged & Verified (Phase 6 Post-Merge Complete)
+- **Pull Request**: [#1 (https://github.com/gpfister/hsm/pull/1)](https://github.com/gpfister/hsm/pull/1)
+- **Base Branch**: `main`
+- **Merged Source Branch**: `task/rename-subrepo-hsm-pkcs11` (squashed commit: [`81d2cb9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))
+- **Branch Cleanup**: `task/rename-subrepo-hsm-pkcs11` deleted locally and remotely.
+- **Root Commit on main**: [`81d2cb9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`81d2cb9`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11 (#1)*
 - **GitHub Remote**: Successfully renamed to `gpfister/hsm-pkcs11`
-- **Verification**: `make status`, `make libpkcs11-build`, `make libpkcs11-test`, and `make integration-test` passing 100%. Ready for merge into `main`.
+- **Verification**: `make status`, `make libpkcs11-build`, `make libpkcs11-test`, and `make integration-test` passing 100% on `main`. Clean working trees.

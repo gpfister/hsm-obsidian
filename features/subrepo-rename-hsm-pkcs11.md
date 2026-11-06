@@ -11,11 +11,12 @@ tags:
   - abi-compatibility
 created: 2026-11-06
 updated: 2026-11-06
-status: "Phase 5 (Review Approved / Pre-Merge Ready)"
+status: "Phase 6 (Post-Merge Complete)"
 target_branches:
-  root: task/rename-subrepo-hsm-pkcs11 (e53ab09)
+  root: main (merged commit 81d2cb9 via PR #1)
   pkcs11: main (tracking gpfister/hsm-pkcs11)
   obsidian: main
+pr: "https://github.com/gpfister/hsm/pull/1"
 adrs:
   - "[[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]"
   - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
@@ -29,12 +30,15 @@ references:
 # Feature Specification: Sub-Repository Renaming to `hsm-pkcs11`
 
 > [!NOTE]
-> **Lifecycle Phase**: Phase 5 (Review Approved / Pre-Merge Complete — Ready for Merge into main)  
+> **Lifecycle Phase**: Phase 6 (Post-Merge Complete — Merged into main via PR #1)  
+> **Pull Request**: [#1 (https://github.com/gpfister/hsm/pull/1)](https://github.com/gpfister/hsm/pull/1)  
+> **Merged Base Commit**: [`81d2cb9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`81d2cb9`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11 (#1)*  
+> **Cleaned Up Branch**: `task/rename-subrepo-hsm-pkcs11` (deleted locally and remotely)  
 > **Related Architecture Decision Records**:
 > - [[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]  
 > - [[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]  
 > **Target Repositories & Working Branches**:
-> - Root Workspace: `task/rename-subrepo-hsm-pkcs11` (Commit [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))
+> - Root Workspace: `main` (fast-forwarded and synchronized with `origin/main` at commit [`81d2cb9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))
 > - Sub-Repository: `hsm-pkcs11` (`main`, remote `origin` set to `git@github.com:gpfister/hsm-pkcs11.git`)
 > - Knowledge Vault: `hsm-obsidian` (`main`)
 
@@ -97,13 +101,17 @@ Simultaneously, this feature establishes strict **ABI and binary invariance**: t
 
 ---
 
-## 5. Deliverable & Pre-Merge Verification Summary
+## 5. Deliverable & Post-Merge Verification Summary
 
-- **Working Branch**: `task/rename-subrepo-hsm-pkcs11`
-- **Root Commit**: [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`e53ab09`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*
+- **Merge Status**: **Phase 6 Post-Merge Complete**
+- **Pull Request**: [#1 (https://github.com/gpfister/hsm/pull/1)](https://github.com/gpfister/hsm/pull/1)
+- **Base Branch**: `main`
+- **Merged Source Branch**: `task/rename-subrepo-hsm-pkcs11` (squashed commit: [`81d2cb9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))
+- **Branch Cleanup**: Local and remote `task/rename-subrepo-hsm-pkcs11` successfully deleted and pruned.
+- **Root Commit on main**: [`81d2cb9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`81d2cb9`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11 (#1)*
 - **Remote Rename**: GitHub repository renamed from `gpfister/hsm-libpkcs11` to `gpfister/hsm-pkcs11`.
 - **Filesystem Migration**: Moved `libgphsm/` &rarr; `hsm-pkcs11/`, reconfigured tracking origin, and verified clean git state.
 - **Root Configurations**: Synchronized [`Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/Makefile), [`.gitignore`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/.gitignore), [`scripts/worktree.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/worktree.sh), and [`scripts/run_integration_tests.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/run_integration_tests.sh).
 - **Documentation Parity**: Synchronized [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/README.md) and [`AGENTS.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/AGENTS.md).
 - **ABI & Compatibility**: `libgphsm.dylib` build output, CMake project `libgphsm`, and Cryptoki C symbol interface remain 100% invariant.
-- **Verification Matrix**: Passed native build, unit tests, and mock PTY integration tests. Clean working trees across root and all sub-repositories. Ready for merge into `main`.
+- **Verification Matrix**: Passed native build, unit tests, and mock PTY integration tests. Clean working trees across root and all sub-repositories on `main`.

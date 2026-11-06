@@ -15,18 +15,19 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 ---
 
-## [Pre-Merge Deliverable] — 2026-11-06: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance
+## [Merged] — 2026-11-06: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance (Merged into main via PR #1)
 
 > [!NOTE]
-> **Pre-Merge Deliverable**: Harmonization of the PKCS#11 sub-repository naming across the multi-repository workspace by renaming the repository to **`hsm-pkcs11`** while strictly preserving dynamic provider library ABI compatibility (`libgphsm.dylib` / `.so` / `.dll`).
+> **Post-Merge Milestone**: Standardization and harmonization of the PKCS#11 sub-repository naming across the multi-repository workspace by renaming the repository to **`hsm-pkcs11`** (remote: `gpfister/hsm-pkcs11`) while strictly preserving dynamic provider library ABI compatibility (`libgphsm.dylib` / `.so` / `.dll`). Successfully merged into `main` via PR #1 (squashed commit: `81d2cb9`), with working tree clean on `main` and all test suites passing 100%.
 >
-> **Lifecycle Phase**: Phase 5 Pre-Merge Review Complete (Ready for merge into `main`).
+> **Lifecycle Phase**: Phase 6 Post-Merge Complete.
 >
-> **Target Branch & Deliverable Commits**:
-> - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Branch `task/rename-subrepo-hsm-pkcs11` &rarr; `main`
->   - Commit [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`e53ab09`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*
+> **Pull Request & Commits**:
+> - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Merged PR [#1 (https://github.com/gpfister/hsm/pull/1)](https://github.com/gpfister/hsm/pull/1) from `task/rename-subrepo-hsm-pkcs11` &rarr; `main`
+>   - Squashed Commit: [`81d2cb9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`81d2cb9`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11 (#1)*
+>   - Branch Cleanup: Local and remote `task/rename-subrepo-hsm-pkcs11` deleted and pruned.
 > - **PKCS#11 Sub-Repo ([`hsm-pkcs11`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11))**: Reconfigured git origin to `git@github.com:gpfister/hsm-pkcs11.git` tracking `main`.
-> - **Documentation Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Pre-merge synchronization across index, feature notes, specs, implementation plans, and ADRs.
+> - **Documentation Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Post-merge synchronization across index, feature notes, specs, implementation plans, git status, and changelog.
 >
 > **Deliverable Scope & Changes**:
 > 1. **GitHub Remote & Filesystem Alignment**:
