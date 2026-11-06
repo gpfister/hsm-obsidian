@@ -7,7 +7,7 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-06
-lifecycle_phase: Phase 6 Post-Merge Complete — HSM Device Initialization and Dual-Mode Protocol Compatibility
+lifecycle_phase: Phase 6 Post-Merge Complete — Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery
 feature: "[[features/hsm-device-initialization-and-dual-mode-protocol-compatibility|HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
 plan: "[[Plan/HSM Device Initialization and Dual-Mode Protocol Compatibility Implementation Plan|Implementation Plan: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
 adrs:
@@ -30,23 +30,47 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Up to date with `origin/main` | `a963023` (*test(scripts): add end-to-end CLI dual-mode init, status, and exclusivity tests to Phase C (#2)*) | Modified (3 files: `AGENTS.md`, `README.md`, `scripts/run_integration_tests.sh`) | **Build Hardening & Symlink Removal** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Up to date with `origin/main` | `48d1ad9` (*chore(workspace): remove legacy symlink references from docs and test runner (#3)*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Up to date with `origin/main` | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `7edc9ba` (*fix(cli): add AT+INIT=1 fallback, dual-prefix parsing, and CME errors 41/42/103 (#1)*) | Modified (5 files; 1 deleted) | **Build Hardening & Symlink Removal** |
+| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `7341531` (*refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Up to date with `origin/main` | `28925aa` (*docs: generalize README terminology to HSM USB key and appliance*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+6`) | `HEAD` (*docs(vault): post-merge status, changelog, and feature specs for dual-mode initialization*) | Synchronized documentation | **Build Hardening & Symlink Removal** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Up to date with `origin/main` | `HEAD` (*docs(vault): update git status and release changelogs for PR #2 and PR #3 merges*) | **Clean** | **Phase 6 Post-Merge Complete** |
 
 ---
 
-## 1.0 Milestone: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery
+## 1.0 Merged Milestone: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
-> **Host Tooling & Build Hardening**: Formal retirement of transitional build-time binary symlinks (`bin/gphsms`, `bin/hsmutil`, `bin/hsmutils`) from `hsm-cli/bin`, establishing `bin/gphsm` as the sole canonical binary executable across the workspace. Introduction of platform-tailored compilation: macOS builds with `CGO_ENABLED=1` linking Apple IOKit/CoreFoundation for native hardware USB discovery, while Linux and Windows builds remain 100% hermetic static binaries (`CGO_ENABLED=0`).
+> **Post-Merge Milestone**: Formal retirement of transitional build-time binary symlinks (`bin/gphsms`, `bin/hsmutil`, `bin/hsmutils`) from `hsm-cli/bin` and removal of legacy symlink references from workspace documentation and test runners successfully merged into `main`. Establishes `bin/gphsm` as the sole canonical binary executable across the workspace. Implements platform-tailored compilation: macOS builds with `CGO_ENABLED=1` linking Apple IOKit/CoreFoundation for native hardware USB discovery, while Linux and Windows builds remain 100% hermetic static binaries (`CGO_ENABLED=0`).
 >
+> - **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+> - **Base Branch**: `main`
+> - **Merged Pull Requests & Commits**:
+>   - **Host Administration CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**: Merged PR [#2 (https://github.com/gpfister/hsm-cli/pull/2)](https://github.com/gpfister/hsm-cli/pull/2) into `main`
+>     - Commit: [`7341531`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`7341531a7836365f5a896587c6aa5673ec4976c6`) — *refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*
+>   - **Workspace Root Orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Merged PR [#3 (https://github.com/gpfister/hsm/pull/3)](https://github.com/gpfister/hsm/pull/3) into `main`
+>     - Commit: [`48d1ad9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`48d1ad9f0868f1c8413b827cb6305a2f58e1cfec`) — *chore(workspace): remove legacy symlink references from docs and test runner (#3)*
+> - **Branch Cleanup**: Both branches cleanly merged, local feature branches deleted, and working trees verified clean on `main`.
 > - **Architecture Decision Record**: [[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery]]
 > - **Reference Documentation**: [[Development/CLI Reference|CLI Reference: gphsm]]
 > - **Release Changelog**: [[Changelog|Workspace Release Changelog]]
+>
+> ### Deliverable Components & Post-Merge Verifications
+> 1. **Host Administration CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**:
+>    - Merged PR: [#2](https://github.com/gpfister/hsm-cli/pull/2) into `main`
+>    - Commit: [`7341531`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`7341531a7836365f5a896587c6aa5673ec4976c6`) — *refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*
+>    - Retired build-time `ln -sf` symlinks (`gphsms`, `hsmutil`, `hsmutils`) from `Makefile`.
+>    - Pruned dead serial fallback discovery code (`internal/infra/serial/discovery_fallback.go`).
+>    - Added platform-tailored compilation: macOS `CGO_ENABLED=1` for native IOKit USB enumeration; Linux/Windows `CGO_ENABLED=0` static hermetic binaries.
+>    - Preserved in-process ergonomic CLI aliases (`gphsm devices`, `gphsm ls`, `gphsm auth`, hidden root commands).
+>    - 100% test pass rate across `go test ./...` with new unit tests in `internal/infra/serial/discovery_test.go`.
+> 2. **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**:
+>    - Merged PR: [#3](https://github.com/gpfister/hsm/pull/3) into `main`
+>    - Commit: [`48d1ad9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`48d1ad9f0868f1c8413b827cb6305a2f58e1cfec`) — *chore(workspace): remove legacy symlink references from docs and test runner (#3)*
+>    - Updated [`scripts/run_integration_tests.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/run_integration_tests.sh) to invoke `CLI_BIN="${CLI_DIR}/bin/gphsm"` exclusively, removing obsolete fallback checks for `bin/hsmutil`.
+>    - Synchronized workspace root [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/README.md) and [`AGENTS.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/AGENTS.md) to document `gphsm` as canonical executable with zero references to legacy binary symlinks.
+>    - Complete test suite passing 100% via `make integration-test`.
 
 ---
 

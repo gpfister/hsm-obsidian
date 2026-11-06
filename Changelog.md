@@ -15,10 +15,20 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 ---
 
-## [Implemented] — 2026-11-06: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery
+## [Merged] — 2026-11-06: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery (Merged into main via CLI PR #2 & Root PR #3)
 
 > [!NOTE]
-> **Host Tooling & Build Hardening**: Formal retirement of transitional build-time binary symlinks (`bin/gphsms`, `bin/hsmutil`, `bin/hsmutils`) in `hsm-cli/bin`, establishing `gphsm` as the sole canonical binary executable across the workspace. Introduction of platform-tailored compilation: macOS builds with `CGO_ENABLED=1` linking Apple IOKit/CoreFoundation for native hardware USB discovery, while Linux and Windows builds remain 100% hermetic static binaries (`CGO_ENABLED=0`).
+> **Post-Merge Milestone**: Formal retirement of transitional build-time binary symlinks (`bin/gphsms`, `bin/hsmutil`, `bin/hsmutils`) in `hsm-cli/bin` and removal of legacy symlink references from workspace docs and test runner successfully merged into `main`. Establishes `gphsm` as the sole canonical binary executable across the workspace. Introduction of platform-tailored compilation: macOS builds with `CGO_ENABLED=1` linking Apple IOKit/CoreFoundation for native hardware USB discovery, while Linux and Windows builds remain 100% hermetic static binaries (`CGO_ENABLED=0`).
+>
+> **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+>
+> **Pull Requests & Merged Commits**:
+> - **Host Administration CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**: Merged PR [#2 (https://github.com/gpfister/hsm-cli/pull/2)](https://github.com/gpfister/hsm-cli/pull/2) into `main`
+>   - Commit: [`7341531`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`7341531a7836365f5a896587c6aa5673ec4976c6`) — *refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*
+> - **Workspace Root Orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Merged PR [#3 (https://github.com/gpfister/hsm/pull/3)](https://github.com/gpfister/hsm/pull/3) into `main`
+>   - Commit: [`48d1ad9`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`48d1ad9f0868f1c8413b827cb6305a2f58e1cfec`) — *chore(workspace): remove legacy symlink references from docs and test runner (#3)*
+> - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Branch `main`
+>   - Synchronized [[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020]], [[Development/CLI Reference|CLI Reference]], [[git-status|Workspace Git Status]], and [[Changelog|Release Changelog]].
 >
 > **Deliverable Scope & Changes**:
 > 1. **Retirement of Build-Time Symlinks**:
@@ -29,6 +39,7 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 >    - Linux & Windows: Built with `CGO_ENABLED=0` and `-ldflags="-s -w"` guaranteeing 100% hermetic static binaries with zero external C dynamic library dependencies.
 > 3. **Obsolete Serial Fallback Pruning**:
 >    - Deleted heuristic serial fallback (`internal/infra/serial/discovery_fallback.go`) in `hsm-cli`, unifying enumeration through `discovery_enumerator.go`.
+>    - Added unit test suite in `internal/infra/serial/discovery_test.go` validating VID/PID matching and sorting.
 > 4. **In-Process Ergonomic Aliases**:
 >    - Preserved operator muscle memory within `gphsm`: `gphsm devices`, `gphsm ls`, `gphsm auth`, and hidden root-level commands (`info`, `reset`, `lock`, `init`, `status`, `firmware`, `auth`).
 > 5. **Root Integration Test & Documentation Alignment**:
