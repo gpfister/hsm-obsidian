@@ -67,7 +67,7 @@ Operators, existing scripts, and CI/CD pipelines can invoke `hsmutil` or `hsmuti
 | **Hidden Aliases** | `gphsm <info\|reset\|lock\|init\|firmware\|auth>` | Legacy root-level commands retained for non-breaking backward compatibility. |
 
 > [!NOTE]
-> **Pruned Commands**: In accordance with [[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017]], the internal `p11` command group has been purged. PKCS#11 operations are cleanly delegated to the dedicated [`libgphsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/libgphsm) provider library and standard OpenSC tooling (`pkcs11-tool`).
+> **Pruned Commands**: In accordance with [[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017]] and [[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018]], the internal `p11` command group has been purged. PKCS#11 operations are cleanly delegated to the dedicated [`hsm-pkcs11`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) provider library (`libgphsm`) and standard OpenSC tooling (`pkcs11-tool`).
 
 ---
 

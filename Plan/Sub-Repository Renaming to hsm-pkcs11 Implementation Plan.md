@@ -10,10 +10,10 @@ tags:
   - hsm-pkcs11
   - automation
 created: 2026-11-06
-status: "Phase 3 (Approved - Ready for Execution)"
+status: "Phase 5 (Review Approved / Pre-Merge Complete)"
 target_branches:
-  root: task/rename-subrepo-hsm-pkcs11 (from main)
-  pkcs11: main (remote tracking URL update)
+  root: task/rename-subrepo-hsm-pkcs11 (Commit e53ab09)
+  pkcs11: main (remote origin git@github.com:gpfister/hsm-pkcs11.git)
   obsidian: main
 adrs:
   - "[[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]"
@@ -29,10 +29,10 @@ references:
 
 > [!NOTE]
 > **Implementation Plan Reference**: Sub-Repository Renaming to `hsm-pkcs11` with `libgphsm` ABI Invariance  
-> **Target Lifecycle Phase**: Phase 3 (Approved Plan — Advancing to Phase 4 Develop)  
+> **Target Lifecycle Phase**: Phase 5 (Review Approved / Pre-Merge Complete — Ready for Merge into main)  
 > **Target Repositories & Working Branches**:
-> - Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)): `task/rename-subrepo-hsm-pkcs11` (based on `main`)
-> - PKCS#11 Sub-Repo ([`libgphsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/libgphsm) &rarr; [`hsm-pkcs11`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11)): `main` (remote tracking URL reconfigured)
+> - Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)): `task/rename-subrepo-hsm-pkcs11` (Commit [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))
+> - PKCS#11 Sub-Repo ([`hsm-pkcs11`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11)): `main` (remote tracking URL set to `git@github.com:gpfister/hsm-pkcs11.git`)
 > - Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian)): `main`
 
 ---
@@ -240,3 +240,20 @@ If any step fails or network interruption blocks the GitHub remote rename:
    ```bash
    make status && make libpkcs11-build && make libpkcs11-test
    ```
+
+---
+
+## 9. Pre-Merge Execution & Verification Record
+
+- **Execution Date**: 2026-11-06
+- **Status**: **Phase 5 Review Approved & Pre-Merge Ready**
+- **Root Commit**: [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`e53ab09`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*
+- **Target Branch**: `task/rename-subrepo-hsm-pkcs11` &rarr; `main`
+- **Validation Highlights**:
+  - Remote repository `gpfister/hsm-libpkcs11` renamed to `gpfister/hsm-pkcs11` on GitHub.
+  - Sub-repo moved from `libgphsm/` to `hsm-pkcs11/` with remote URL updated.
+  - Root `Makefile`, `.gitignore`, `scripts/worktree.sh`, and `scripts/run_integration_tests.sh` updated.
+  - Workspace `README.md` and `AGENTS.md` updated.
+  - Native build produces `hsm-pkcs11/build/libgphsm.dylib`.
+  - Cryptoki test suite (`make libpkcs11-test`) and multi-phase integration tests (`make integration-test`) verified 100% passing.
+  - All working trees clean on branch. Ready for merge.

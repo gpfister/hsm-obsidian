@@ -180,3 +180,13 @@ graph TD
 ### Negative / Neutral
 - Requires updating existing developer clones: existing clones will need to run `git remote set-url origin git@github.com:gpfister/hsm-pkcs11.git` and rename their local `libgphsm` directory to `hsm-pkcs11`. (GitHub automatically handles HTTP/SSH redirects for renamed repositories, providing seamless fallback).
 - Prior CMake build caches in `libgphsm/build` must be cleared (`rm -rf build`) upon renaming to avoid stale absolute path references.
+
+---
+
+## Validation & Implementation Status
+
+- **Status**: Implemented & Verified (Phase 5 Review Approved / Pre-Merge Ready)
+- **Branch**: `task/rename-subrepo-hsm-pkcs11`
+- **Root Commit**: [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`e53ab09`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*
+- **GitHub Remote**: Successfully renamed to `gpfister/hsm-pkcs11`
+- **Verification**: `make status`, `make libpkcs11-build`, `make libpkcs11-test`, and `make integration-test` passing 100%. Ready for merge into `main`.

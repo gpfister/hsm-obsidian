@@ -6,14 +6,15 @@ tags:
   - repository
   - branches
 created: 2026-10-31
-updated: 2026-11-05
-lifecycle_phase: Phase 6 Post-Merge Complete — HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm)
-feature: "[[features/dual-mode-auth-gphsm-and-libgphsm-refactoring|HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm)]]"
-plan: "[[Plan/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring Implementation Plan|Implementation Plan: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring]]"
+updated: 2026-11-06
+lifecycle_phase: Phase 5 Pre-Merge Ready — Sub-Repository Renaming to hsm-pkcs11
+feature: "[[features/subrepo-rename-hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11]]"
+plan: "[[Plan/Sub-Repository Renaming to hsm-pkcs11 Implementation Plan|Implementation Plan: Sub-Repository Renaming to hsm-pkcs11]]"
 adrs:
-  - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
+  - "[[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]"
   - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
-specification: "[[Specification/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring|Technical Specification: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring]]"
+  - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
+specification: "[[Specification/Sub-Repository Renaming to hsm-pkcs11|Technical Specification: Sub-Repository Renaming to hsm-pkcs11]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
 
@@ -27,16 +28,49 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Ahead of `origin/main` (`+2`) | `2848d50` (*docs(workspace): update root README and AGENTS.md for gphsm, libgphsm, and dual-mode auth*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `task/rename-subrepo-hsm-pkcs11` | Ahead of `origin/main` (`+3`) | `e53ab09` (*chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*) | **Clean** | **Phase 5 Pre-Merge Ready** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Ahead of `origin/main` (`+2`) | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Ahead of `origin/main` (`+1`) | `14ea65f` (*feat(cli): rebrand to gphsm, add dual-mode auth, pwquality PIN validation, and purge p11*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **PKCS#11 Provider** | [libgphsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/libgphsm) | `main` | Ahead of `origin/main` (`+2`) | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `14ea65f` (*feat(cli): rebrand to gphsm, add dual-mode auth, pwquality PIN validation, and purge p11*) | In-flight dev | **Phase 6 Post-Merge Complete** |
+| **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Ahead of `origin/main` (`+2`) | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Phase 5 Pre-Merge Verified** |
 | **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Up to date with `origin/main` | `28925aa` (*docs: generalize README terminology to HSM USB key and appliance*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+2`) | Current (`HEAD`) (*docs(vault): post-merge status, branch tracking, and release changelog*) | **Clean** | **Post-Merge Synchronized** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+2`) | Current (`HEAD`) (*docs(vault): pre-merge documentation tidy-up for sub-repository renaming to hsm-pkcs11*) | **Clean** | **Pre-Merge Synchronized** |
 
 ---
 
-## 1.0 Merged Milestone: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm) (Phase 6 Post-Merge Complete)
+## 1.0 Pre-Merge Deliverable: Sub-Repository Renaming to hsm-pkcs11 (Phase 5 Pre-Merge Ready)
+
+> [!NOTE]
+> **Pre-Merge Deliverable**: Standardization of the Cryptoki PKCS#11 provider sub-repository to `hsm-pkcs11` across directory structure, GitHub remote, and root automation tooling while strictly preserving the `libgphsm` runtime dynamic library ABI and symbol exports.
+>
+> - **Working Branch**: `task/rename-subrepo-hsm-pkcs11` &rarr; `main`
+> - **Root Commit**: [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`e53ab09`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*
+> - **Architecture Decision Record**: [[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]
+> - **Implementation Plan**: [[Plan/Sub-Repository Renaming to hsm-pkcs11 Implementation Plan|Sub-Repository Renaming to hsm-pkcs11 Implementation Plan]]
+> - **Technical Specification**: [[Specification/Sub-Repository Renaming to hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11 Specification]]
+> - **Feature Specification**: [[features/subrepo-rename-hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11 Feature Note]]
+>
+> ### Deliverable Components & Actions
+> 1. **GitHub Remote Rename**:
+>    - Renamed repository on GitHub from `gpfister/hsm-libpkcs11` to `gpfister/hsm-pkcs11`.
+>    - Reconfigured origin remote URL in [`hsm-pkcs11`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) to `git@github.com:gpfister/hsm-pkcs11.git`.
+> 2. **Local Filesystem Relocation**:
+>    - Renamed directory `libgphsm/` &rarr; `hsm-pkcs11/`.
+>    - Confirmed presence of `hsm-pkcs11/` and absence of `libgphsm/`.
+> 3. **Root Workspace Automation Synchronization**:
+>    - [`Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/Makefile): Updated `SUBREPOS` and `LIBPKCS11_DIR := hsm-pkcs11`.
+>    - [`.gitignore`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/.gitignore): Added `/hsm-pkcs11/` exclusion while retaining legacy entries for backward compatibility.
+>    - [`scripts/worktree.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/worktree.sh): Updated `SUBREPOS` array to include `hsm-pkcs11`.
+>    - [`scripts/run_integration_tests.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/run_integration_tests.sh): Updated `P11_DIR` variable to `${WORKSPACE_ROOT}/hsm-pkcs11`.
+> 4. **Workspace Documentation Alignment**:
+>    - [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/README.md) and [`AGENTS.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/AGENTS.md) synchronized to reference `hsm-pkcs11/`.
+> 5. **Strict ABI Invariance Maintained**:
+>    - Output dynamic library remains `libgphsm.dylib` (macOS), `libgphsm.so` (Linux), `libgphsm.dll` (Windows).
+>    - CMake project definition `project(libgphsm C)` and target properties (`OUTPUT_NAME "gphsm"`, `PREFIX "lib"`) completely untouched.
+>    - 100% test pass rate across `make libpkcs11-build`, `make libpkcs11-test`, and `make integration-test`. Ready for merge into `main`.
+
+---
+
+## 1.1 Merged Milestone: HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring (libgphsm) (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
 > **Post-Merge Milestone**: Multi-repository delivery of HSM dual-mode authentication, host CLI rebranding (`gphsm`), pure-Go PAM pwquality password validation, and PKCS#11 provider refactoring (`libgphsm`) successfully fast-forward merged into `main` across all target repositories. All working trees are clean on `main`, with 100% test passage achieved across firmware CTest, CLI unit tests, and the end-to-end multi-phase integration test suite (`make integration-test`).
@@ -631,6 +665,18 @@ Connected hardware dongles detected and verified via `hsmutil devices`:
 
 ## 6. Upcoming & In-Flight Features
 
+- **[[features/subrepo-rename-hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]**:
+  - **Status**: **Phase 5 Pre-Merge Ready (Review Approved — Ready for Merge into main)**.
+  - **Active Branch**: `task/rename-subrepo-hsm-pkcs11` (Commit [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) on workspace root).
+  - **Sub-Repo Path**: [`hsm-pkcs11/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) (moved from `libgphsm/`).
+  - **GitHub Remote**: `gpfister/hsm-pkcs11` (renamed from `gpfister/hsm-libpkcs11`).
+  - **Formal Spec**: [[Specification/Sub-Repository Renaming to hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11 Specification]]
+  - **Implementation Plan**: [[Plan/Sub-Repository Renaming to hsm-pkcs11 Implementation Plan|Sub-Repository Renaming to hsm-pkcs11 Implementation Plan]]
+  - **Architecture Decision Record**: [[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]
+  - **Deliverable Commits**:
+    - Root: [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*
+  - **Verification Status**: 100% passing across `make status`, `make libpkcs11-build`, `make libpkcs11-test`, and `make integration-test`. Working tree clean on branch. Ready for merge.
+
 - **[[features/fix-macos-cdc-acm-enumeration|Fix macOS CDC-ACM Enumeration for Interface 2 (HSM AT Channel)]]**:
   - **Status**: **Merged into `feature/at-dfu-support` (Phase 6 Post-Merge Complete)**.
   - **Merge Type**: Fast-forward merge (`7aa1d2b..1d76b0d`) into `feature/at-dfu-support`.
@@ -679,6 +725,10 @@ Connected hardware dongles detected and verified via `hsmutil devices`:
 
 - [[00 - Index|Vault Index]]
 - [[Changelog|Workspace Release Changelog]]
+- [[features/subrepo-rename-hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11 Feature Specification]]
+- [[Specification/Sub-Repository Renaming to hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11 Specification]]
+- [[Plan/Sub-Repository Renaming to hsm-pkcs11 Implementation Plan|Sub-Repository Renaming to hsm-pkcs11 Implementation Plan]]
+- [[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]
 - [[features/documentation-terminology-generalization|Documentation Terminology Generalization Feature Specification]]
 - [[features/fix-macos-cdc-acm-enumeration|Fix macOS CDC-ACM Enumeration for Interface 2 Feature Specification]]
 - [[features/yocto-boot-visibility-and-password-policy|Yocto Boot Visibility & Password Policy Feature Specification]]

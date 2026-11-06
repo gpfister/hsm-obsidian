@@ -11,7 +11,7 @@ tags:
   - abi-compatibility
 created: 2026-11-06
 updated: 2026-11-06
-status: Approved (Phase 2 Specification Approved)
+status: Phase 5 (Review Approved / Pre-Merge Verified)
 adrs:
   - "[[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]"
   - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
@@ -173,3 +173,12 @@ Harmonize the repository naming convention by renaming both the local workspace 
    - `make libpkcs11-build` compiles successfully from `hsm-pkcs11/` and outputs `hsm-pkcs11/build/libgphsm.dylib` (on macOS) or appropriate platform extension.
    - `make libpkcs11-test` passes all CTest test cases.
    - `make integration-test` runs end-to-end integration test harness with mock HSM PTY and passes without error.
+
+---
+
+## 7. Implementation & Pre-Merge Verification Status
+
+- **Status**: Implemented and verified (Phase 5 Review Approved / Pre-Merge Ready)
+- **Branch**: `task/rename-subrepo-hsm-pkcs11`
+- **Root Commit**: [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`e53ab09`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*
+- **Acceptance Criteria Verification**: All acceptance criteria 1 through 4 have been validated and confirmed.

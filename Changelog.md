@@ -6,12 +6,48 @@ tags:
   - history
   - milestones
 created: 2026-10-31
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 
 # Workspace Release Changelog
 
 This document tracks all formal releases, milestone deliveries, and post-merge changelog notes across the orchestrated multi-repository workspace (`ncs-nrf52840dongle-kms`).
+
+---
+
+## [Pre-Merge Deliverable] — 2026-11-06: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance
+
+> [!NOTE]
+> **Pre-Merge Deliverable**: Harmonization of the PKCS#11 sub-repository naming across the multi-repository workspace by renaming the repository to **`hsm-pkcs11`** while strictly preserving dynamic provider library ABI compatibility (`libgphsm.dylib` / `.so` / `.dll`).
+>
+> **Lifecycle Phase**: Phase 5 Pre-Merge Review Complete (Ready for merge into `main`).
+>
+> **Target Branch & Deliverable Commits**:
+> - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Branch `task/rename-subrepo-hsm-pkcs11` &rarr; `main`
+>   - Commit [`e53ab09`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`e53ab09`) — *chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11*
+> - **PKCS#11 Sub-Repo ([`hsm-pkcs11`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11))**: Reconfigured git origin to `git@github.com:gpfister/hsm-pkcs11.git` tracking `main`.
+> - **Documentation Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Pre-merge synchronization across index, feature notes, specs, implementation plans, and ADRs.
+>
+> **Deliverable Scope & Changes**:
+> 1. **GitHub Remote & Filesystem Alignment**:
+>    - Renamed GitHub repository `gpfister/hsm-libpkcs11` to `gpfister/hsm-pkcs11`.
+>    - Moved sub-repository directory `libgphsm/` to `hsm-pkcs11/` and updated git origin URL.
+> 2. **Root Workspace Automation & Tooling**:
+>    - [`Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/Makefile): Updated `SUBREPOS` and `LIBPKCS11_DIR` variable to `hsm-pkcs11`.
+>    - [`.gitignore`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/.gitignore): Added `/hsm-pkcs11/` exclusion with backward-compatible legacy entries retained.
+>    - [`scripts/worktree.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/worktree.sh): Aligned `SUBREPOS` array to `hsm-pkcs11`.
+>    - [`scripts/run_integration_tests.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/scripts/run_integration_tests.sh): Aligned `P11_DIR` to `${WORKSPACE_ROOT}/hsm-pkcs11`.
+> 3. **Workspace Documentation**:
+>    - Root [`README.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/README.md) and [`AGENTS.md`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/AGENTS.md) updated to reference `hsm-pkcs11/`.
+> 4. **Strict ABI & Binary Invariance**:
+>    - Preserved `libgphsm.dylib`, `libgphsm.so`, `libgphsm.dll` binary names and CMake target properties (`OUTPUT_NAME "gphsm"`, `PREFIX "lib"`).
+>    - 100% test pass rate across `make libpkcs11-build`, `make libpkcs11-test`, and `make integration-test`.
+>
+> **Associated Architecture & Specification Artifacts**:
+> - [[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]
+> - [[features/subrepo-rename-hsm-pkcs11|Feature Specification: Sub-Repository Renaming to hsm-pkcs11]]
+> - [[Specification/Sub-Repository Renaming to hsm-pkcs11|Technical Specification: Sub-Repository Renaming to hsm-pkcs11]]
+> - [[Plan/Sub-Repository Renaming to hsm-pkcs11 Implementation Plan|Implementation Plan: Sub-Repository Renaming to hsm-pkcs11]]
 
 ---
 
