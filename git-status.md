@@ -7,14 +7,15 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-06
-lifecycle_phase: Phase 6 Post-Merge Complete — Sub-Repository Renaming to hsm-pkcs11
-feature: "[[features/subrepo-rename-hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11]]"
-plan: "[[Plan/Sub-Repository Renaming to hsm-pkcs11 Implementation Plan|Implementation Plan: Sub-Repository Renaming to hsm-pkcs11]]"
+lifecycle_phase: Phase 5 Review / Pre-Merge Complete — HSM Device Initialization and Dual-Mode Protocol Compatibility
+feature: "[[features/hsm-device-initialization-and-dual-mode-protocol-compatibility|HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
+plan: "[[Plan/HSM Device Initialization and Dual-Mode Protocol Compatibility Implementation Plan|Implementation Plan: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
 adrs:
+  - "[[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
   - "[[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]"
   - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
-specification: "[[Specification/Sub-Repository Renaming to hsm-pkcs11|Technical Specification: Sub-Repository Renaming to hsm-pkcs11]]"
+specification: "[[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|Technical Specification: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
 
@@ -28,16 +29,48 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Up to date with `origin/main` | `81d2cb9` (*chore(workspace): standardize PKCS#11 sub-repo to hsm-pkcs11 (#1)*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Ahead of `origin/main` (`+2`) | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `14ea65f` (*feat(cli): rebrand to gphsm, add dual-mode auth, pwquality PIN validation, and purge p11*) | In-flight dev | **Phase 6 Post-Merge Complete** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `bugfix/init-dual-mode-protocol-compat` | Tracking local branch | `52114b4` (*test(scripts): add end-to-end CLI dual-mode init, status, and exclusivity tests to Phase C*) | **Clean** | **Phase 5 Review / Pre-Merge** |
+| **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `bugfix/init-dual-mode-protocol-compat` | Tracking local branch | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Phase 5 Review / Pre-Merge** |
+| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `bugfix/init-dual-mode-protocol-compat` | Tracking local branch | `f46351a` (*fix(cli): add AT+INIT=1 fallback, dual-prefix parsing, and CME errors 41/42/103*) | In-flight dev | **Phase 5 Review / Pre-Merge** |
 | **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Up to date with `origin/main` | `28925aa` (*docs: generalize README terminology to HSM USB key and appliance*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+3`) | `HEAD` (*docs(vault): update git status, branch tracking, and release changelogs for subrepo rename post-merge*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` (`+6`) | `b5a4ce6` (*docs(vault): pre-merge documentation synchronization for device initialization and dual-mode protocol compatibility*) | **Clean** | **Phase 5 Review / Pre-Merge** |
 
 ---
 
-## 1.0 Merged Milestone: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance (Phase 6 Post-Merge Complete)
+## 1.0 Active Pre-Merge Candidate: HSM Device Initialization and Dual-Mode Protocol Compatibility (Phase 5 Review / Pre-Merge Complete)
+
+> [!NOTE]
+> **Pre-Merge Candidate Milestone**: Interoperability hardening and protocol compatibility across the dual-mode HSM ecosystem, enabling reliable device initialization in both modern and legacy firmware builds, line parser prefix unification (`+INIT:` and `+SHARE:`), typed hardware CME error code translations (41, 42, 103), end-to-end CLI integration testing in Phase C, and verified in-place streaming DFU deployment on physical hardware.
+>
+> - **Lifecycle Phase**: Phase 5 Review / Pre-Merge Complete (Ready for Merge).
+> - **Target Base Branch**: `main`
+> - **Source Branch**: `bugfix/init-dual-mode-protocol-compat`
+> - **Architecture Decision Record**: [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
+> - **Technical Specification**: [[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|Technical Specification: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
+> - **Implementation Plan**: [[Plan/HSM Device Initialization and Dual-Mode Protocol Compatibility Implementation Plan|Implementation Plan: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
+> - **Feature Specification**: [[features/hsm-device-initialization-and-dual-mode-protocol-compatibility|Feature Specification: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
+> - **Source Issue Assessment**: [[investigations/2026-11-06 - HSM Device Initialization Failure|Issue Assessment: 2026-11-06 - HSM Device Initialization Failure]]
+>
+> ### Commit Details & Verifications
+> 1. **Host Administration CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**:
+>    - Branch: `bugfix/init-dual-mode-protocol-compat`
+>    - Commit: [`f46351a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) — *fix(cli): add AT+INIT=1 fallback, dual-prefix parsing, and CME errors 41/42/103*
+>    - Changes: Intercepts `+CME ERROR: 8` on `AT+INIT=SHAMIR` and falls back to `AT+INIT=1`; line parsers accept both `+INIT:` and `+SHARE:`; share submission accepts `+SHARE: <count>/3 ACCEPTED,WORD="..."`; maps CME errors 41 (`ErrAlreadyConfigured`), 42 (`ErrInvalidAuthMode`), and 103 (`ErrDuplicateShare`).
+>    - Verification: 100% pass across `internal/domain` unit tests.
+> 2. **Root Workspace Test Harness ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**:
+>    - Branch: `bugfix/init-dual-mode-protocol-compat`
+>    - Commit: [`52114b4`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) — *test(scripts): add end-to-end CLI dual-mode init, status, and exclusivity tests to Phase C*
+>    - Changes: Comprehensive Phase C CLI execution steps in `scripts/run_integration_tests.sh` testing PIN initialization, duplicate init rejection, unlock, factory reset, Shamir initialization with share parsing, PIN unlock rejection in Shamir mode, and reset restoration.
+>    - Verification: `make integration-test` passed 100% across Phase A (16/16 AT steps), Phase B (PKCS#11 mock), and Phase C (CLI test suite).
+> 3. **Embedded Firmware Rebuild & Hardware DFU Upgrade ([`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware))**:
+>    - Branch: `bugfix/init-dual-mode-protocol-compat` (at `7f516bd`)
+>    - Rebuilt signed production binary `zephyr.signed.bin` via sysbuild (`make firmware-build`).
+>    - Verified physical in-place DFU streaming upgrade on PCA10059 dongle via `gphsm device firmware update --file ...`. Verified MCUboot slot swap, post-reboot enumeration, and operational status.
+
+---
+
+## 1.1 Merged Milestone: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
 > **Post-Merge Milestone**: Standardization and harmonization of the PKCS#11 sub-repository naming across the multi-repository workspace by renaming the repository to **`hsm-pkcs11`** (remote: `gpfister/hsm-pkcs11`) while strictly preserving dynamic provider library ABI compatibility (`libgphsm.dylib` / `.so` / `.dll`). Merged into `main` via PR #1 (squashed commit: `81d2cb9`), with working tree clean on `main` and all test suites passing 100%.

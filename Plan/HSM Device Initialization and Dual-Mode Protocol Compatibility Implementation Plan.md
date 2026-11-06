@@ -15,7 +15,7 @@ tags:
   - dfu
   - cme-errors
 created: 2026-11-06
-status: Approved (Phase 3 Plan Formalized; Ready for Development)
+status: Completed (Phase 5 Review / Pre-Merge Complete)
 target_branches:
   root: bugfix/init-dual-mode-protocol-compat
   cli: bugfix/init-dual-mode-protocol-compat
@@ -26,6 +26,7 @@ adrs:
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
   - "[[Architecture/Decisions/ADR-0015 - HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|ADR-0015: HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]]"
   - "[[Architecture/Decisions/ADR-0006 - AT-Protocol DFU Chunk Streaming and Deferred MCUboot Swap|ADR-0006: AT-Protocol DFU Chunk Streaming and Deferred MCUboot Swap]]"
+specification: "[[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|Technical Specification: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
 references:
   - "[[investigations/2026-11-06 - HSM Device Initialization Failure|Issue Assessment: HSM Device Initialization Failure (+CME ERROR: 8)]]"
   - "[[features/hsm-device-initialization-and-dual-mode-protocol-compatibility|Feature Specification: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
@@ -316,17 +317,17 @@ flowchart TD
 
 ## 4. Verification & Validation Protocol
 
-| Gate | Target Component | Command / Verification Procedure | Expected Outcome |
-| :--- | :--- | :--- | :--- |
-| **Gate 1** | `hsm-cli` Unit Tests | `make cli-test` | All unit tests pass, including fallback and parser tests |
-| **Gate 2** | Mock Integration Tests | `make integration-test` | Full CLI init (PIN & Shamir) succeeds against `mock_hsm_pty.py` |
-| **Gate 3** | Firmware Build | `make firmware-build` | `zephyr.signed.bin` compiled and signed without errors |
-| **Gate 4** | Physical Dongle DFU | `gphsm device firmware update --file ...` | 100% chunks transferred, swap applied, reboot verified |
-| **Gate 5** | Physical Device Status | `gphsm device status` | Exposes `CONFIGURED`, `AUTH`, `METHOD`, `RETRIES`, `KEYCOUNT` |
-| **Gate 6** | Physical Init (PIN) | `gphsm device init --mode pin` | PIN accepted; device enters locked state (solid RED) |
-| **Gate 7** | Physical Unlock (PIN) | `gphsm unlock --pin ...` | Device unlocked; LED transitions to solid GREEN |
-| **Gate 8** | Physical Factory Reset | `gphsm device reset -y` | Device zeroized; LED returns to pulsing BLUE (`CONFIGURED=0`) |
-| **Gate 9** | Physical Init (Shamir)| `gphsm device init --mode shamir` | Emits 5 custodian shares; device configured in Shamir mode |
+| Gate | Target Component | Command / Verification Procedure | Expected Outcome | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **Gate 1** | `hsm-cli` Unit Tests | `make cli-test` | All unit tests pass, including fallback and parser tests | **PASSED** (commit `f46351a`) |
+| **Gate 2** | Mock Integration Tests | `make integration-test` | Full CLI init (PIN & Shamir) succeeds against `mock_hsm_pty.py` | **PASSED** (commit `52114b4`) |
+| **Gate 3** | Firmware Build | `make firmware-build` | `zephyr.signed.bin` compiled and signed without errors | **PASSED** (`build-prod`) |
+| **Gate 4** | Physical Dongle DFU | `gphsm device firmware update --file ...` | 100% chunks transferred, swap applied, reboot verified | **PASSED** (PCA10059) |
+| **Gate 5** | Physical Device Status | `gphsm device status` | Exposes `CONFIGURED`, `AUTH`, `METHOD`, `RETRIES`, `KEYCOUNT` | **PASSED** |
+| **Gate 6** | Physical Init (PIN) | `gphsm device init --mode pin` | PIN accepted; device enters locked state (solid RED) | **PASSED** |
+| **Gate 7** | Physical Unlock (PIN) | `gphsm unlock --pin ...` | Device unlocked; LED transitions to solid GREEN | **PASSED** |
+| **Gate 8** | Physical Factory Reset | `gphsm device reset -y` | Device zeroized; LED returns to pulsing BLUE (`CONFIGURED=0`) | **PASSED** |
+| **Gate 9** | Physical Init (Shamir)| `gphsm device init --mode shamir` | Emits 5 custodian shares; device configured in Shamir mode | **PASSED** |
 
 ---
 

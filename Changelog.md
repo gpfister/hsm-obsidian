@@ -15,6 +15,48 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 ---
 
+## [Pre-Merge Candidate] — 2026-11-06: HSM Device Initialization and Dual-Mode Protocol Compatibility (Branch: bugfix/init-dual-mode-protocol-compat)
+
+> [!NOTE]
+> **Pre-Merge Milestone**: Synchronization and hardening of HSM device initialization across modern and legacy firmware builds, line parser prefix unification, typed CME error code translations, end-to-end CLI integration testing, and in-place physical dongle DFU deployment.
+>
+> **Lifecycle Phase**: Phase 5 Review / Pre-Merge Complete (Ready for Fast-Forward Merge).
+>
+> **Pull Request & Working Commits**:
+> - **Host Administration CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**: Branch `bugfix/init-dual-mode-protocol-compat`
+>   - Commit: [`f46351a`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) — *fix(cli): add AT+INIT=1 fallback, dual-prefix parsing, and CME errors 41/42/103*
+> - **Root Workspace Orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Branch `bugfix/init-dual-mode-protocol-compat`
+>   - Commit: [`52114b4`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) — *test(scripts): add end-to-end CLI dual-mode init, status, and exclusivity tests to Phase C*
+> - **Embedded Firmware ([`hsm-ncs-firmware`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware))**: Branch `bugfix/init-dual-mode-protocol-compat`
+>   - Production signed firmware rebuilt ([`zephyr.signed.bin`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware/build-prod/app/zephyr/zephyr.signed.bin)) and verified via in-place DFU streaming upgrade against connected physical PCA10059 dongle.
+> - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Branch `main`
+>   - Formalized [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019]], [[Plan/HSM Device Initialization and Dual-Mode Protocol Compatibility Implementation Plan|Implementation Plan]], [[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|Technical Specification]], and [[features/hsm-device-initialization-and-dual-mode-protocol-compatibility|Feature Specification]].
+>
+> **Deliverable Scope & Changes**:
+> 1. **Unsupported Command Fallback**:
+>    - Intercepts `+CME ERROR: 8` (`ErrCommandUnsupported`) on `AT+INIT=SHAMIR` and transparently falls back to canonical legacy `AT+INIT=1`.
+>    - Eliminates the non-standard `AT+INIT=THRESHOLD,3,5` fallback call.
+> 2. **Multi-Prefix Line Parsing**:
+>    - Initialization shares: accepts both `+INIT:` and `+SHARE:` line prefixes.
+>    - Custodian share submissions: parses intermediate commitment status lines `+SHARE: <count>/3 ACCEPTED,WORD="..."` alongside `+COMMIT:` and `+WORD:`.
+> 3. **Hardware CME Error Code Mapping**:
+>    - Code 41 (`CME_ERR_ALREADY_CONFIGURED`) &rarr; `ErrAlreadyConfigured`.
+>    - Code 42 (`CME_ERR_INVALID_AUTH_MODE`) &rarr; `ErrInvalidAuthMode`.
+>    - Code 103 (`CME_ERR_DUPLICATE_SHARE`) &rarr; `ErrDuplicateShare`.
+> 4. **End-to-End Test Suite Automation**:
+>    - Added comprehensive Phase C CLI execution steps in `scripts/run_integration_tests.sh`: PIN init, duplicate init rejection, unlock, factory reset, Shamir init with share parsing, PIN unlock rejection in Shamir mode, and reset restoration.
+> 5. **Physical Hardware Verification**:
+>    - Verified physical PCA10059 dongle streaming DFU upgrade via `gphsm device firmware update --file ...` and confirmed dual-mode readiness.
+>
+> **Associated Architecture & Specification Artifacts**:
+> - [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
+> - [[features/hsm-device-initialization-and-dual-mode-protocol-compatibility|Feature Specification: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
+> - [[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|Technical Specification: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
+> - [[Plan/HSM Device Initialization and Dual-Mode Protocol Compatibility Implementation Plan|Implementation Plan: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
+> - [[investigations/2026-11-06 - HSM Device Initialization Failure|Issue Assessment: 2026-11-06 - HSM Device Initialization Failure]]
+
+---
+
 ## [Merged] — 2026-11-06: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance (Merged into main via PR #1)
 
 > [!NOTE]

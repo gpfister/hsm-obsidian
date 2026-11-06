@@ -10,13 +10,15 @@ tags:
   - dual-mode-auth
   - pwquality
 created: 2026-10-29
-updated: 2026-11-05
+updated: 2026-11-06
 references:
+  - "[[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
   - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
   - "[[Architecture/Decisions/ADR-0015 - HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|ADR-0015: HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]]"
   - "[[Architecture/Decisions/ADR-0014 - Documentation Terminology Generalization to Generic HSM USB Key|ADR-0014: Documentation Terminology Generalization to Generic HSM USB Key]]"
-  - "[[Plan/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring Implementation Plan|Implementation Plan: Dual-Mode Auth, CLI Renaming & PKCS#11 Refactoring]]"
+  - "[[Plan/HSM Device Initialization and Dual-Mode Protocol Compatibility Implementation Plan|Implementation Plan: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
+  - "[[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|Technical Specification: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
 ---
 
 # `gphsm` (hsmutil) CLI Reference
@@ -133,6 +135,12 @@ Initializes authentication mode on an unconfigured device (`CONFIGURED=0`):
    - Flags: `--pin <string>` (or env `GPHSM_PIN`).
 3. **Shamir Mode (`--mode shamir`)**:
    Executes a 3-of-5 threshold ceremony, emitting 5 custodian shares and requiring confirmation before zeroizing RAM buffers.
+
+> [!TIP]
+> **Protocol Compatibility & Error Sentinels (ADR-0019)**:
+> - **Fallback Compatibility**: If an un-upgraded firmware build rejects `AT+INIT=SHAMIR` with `+CME ERROR: 8` (`ErrCommandUnsupported`), `gphsm` automatically falls back to canonical legacy `AT+INIT=1`.
+> - **Multi-Prefix Tolerance**: The line parser tolerates response shares prefixed with either `+INIT:` (modern firmware/mock) or `+SHARE:` (legacy).
+> - **Hardware CME Mappings**: Hardware CME errors are parsed into typed Go error sentinels: Code 41 (`ErrAlreadyConfigured`), Code 42 (`ErrInvalidAuthMode`), and Code 103 (`ErrDuplicateShare`).
 
 ---
 

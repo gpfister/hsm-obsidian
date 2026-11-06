@@ -58,6 +58,7 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 - [[features/yocto-boot-visibility-and-password-policy|Yocto Boot Visibility & Password Policy]] — Dev/prod boot log multiplexing, silent U-Boot hardening, default password `password`, PAM pwquality complexity, and 90-day expiration.
 
 ### 📐 Specifications
+- [[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|HSM Device Initialization and Dual-Mode Protocol Compatibility]] — Technical specification for legacy AT+INIT=1 fallback, dual-prefix (+INIT:/+SHARE:) line parsing, CME error mappings (41, 42, 103), and CLI end-to-end integration tests.
 - [[Specification/Sub-Repository Renaming to hsm-pkcs11|Sub-Repository Renaming to hsm-pkcs11]] — Technical specification for directory relocation, remote tracking URL reconfiguration, build system contracts, and ABI invariance.
 - [[Specification/HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS11 Refactoring|HSM Dual-Mode Authentication, CLI Renaming (gphsm), and PKCS#11 Refactoring]] — Technical specification for dual-mode authentication, `AT+STATUS?`, `AT+INIT=PIN` / `SHAMIR`, `gphsm` CLI command contracts, and `libgphsm` Cryptoki state machine.
 - [[Specification/HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS11 Equivalence|HSM CLI Restructuring, Static Compilation, Bubble Tea UX, and PKCS#11 Equivalence]] — Technical specification for CLI command dispatch, TTY detection, Bubble Tea UX, migration protocol, and PKCS#11 parity mapping.
