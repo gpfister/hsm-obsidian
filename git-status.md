@@ -7,7 +7,7 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-11
-lifecycle_phase: Phase 5 Pre-Merge Documentation Tidy-Up — HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment
+lifecycle_phase: Phase 6 Post-Merge Complete — HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment
 feature: "[[features/yocto-hardening-clean-console-pikms|HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]"
 plan: "[[Plan/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment Implementation Plan|Implementation Plan: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]"
 adrs:
@@ -37,42 +37,49 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `feature/yocto-hardening-clean-console` | Branch active (ahead of `main` by 1 commit) | `8487738` (*docs(workspace): document piKMS appliance identity, stealth console, and gphsm CLI alignment*) | **Clean** | **Phase 5 Pre-Merge Review** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Ahead of `origin/main` by 3 commits | `8487738` (*docs(workspace): document piKMS appliance identity, stealth console, and gphsm CLI alignment*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Up to date with `origin/main` | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Production Ready** |
 | **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `7341531` (*refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*) | **Clean** | **Production Ready** |
 | **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Production Ready** |
-| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `feature/yocto-hardening-clean-console` | Branch active (ahead of `main` by 4 commits) | `624b6ba` (*docs: document clean console, piKMS identity, and U-Boot network deactivation in README*) | **Clean** | **Phase 5 Pre-Merge Review** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` by 3 commits | `ee751f4` (*docs(vault): formalize ADR-0024 through ADR-0027, clean console, and piKMS identity*) | **Clean** | **Phase 5 Pre-Merge Review** |
+| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Ahead of `origin/main` by 6 commits | `624b6ba` (*docs: document clean console, piKMS identity, and U-Boot network deactivation in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` by 4 commits | `HEAD` (*docs(vault): post-merge documentation for clean console, piKMS identity, and u-boot network deactivation*) | **Clean** | **Phase 6 Post-Merge Complete** |
 
 ---
 
-## 1.0 Active Milestone: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, piKMS Hostname Standardization, and gphsm CLI Alignment (Phase 5 Pre-Merge Documentation Tidy-Up)
+## 1.0 Merged Milestone: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, piKMS Hostname Standardization, and gphsm CLI Alignment (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
-> **Active Milestone**: Comprehensive hardening and user experience refinement for the air-gapped embedded Linux OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and root workspace coordination.
+> **Post-Merge Milestone**: Hardening, stealth console optimization, and CLI tooling alignment for the air-gapped embedded Linux operating system ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and workspace root orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)) successfully merged into `main`. Enforces native Linux PAM first-login password expiration (`sp_lstchg=0`) with deduplicated setup wizard, completely deactivates U-Boot network drivers and commands (`no-net.cfg`), eliminates boot logos and suppresses HDMI console noise (`10-clean-console.conf`, `20-quiet-console.conf`), standardizes system identity to `piKMS`, and aligns application packaging to `/usr/local/bin/gphsm` with `/usr/local/bin/hsmutil` symlink.
 >
-> - **Lifecycle Phase**: Phase 5 Pre-Merge Documentation Tidy-Up.
-> - **Target Branch**: `main`
-> - **Active Feature Branches**:
->   - **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: `feature/yocto-hardening-clean-console`
->     - `624b6ba` — *docs: document clean console, piKMS identity, and U-Boot network deactivation in README*
->     - `9eb816e` — *feat(yocto): align CLI packaging to gphsm and standardize piKMS identity*
->     - `e634468` — *feat(yocto): eliminate console chatter, suppress boot logo, and deactivate u-boot network*
->     - `ceba76d` — *feat(yocto): enforce password change natively via shadow and deduplicate wizard*
->   - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: `feature/yocto-hardening-clean-console`
->     - `8487738` — *docs(workspace): document piKMS appliance identity, stealth console, and gphsm CLI alignment*
+> - **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+> - **Base Branch**: `main`
+> - **Merged Repositories & Commits**:
+>   - **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: Merged `feature/yocto-hardening-clean-console` into `main`
+>     - Commit: [`624b6ba`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`624b6ba9039f98338c36088b734c0391bb20773a`) — *docs: document clean console, piKMS identity, and U-Boot network deactivation in README*
+>     - Commit: [`9eb816e`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`9eb816e06b3aa1e14be261bc9b251ce7839352c2`) — *feat(yocto): align CLI packaging to gphsm and standardize piKMS identity*
+>     - Commit: [`e634468`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`e634468cbbe714ea8ec36ca47a61d1983796d83a`) — *feat(yocto): eliminate console chatter, suppress boot logo, and deactivate u-boot network*
+>     - Commit: [`ceba76d`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`ceba76d755737bc0f7a07bfd2d2a45d06ce59828`) — *feat(yocto): enforce password change natively via shadow and deduplicate wizard*
+>   - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Merged `feature/yocto-hardening-clean-console` into `main`
+>     - Commit: [`8487738`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`8487738798f964e15df29034696a5e83d9c47eeb`) — *docs(workspace): document piKMS appliance identity, stealth console, and gphsm CLI alignment*
 > - **Architecture Decision Records**:
 >   - [[Architecture/Decisions/ADR-0024 - Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication|ADR-0024: Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication]]
 >   - [[Architecture/Decisions/ADR-0025 - Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance|ADR-0025: Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance]]
 >   - [[Architecture/Decisions/ADR-0026 - HDMI Console Noise Suppression and Log Level Hardening|ADR-0026: HDMI Console Noise Suppression and Log Level Hardening]]
 >   - [[Architecture/Decisions/ADR-0027 - Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm|ADR-0027: Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm]]
+> - **Architecture & Hardware Documentation**:
+>   - [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|07 - Air-Gapped RPi HSM OS Architecture]]
+>   - [[Architecture/08 - Air-Gapped Time Synchronization and Hardware RTC Architecture|08 - Time Synchronization Architecture]]
+>   - [[Architecture/Build Lifecycle and Workspace Clean Routines|Build Lifecycle and Workspace Clean Routines]]
+>   - [[Hardware/HW-084 DS3231 Real-Time Clock Module|HW-084 Real-Time Clock Module]]
 > - **Technical Specification & Plan**:
->   - [[Specification/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment|Technical Specification]]
->   - [[Plan/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment Implementation Plan|Implementation Plan]]
->   - [[features/yocto-hardening-clean-console-pikms|Feature Specification]]
+>   - [[Specification/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment|Technical Specification: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
+>   - [[Plan/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment Implementation Plan|Implementation Plan: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
+>   - [[features/yocto-hardening-clean-console-pikms|Feature Specification: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
+> - **Release Changelog**: [[Changelog|Workspace Release Changelog]]
 >
-> ### Deliverable Components & Pre-Merge Verifications
+> ### Deliverable Components & Post-Merge Verifications
 > 1. **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**:
+>    - Merged into `main` at commit [`624b6ba`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi).
 >    - Enforced native PAM first-login password rotation via `sp_lstchg = 0` in `shadow_%.bbappend` and deduplicated `first-login-wizard.sh`.
 >    - Deactivated U-Boot network subsystem via `no-net.cfg` (`CONFIG_NET=n`, zero network commands).
 >    - Suppressed boot logo (`# CONFIG_LOGO is not set`, `logo.nologo vt.global_cursor_default=1`).
@@ -81,11 +88,12 @@ This document tracks real-time Git branch topologies, commit records, working di
 >    - Packaged `/usr/local/bin/gphsm` via `recipes-support/gphsm/gphsm.bb` with `/usr/local/bin/hsmutil` symlink.
 >    - Automated security assertions passed (19/19 checks in `verify-security-configs.sh` and 14/14 tests in `test-password-validator.sh`).
 > 2. **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**:
+>    - Merged into `main` at commit [`8487738`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm).
 >    - Updated `AGENTS.md` and `README.md` reflecting `piKMS` identity, clean console, and `gphsm` CLI alignment.
 >    - Updated `Makefile` help documentation.
 > 3. **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**:
 >    - Formalized ADR-0024, ADR-0025, ADR-0026, and ADR-0027.
->    - Updated Architecture Note 07, `00 - Index.md`, and `README.md`.
+>    - Synchronized `00 - Index.md`, `README.md`, `Architecture/07 - Air-Gapped RPi HSM OS Architecture.md`, `Changelog.md`, and `git-status.md`.
 >
 > ---
 >

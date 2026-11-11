@@ -15,6 +15,52 @@ This document tracks all formal releases, milestone deliveries, and post-merge c
 
 ---
 
+## [Merged] — 2026-11-11: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, piKMS Hostname Standardization, and gphsm CLI Alignment (Merged into main)
+
+> [!NOTE]
+> **Post-Merge Milestone**: Hardening, stealth console optimization, and CLI tooling alignment for the air-gapped embedded Linux operating system ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and workspace root orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)) successfully merged into `main`. Enforces native Linux PAM first-login password expiration (`sp_lstchg=0`) with deduplicated setup wizard, completely deactivates U-Boot network drivers and commands (`no-net.cfg`), eliminates boot logos and suppresses HDMI console noise (`10-clean-console.conf`, `20-quiet-console.conf`), standardizes system identity to `piKMS`, and aligns application packaging to `/usr/local/bin/gphsm` with `/usr/local/bin/hsmutil` symlink.
+>
+> **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+>
+> **Merged Repositories & Commits**:
+> - **Air-Gapped Embedded Linux OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: Merged `feature/yocto-hardening-clean-console` into `main`
+>   - Commit: [`624b6ba`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`624b6ba9039f98338c36088b734c0391bb20773a`) — *docs: document clean console, piKMS identity, and U-Boot network deactivation in README*
+>   - Commit: [`9eb816e`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`9eb816e06b3aa1e14be261bc9b251ce7839352c2`) — *feat(yocto): align CLI packaging to gphsm and standardize piKMS identity*
+>   - Commit: [`e634468`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`e634468cbbe714ea8ec36ca47a61d1983796d83a`) — *feat(yocto): eliminate console chatter, suppress boot logo, and deactivate u-boot network*
+>   - Commit: [`ceba76d`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`ceba76d755737bc0f7a07bfd2d2a45d06ce59828`) — *feat(yocto): enforce password change natively via shadow and deduplicate wizard*
+> - **Workspace Root Orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Merged `feature/yocto-hardening-clean-console` into `main`
+>   - Commit: [`8487738`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`8487738798f964e15df29034696a5e83d9c47eeb`) — *docs(workspace): document piKMS appliance identity, stealth console, and gphsm CLI alignment*
+> - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Branch `main`
+>   - Formalized [[Architecture/Decisions/ADR-0024 - Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication|ADR-0024]], [[Architecture/Decisions/ADR-0025 - Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance|ADR-0025]], [[Architecture/Decisions/ADR-0026 - HDMI Console Noise Suppression and Log Level Hardening|ADR-0026]], [[Architecture/Decisions/ADR-0027 - Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm|ADR-0027]], [[features/yocto-hardening-clean-console-pikms|Feature Specification]], and updated [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|07 - Air-Gapped RPi HSM OS Architecture]].
+>
+> **Deliverable Scope & Changes**:
+> 1. **Native PAM Password Expiration & Wizard Deduplication**:
+>    - Set `sp_lstchg = 0` in `/etc/shadow` via `shadow_%.bbappend`, enabling native Linux PAM (`pam_pwquality.so`) to enforce immediate initial password rotation upon login.
+>    - Purged duplicate ~130-line bash password verification loop from `first-login-wizard.sh`, leaving a streamlined 2-step setup: Step 1 Keyboard layout (`loadkeys`), Step 2 System locale & UTC timezone.
+> 2. **Complete U-Boot Network Deactivation**:
+>    - Introduced `recipes-bsp/u-boot/files/no-net.cfg` stripping `CONFIG_NET`, `CONFIG_CMD_DHCP`, `CONFIG_CMD_PING`, `CONFIG_CMD_TFTPBOOT`, `CONFIG_CMD_NFS`, and network drivers across both dev and prod images.
+>    - Guarantees zero network attack surface at early bootloader stage.
+> 3. **HDMI Console Noise Suppression & Stealth Hardening**:
+>    - Stripped framebuffer boot logos (`# CONFIG_LOGO is not set` in `hardened.cfg`) and added `logo.nologo vt.global_cursor_default=1` to kernel cmdlines.
+>    - Implemented `recipes-core/clean-console/clean-console.bb` packaging `/etc/systemd/system.conf.d/10-clean-console.conf` (`LogLevel=notice`, `LogTarget=journal`, `ShowStatus=no`, `LogColor=no`) and `/etc/sysctl.d/20-quiet-console.conf` (`kernel.printk = 1 1 1 1`).
+> 4. **Appliance Identity Standardization (`piKMS`)**:
+>    - Configured `hostname:pn-base-files = "piKMS"` in `kas-project.yml`, ensuring uniform operator prompts (`hsmutil@piKMS:~#` / `hsmutil@piKMS:~$`) across the board.
+> 5. **Canonical CLI Packaging (`gphsm`)**:
+>    - Created `recipes-support/gphsm/gphsm.bb` packaging `/usr/local/bin/gphsm` as the primary executable and establishing backward-compatible symlink `/usr/local/bin/hsmutil`.
+>    - Preserved unprivileged operator account `hsmutil:users` and home directory `/home/hsmutil`.
+>
+> **Associated Architecture & Decision Artifacts**:
+> - [[Architecture/Decisions/ADR-0024 - Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication|ADR-0024: Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication]]
+> - [[Architecture/Decisions/ADR-0025 - Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance|ADR-0025: Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance]]
+> - [[Architecture/Decisions/ADR-0026 - HDMI Console Noise Suppression and Log Level Hardening|ADR-0026: HDMI Console Noise Suppression and Log Level Hardening]]
+> - [[Architecture/Decisions/ADR-0027 - Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm|ADR-0027: Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm]]
+> - [[features/yocto-hardening-clean-console-pikms|Feature Specification: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
+> - [[Specification/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment|Technical Specification: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
+> - [[Plan/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment Implementation Plan|Implementation Plan: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
+> - [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|07 - Air-Gapped RPi HSM OS Architecture]]
+
+---
+
 ## [Merged] — 2026-11-11: Yocto 6.1 (Blacksail) Upgrade, HW-084 (DS3231) RTC Integration, and Workspace Distclean Automation (Merged into main)
 
 > [!NOTE]
