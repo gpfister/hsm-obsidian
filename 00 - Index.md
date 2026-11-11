@@ -18,6 +18,8 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 ### 🏗️ Architecture
 - [[Architecture/System Architecture|System Architecture]] — Multi-repository layout, system blocks, and runtime interactions.
 - [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|Air-Gapped RPi HSM OS Architecture]] — Ultra-hardened embedded Linux appliance, physical network isolation, out-of-tree kernel driver, volatile RAM overlays, and dual-slot RAUC A/B updates.
+- [[Architecture/08 - Air-Gapped Time Synchronization and Hardware RTC Architecture|Air-Gapped Time Synchronization and Hardware RTC Architecture]] — Hardware RTC (HW-084 DS3231) on I2C-1, early kernel clock synchronization, RTC-aware login prompt, and transactional SUID time setting.
+- [[Architecture/Build Lifecycle and Workspace Clean Routines|Build Lifecycle and Workspace Clean Routines]] — Multi-repository build mechanics, Kas container volume management (`rpi_yocto_hsm_tmp`), and tiered clean vs distclean architecture.
 - [[Architecture/Dual-Stage Secure Boot|Dual-Stage Secure Boot]] — B0 immutable bootloader, MCUboot, and ECDSA P-256 signature chain.
 - [[Architecture/USB Composite Stack|USB Composite Stack]] — Dual CDC-ACM Virtual COM Ports (Console vs HSM API).
 - [[Architecture/HSM State Machine|HSM State Machine]] — State transitions and RGB LED indicators.
@@ -43,6 +45,9 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 - [[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]] — Harmonization of PKCS#11 sub-repository directory and GitHub remote to `hsm-pkcs11` while strictly preserving `libgphsm` ABI, CMake target definitions, and binary output names.
 - [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]] — Unsupported command fallback in InitShamir() (`AT+INIT=1`), multi-prefix parsing (`+INIT:` and `+SHARE:`), CME error code mapping (41, 42, 103), and physical dongle DFU deployment.
 - [[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery]] — Removal of transitional binary symlinks (`gphsms`, `hsmutil`, `hsmutils`) from `bin/`, `CGO_ENABLED=1` native IOKit discovery on Darwin, and hermetic static builds for Linux/Windows.
+- [[Architecture/Decisions/ADR-0021 - Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module|ADR-0021: Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module]] — Dedicated primary hardware I2C-1 bus mapping (Pins 1, 3, 5, 9) for HW-084 DS3231 RTC, kernel early boot clock sync (`CONFIG_RTC_HCTOSYS`), and device tree overlay.
+- [[Architecture/Decisions/ADR-0022 - RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync|ADR-0022: RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync]] — Informational console login prompt with RTC status awareness, zero-friction Enter-to-keep, and transactional dual-sync via setuid `hsm-set-date`.
+- [[Architecture/Decisions/ADR-0023 - Container Volume and Workspace Cache Purging during Distclean|ADR-0023: Container Volume and Workspace Cache Purging during Distclean]] — Multi-repository `distclean` automation purging build directories, shared state, downloads, Kas layers, and container volume `rpi_yocto_hsm_tmp`.
 
 ### 🧩 Feature Specifications
 - [[features/hsm-device-initialization-and-dual-mode-protocol-compatibility|HSM Device Initialization and Dual-Mode Protocol Compatibility]] — Resolution of initialization and ceremony protocol mismatches across `gphsm` CLI, PCA10059 firmware, and mock test harness.
@@ -57,6 +62,7 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 - [[features/usb-descriptors-ble-address|USB Descriptors & Device Identification]] — Deterministic hardware BLE serial numbers, macOS CDC-ACM port allocation, and multi-device discovery.
 - [[features/hsmutil-reset-and-multi-device-disambiguation|Reset Confirmation & Multi-Device Disambiguation]] — Interactive confirmation safeguards, firmware CC310 zeroization, and deterministic multi-dongle CLI targeting.
 - [[features/yocto-boot-visibility-and-password-policy|Yocto Boot Visibility & Password Policy]] — Dev/prod boot log multiplexing, silent U-Boot hardening, default password `password`, PAM pwquality complexity, and 90-day expiration.
+- [[features/yocto-blacksail-rtc-and-distclean|Yocto 6.1 (Blacksail), HW-084 (DS3231) RTC & Workspace Distclean]] — Yocto 6.1 modernization, DS3231 RTC hardware integration on I2C-1, informational login prompt, and atomic workspace distclean automation.
 
 ### 📐 Specifications
 - [[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|HSM Device Initialization and Dual-Mode Protocol Compatibility]] — Technical specification for legacy AT+INIT=1 fallback, dual-prefix (+INIT:/+SHARE:) line parsing, CME error mappings (41, 42, 103), and CLI end-to-end integration tests.
@@ -69,6 +75,7 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 - [[Specification/Uncompressed WIC Image Generation and SD Flash Tooling Alignment|Uncompressed WIC Image Generation & SD Flash Tooling Alignment]] — Technical specification for `IMAGE_FSTYPES` `.wic` emission and cross-platform SD card flashing.
 - [[Specification/Reset Confirmation and Multi-Device Disambiguation|Reset Confirmation & Multi-Device Disambiguation]] — Interactive confirmation safeguards, CC310 zeroization, and deterministic multi-device auto-discovery.
 - [[Specification/Yocto 6.1 Blacksail Upgrade|Yocto 6.1 (Blacksail) Upgrade]] — Upgrade of `rpi-z2w-yocto-hsm` from Scarthgap: layer decomposition, RAUC internalization, UNPACKDIR, kernel 6.12+.
+- [[Specification/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean|Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean]] — Technical specification for Yocto 6.1 syntax modernization, HW-084 DS3231 RTC hardware time synchronization, and container volume purging distclean target.
 - [[Specification/Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy|Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy]] — Technical specification for dev/prod boot visibility, U-Boot silence, password complexity, and expiration policy.
 - [[Specification/USB Descriptors and Device Identification|USB Descriptors & Device Identification]] — FICR BLE address serial number, protocol IDs, and macOS device node mapping.
 - [[Specification/YubiHSM Protocol|YubiHSM Protocol]] — Binary packet framing, command opcodes, and response payloads.
@@ -77,6 +84,7 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 ### 🔌 Hardware
 - [[Hardware/nRF52840 Dongle PCA10059|nRF52840 Dongle PCA10059]] — Pinout, RGB LEDs, buttons, and crystal oscillators.
 - [[Hardware/Waveshare USB HAT (B) Integration|Waveshare USB HAT (B) Integration]] — 4-port USB 2.0 expansion hub, DWC2 host overlay, power budgeting, and peripheral port allocation.
+- [[Hardware/HW-084 DS3231 Real-Time Clock Module|HW-084 DS3231 Real-Time Clock Module]] — Maxim DS3231SN TCXO Real-Time Clock breakout, I2C-1 bus mapping (Pins 1, 3, 5, 9), battery backup, and kernel driver integration.
 - [[Hardware/JLink Debug Header|JLink Debug Header]] — SWD connector pinout and Segger J-Link integration.
 
 ### 💻 Development & Workflows
@@ -122,4 +130,5 @@ Welcome to the central engineering documentation vault for the **Hardware Securi
 - [[Plan/Reset Confirmation and Multi-Device Disambiguation Implementation Plan|Implementation Plan: Reset Confirmation & Multi-Device Disambiguation]] — Multi-repository implementation plan across firmware keystore zeroization, CLI confirmation safeguards, and serial disambiguation.
 - [[Plan/USB Descriptors and BLE Identification Implementation Plan|Implementation Plan: USB Descriptors & BLE Device Identification]] — Multi-repository implementation plan across firmware, CLI, PKCS#11, and documentation.
 - [[Plan/Yocto 6.1 Blacksail Upgrade Implementation Plan|Implementation Plan: Yocto 6.1 (Blacksail) Upgrade]] — Work breakdown, deployment verification and risks for `rpi-z2w-yocto-hsm`.
+- [[Plan/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean Implementation Plan|Implementation Plan: Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration & Workspace Distclean]] — Multi-repository implementation plan for Yocto 6.1 modernization, DS3231 RTC integration, and root/subrepo distclean automation.
 - [[Plan/Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy Implementation Plan|Implementation Plan: Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy]] — Repository work breakdown, Kconfig fragments, PAM configuration, and test matrix.

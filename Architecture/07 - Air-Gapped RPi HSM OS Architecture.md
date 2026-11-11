@@ -208,13 +208,15 @@ flowchart TD
 
     subgraph KernelSpace ["Linux Kernel 6.12+ (Hardened)"]
         KCONFIG["Hardened Defconfig (No Net, No BT, No WiFi)"]
-        DTB["Device Tree Overlays (dwc2 host, no-wifi, no-bt)"]
+        DTB["Device Tree Overlays (dwc2 host, no-wifi, no-bt, i2c-rtc,ds3231)"]
         KMOD["nrf52840-hsm-kmod (Out-of-tree Driver, Linux 6.12+ llseek compat)"]
         NFT["nftables Total Drop Hook"]
         CMDLINE["Kernel Boot Console Multiplexing\nDev: console=serial0,115200 console=tty1 loglevel=7 debug earlyprintk\nProd: quiet loglevel=0 console=tty1 fsck.mode=skip"]
+        RTC_DRV["HW-084 DS3231 RTC (I2C-1, rtc-ds1307, CONFIG_RTC_HCTOSYS)\nEarly Boot System Clock Sync (<50ms)"]
         
         KMOD --> DEV_NODES["/dev/tty.hsm<ble_address><number>"]
         DEV_NODES --> SYMLINK["/dev/tty.hsm (Symlink)"]
+        RTC_DRV --> RTC_DEV["/dev/rtc0"]
     end
 
     subgraph UserSpace ["User Space (Read-Only Rootfs + RAM Overlays)"]
@@ -222,10 +224,10 @@ flowchart TD
         INIT["System Init & Login Service"]
         WIZARD["Mandatory Login Wizard\nInitial PWD 'password'\nPre-checks 6 complexity rules\nloadkeys layout selection\nUTC timezone standard"]
         PAM["PAM & Security Subsystem\npam_pwquality.so complexity rules\nPASS_MAX_DAYS=90 password aging"]
-        DATE_PROMPT["Login Clock Prompt (UTC Date Synchronization via setuid hsm-set-date)"]
+        DATE_PROMPT["RTC-Aware Login Clock Prompt (clock-setup.sh)\nStatus verification, Enter-to-keep, SUID hsm-set-date dual sync"]
         AUTOMOUNT["Automount Manager (usb-mount.sh -> /media/usb-*)"]
         RAUC_SRV["RAUC Update Service (rauc-usb-autoinstall)"]
-        HSMUTIL["/usr/local/bin/hsmutil (CLI / TUI)"]
+        HSMUTIL["/usr/local/bin/gphsm (CLI / TUI)"]
         
         VOLATILE --> INIT
         INIT --> WIZARD
@@ -236,6 +238,7 @@ flowchart TD
         AUTOMOUNT -. Detects .raucb .-> RAUC_SRV
         RAUC_SRV --> UBOOT
         SYMLINK --> HSMUTIL
+        RTC_DEV --> DATE_PROMPT
     end
 
     SLOT_A --> KernelSpace
@@ -334,11 +337,13 @@ Configured via [`recipes-core/users/hsmutil-user.bb`](file:///Users/gpfister/Dev
   - Enforces mandatory password change for `hsmutil` on initial login.
   - Prompts operator to select physical keyboard layout (US, FR, DE, UK, fr_CH, sg) using `loadkeys` and persists selection to `~/.keymap`.
   - Exports standard UTC timezone (`export TZ=UTC`).
-- **Login Clock Calibration (`clock-setup.sh` & `hsm-set-date.c`)**:
-  - Raspberry Pi boards lack an onboard battery RTC, and NTP is impossible in an air-gapped environment.
-  - On every login, prompts operator for current UTC timestamp (`YYYY-MM-DD HH:MM:SS`).
-  - Calls setuid root helper `/usr/local/bin/hsm-set-date` (mode `4755`), which validates timestamp with `strptime`/`timegm` and calls `settimeofday()`.
-  - Grants unprivileged `hsmutil` the ability to calibrate system time safely without sudo.
+- **RTC-Aware Login Clock Calibration (`clock-setup.sh` & `hsm-set-date.c`)**:
+  - The appliance integrates the **HW-084 (Maxim DS3231SN)** hardware RTC module over hardware I2C-1 (Pins 1, 3, 5, 9), enabling kernel-level early-boot synchronization via `CONFIG_RTC_DRV_DS1307=y` and `CONFIG_RTC_HCTOSYS=y` (see [[Architecture/Decisions/ADR-0021 - Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module|ADR-0021]]).
+  - On console login (`/etc/profile.d/hsm-login.sh`), `clock-setup.sh` verifies `/dev/rtc0` health via `hwclock -u -r` (see [[Architecture/Decisions/ADR-0022 - RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync|ADR-0022]]).
+  - If the RTC is healthy, it displays a status confirmation (`Hardware RTC detected (/dev/rtc0): active and synchronized`) and prompts `Enter current UTC date/time [YYYY-MM-DD HH:MM:SS] (or Enter to keep): `.
+  - Pressing `[Enter]` retains the hardware-synchronized clock with zero typing overhead.
+  - If a manual timestamp is supplied, the setuid root helper `/usr/local/bin/hsm-set-date` (mode `4755`) validates the syntax, updates kernel system time via `settimeofday()`, and atomically writes back to the DS3231 hardware registers via `ioctl(RTC_SET_TIME)`.
+  - Detailed architecture: see [[Architecture/08 - Air-Gapped Time Synchronization and Hardware RTC Architecture|08 - Air-Gapped Time Synchronization and Hardware RTC Architecture]].
 
 ### 5.7 USB Mass Storage Automount & Auto-Update
 Implemented in [`meta-hsm-os/recipes-support/usb-mount/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-support/usb-mount/):
@@ -364,6 +369,23 @@ The repository provides standalone test suites in [`scripts/`](file:///Users/gpf
    - Evaluates 14 test cases covering minimum length, uppercase, digits, symbols, adjacent identical repetitions (`maxrepeat=1`), and monotonic sequential characters (`maxsequence=2`).
 2. **Security Configuration Verifier** ([`scripts/verify-security-configs.sh`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/scripts/verify-security-configs.sh)):
    - Runs 19 automated assertions validating `kas-dev.yml`, `kas-prod.yml`, `kas-project.yml`, `rpi-cmdline.bbappend`, `silent-boot.cfg`, `squashfs.cfg`, `rpi-u-boot-scr.bbappend`, `hsmutil-user.bb`, `shadow_%.bbappend`, and `libpwquality_%.bbappend`.
+
+### 5.10 Yocto 6.1 (Blacksail) Modernization & Build Lifecycle Automation
+1. **Manifest Deprecation Purge**:
+   - In [`kas-project.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/kas-project.yml), deprecated Yocto variables are replaced with strict override syntax:
+     - `DISTRO_FEATURES_OPTED_OUT += "sysvinit"` &rarr; `DISTRO_FEATURES:remove = "sysvinit"`
+     - `MACHINE_FEATURES_OPTED_OUT += "bluetooth wifi"` &rarr; `MACHINE_FEATURES:remove = "bluetooth wifi"`
+   - BitBake tracking aligned to branch `2.20` and core layers to `blacksail`.
+   - Forward compatibility overrides declared for upstream master layers:
+     ```bitbake
+     LAYERSERIES_COMPAT_raspberrypi:append = " blacksail"
+     LAYERSERIES_COMPAT_rauc:append = " blacksail"
+     ```
+2. **BitBake 2.20 UNPACKDIR Compliance**:
+   - All recipes across `meta-hsm-os` strictly utilize `${UNPACKDIR}` for local `file://` sources, isolating source extraction from the build directory (`${B}` / `${S}`).
+3. **Workspace Distclean Automation**:
+   - The sub-repository [`Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/Makefile) provides `make distclean`, which atomically removes `build/`, `downloads/`, `sstate-cache/`, checked-out Kas layer repositories, and forcefully removes the container volume `rpi_yocto_hsm_tmp` via `$(CONTAINER_ENGINE) volume rm -f` (see [[Architecture/Decisions/ADR-0023 - Container Volume and Workspace Cache Purging during Distclean|ADR-0023]]).
+   - Cascaded from root [`Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/Makefile) via `make yocto-distclean` and root `make distclean` (see [[Architecture/Build Lifecycle and Workspace Clean Routines|Build Lifecycle and Workspace Clean Routines]]).
 
 ---
 
@@ -434,8 +456,11 @@ sequenceDiagram
 ## 8. Subsystem Integration & Cross-References
 
 - **Hardware Hub Integration**: [[Hardware/Waveshare USB HAT (B) Integration|Waveshare USB HAT (B) Integration Specification]]
+- **Hardware RTC Integration**: [[Hardware/HW-084 DS3231 Real-Time Clock Module|HW-084 DS3231 Real-Time Clock Module]]
 - **Dongle Hardware**: [[Hardware/nRF52840 Dongle PCA10059|nRF52840 Dongle PCA10059 Specification]]
 - **Dongle USB Interfaces**: [[Architecture/USB Composite Stack|USB Composite Stack Architecture]]
+- **Time Synchronization Architecture**: [[Architecture/08 - Air-Gapped Time Synchronization and Hardware RTC Architecture|08 - Air-Gapped Time Synchronization and Hardware RTC Architecture]]
+- **Build Lifecycle & Clean Routines**: [[Architecture/Build Lifecycle and Workspace Clean Routines|Build Lifecycle and Workspace Clean Routines]]
 - **Dongle Serial Identification**: [[Architecture/Decisions/ADR-0001 - Hardware BLE Address for Deterministic USB Serial Number|ADR-0001: BLE Address Serial Number]]
 - **Host Port Targeting**: [[Architecture/Decisions/ADR-0003 - Host Port Discovery and Serial Targeting Strategy|ADR-0003: Host Port Discovery]]
 - **Disk Image `.img` Output Strategy**: [[Architecture/Decisions/ADR-0005 - Custom BitBake img Image Type via WIC Rename|ADR-0005: Custom BitBake img Image Type via WIC Rename]]
@@ -445,10 +470,11 @@ sequenceDiagram
 - **Kernel Boot Console Multiplexing**: [[Architecture/Decisions/ADR-0010 - Kernel Boot Console Multiplexing and Command Line Specialization|ADR-0010: Kernel Boot Console Multiplexing & Command Line Specialization]]
 - **Silent Non-Interactive U-Boot Bootloader**: [[Architecture/Decisions/ADR-0011 - Silent Non-Interactive U-Boot Bootloader Hardening|ADR-0011: Silent Non-Interactive U-Boot Bootloader Hardening]]
 - **PAM Password Complexity & Expiration Policy**: [[Architecture/Decisions/ADR-0012 - PAM pwquality Password Complexity and Expiration Policy|ADR-0012: PAM pwquality Password Complexity & Expiration Policy]]
-- **Feature Specification**: [[features/yocto-boot-visibility-and-password-policy|Feature: Yocto Boot Visibility & Password Policy]]
-- **Technical Specification**: [[Specification/Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy|Specification: Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy]]
-- **Implementation Plan**: [[Plan/Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy Implementation Plan|Implementation Plan: Yocto Dev-Prod Boot Visibility, U-Boot Hardening, and Password Policy]]
-- **Yocto 6.1 Upgrade Specification**: [[Specification/Yocto 6.1 Blacksail Upgrade|Specification: Yocto 6.1 Blacksail Upgrade]]
-- **Yocto 6.1 Upgrade Plan**: [[Plan/Yocto 6.1 Blacksail Upgrade Implementation Plan|Implementation Plan: Yocto 6.1 Blacksail Upgrade]]
+- **Hardware I2C-1 Bus Mapping for RTC**: [[Architecture/Decisions/ADR-0021 - Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module|ADR-0021: Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module]]
+- **RTC-Aware Informational Login Prompt**: [[Architecture/Decisions/ADR-0022 - RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync|ADR-0022: RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync]]
+- **Container Volume and Workspace Distclean**: [[Architecture/Decisions/ADR-0023 - Container Volume and Workspace Cache Purging during Distclean|ADR-0023: Container Volume and Workspace Cache Purging during Distclean]]
+- **Feature Specification**: [[features/yocto-blacksail-rtc-and-distclean|Feature: Yocto 6.1 (Blacksail), HW-084 (DS3231) RTC & Workspace Distclean]]
+- **Technical Specification**: [[Specification/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean|Specification: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]
+- **Implementation Plan**: [[Plan/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean Implementation Plan|Implementation Plan: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]
 - **Operational Guide**: [[Development/Yocto Build and RAUC Update Guide|Yocto Build and RAUC Update Guide]]
-- **Source Code**: [`rpi-z2w-yocto-hsm/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm)
+- **Source Code**: [`hsm-yocto-offgrid-rpi/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)
