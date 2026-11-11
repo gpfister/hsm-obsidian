@@ -7,10 +7,14 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-11
-lifecycle_phase: Phase 6 Post-Merge Complete — Yocto 6.1 (Blacksail) Upgrade, HW-084 (DS3231) RTC Integration & Workspace Distclean
-feature: "[[features/yocto-blacksail-rtc-and-distclean|Yocto 6.1 (Blacksail), HW-084 (DS3231) RTC & Workspace Distclean]]"
-plan: "[[Plan/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean Implementation Plan|Implementation Plan: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]"
+lifecycle_phase: Phase 5 Pre-Merge Documentation Tidy-Up — HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment
+feature: "[[features/yocto-hardening-clean-console-pikms|HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]"
+plan: "[[Plan/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment Implementation Plan|Implementation Plan: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]"
 adrs:
+  - "[[Architecture/Decisions/ADR-0027 - Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm|ADR-0027: Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm]]"
+  - "[[Architecture/Decisions/ADR-0026 - HDMI Console Noise Suppression and Log Level Hardening|ADR-0026: HDMI Console Noise Suppression and Log Level Hardening]]"
+  - "[[Architecture/Decisions/ADR-0025 - Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance|ADR-0025: Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance]]"
+  - "[[Architecture/Decisions/ADR-0024 - Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication|ADR-0024: Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication]]"
   - "[[Architecture/Decisions/ADR-0023 - Container Volume and Workspace Cache Purging during Distclean|ADR-0023: Container Volume and Workspace Cache Purging during Distclean]]"
   - "[[Architecture/Decisions/ADR-0022 - RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync|ADR-0022: RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync]]"
   - "[[Architecture/Decisions/ADR-0021 - Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module|ADR-0021: Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module]]"
@@ -19,7 +23,7 @@ adrs:
   - "[[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]"
   - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
-specification: "[[Specification/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean|Technical Specification: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]"
+specification: "[[Specification/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment|Technical Specification: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
 
@@ -33,16 +37,59 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Ahead of `origin/main` by 2 commits | `37232ce` (*docs: pre-merge documentation update for Yocto 6.1, HW-084 RTC, and distclean*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Up to date with `origin/main` | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `7341531` (*refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Ahead of `origin/main` by 2 commits | `259b65c` (*docs: pre-merge update for HW-084 RTC, distclean, and vault links*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` by 1 commit | `HEAD` (*docs(vault): pre-merge formalization of ADR-0021 through ADR-0023, HW-084 RTC, and distclean*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `feature/yocto-hardening-clean-console` | Branch active (ahead of `main` by 1 commit) | `8487738` (*docs(workspace): document piKMS appliance identity, stealth console, and gphsm CLI alignment*) | **Clean** | **Phase 5 Pre-Merge Review** |
+| **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Up to date with `origin/main` | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Production Ready** |
+| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `7341531` (*refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*) | **Clean** | **Production Ready** |
+| **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Production Ready** |
+| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `feature/yocto-hardening-clean-console` | Branch active (ahead of `main` by 4 commits) | `624b6ba` (*docs: document clean console, piKMS identity, and U-Boot network deactivation in README*) | **Clean** | **Phase 5 Pre-Merge Review** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` by 3 commits | `ee751f4` (*docs(vault): formalize ADR-0024 through ADR-0027, clean console, and piKMS identity*) | **Clean** | **Phase 5 Pre-Merge Review** |
 
 ---
 
-## 1.0 Merged Milestone: Yocto 6.1 (Blacksail) Upgrade, HW-084 (DS3231) RTC Integration, and Workspace Distclean Automation (Phase 6 Post-Merge Complete)
+## 1.0 Active Milestone: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, piKMS Hostname Standardization, and gphsm CLI Alignment (Phase 5 Pre-Merge Documentation Tidy-Up)
+
+> [!NOTE]
+> **Active Milestone**: Comprehensive hardening and user experience refinement for the air-gapped embedded Linux OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and root workspace coordination.
+>
+> - **Lifecycle Phase**: Phase 5 Pre-Merge Documentation Tidy-Up.
+> - **Target Branch**: `main`
+> - **Active Feature Branches**:
+>   - **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: `feature/yocto-hardening-clean-console`
+>     - `624b6ba` — *docs: document clean console, piKMS identity, and U-Boot network deactivation in README*
+>     - `9eb816e` — *feat(yocto): align CLI packaging to gphsm and standardize piKMS identity*
+>     - `e634468` — *feat(yocto): eliminate console chatter, suppress boot logo, and deactivate u-boot network*
+>     - `ceba76d` — *feat(yocto): enforce password change natively via shadow and deduplicate wizard*
+>   - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: `feature/yocto-hardening-clean-console`
+>     - `8487738` — *docs(workspace): document piKMS appliance identity, stealth console, and gphsm CLI alignment*
+> - **Architecture Decision Records**:
+>   - [[Architecture/Decisions/ADR-0024 - Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication|ADR-0024: Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication]]
+>   - [[Architecture/Decisions/ADR-0025 - Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance|ADR-0025: Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance]]
+>   - [[Architecture/Decisions/ADR-0026 - HDMI Console Noise Suppression and Log Level Hardening|ADR-0026: HDMI Console Noise Suppression and Log Level Hardening]]
+>   - [[Architecture/Decisions/ADR-0027 - Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm|ADR-0027: Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm]]
+> - **Technical Specification & Plan**:
+>   - [[Specification/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment|Technical Specification]]
+>   - [[Plan/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment Implementation Plan|Implementation Plan]]
+>   - [[features/yocto-hardening-clean-console-pikms|Feature Specification]]
+>
+> ### Deliverable Components & Pre-Merge Verifications
+> 1. **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**:
+>    - Enforced native PAM first-login password rotation via `sp_lstchg = 0` in `shadow_%.bbappend` and deduplicated `first-login-wizard.sh`.
+>    - Deactivated U-Boot network subsystem via `no-net.cfg` (`CONFIG_NET=n`, zero network commands).
+>    - Suppressed boot logo (`# CONFIG_LOGO is not set`, `logo.nologo vt.global_cursor_default=1`).
+>    - Silenced console noise via `clean-console.bb` (`10-clean-console.conf` ShowStatus=no, `20-quiet-console.conf` kernel.printk = 1 1 1 1).
+>    - Standardized hostname to `piKMS` in `kas-project.yml`.
+>    - Packaged `/usr/local/bin/gphsm` via `recipes-support/gphsm/gphsm.bb` with `/usr/local/bin/hsmutil` symlink.
+>    - Automated security assertions passed (19/19 checks in `verify-security-configs.sh` and 14/14 tests in `test-password-validator.sh`).
+> 2. **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**:
+>    - Updated `AGENTS.md` and `README.md` reflecting `piKMS` identity, clean console, and `gphsm` CLI alignment.
+>    - Updated `Makefile` help documentation.
+> 3. **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**:
+>    - Formalized ADR-0024, ADR-0025, ADR-0026, and ADR-0027.
+>    - Updated Architecture Note 07, `00 - Index.md`, and `README.md`.
+>
+> ---
+>
+> ## 1.1 Merged Milestone: Yocto 6.1 (Blacksail) Upgrade, HW-084 (DS3231) RTC Integration, and Workspace Distclean Automation (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
 > **Post-Merge Milestone**: Full modernization of the air-gapped embedded Linux OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and workspace build orchestration successfully merged into `main`. Upgrades build manifests to Yocto Project 6.1 (`blacksail`) and BitBake 2.20, eliminates deprecated syntax (`*_OPTED_OUT`), enforces `${UNPACKDIR}` compliance, and integrates the battery-backed **HW-084 (Maxim DS3231SN)** hardware Real-Time Clock module over primary I2C-1 (Pins 1, 3, 5, 9) for high-precision air-gapped timekeeping. Establishes atomic `make distclean` and `make yocto-distclean` routines with container volume (`rpi_yocto_hsm_tmp`) purging.
