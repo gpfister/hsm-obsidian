@@ -195,7 +195,7 @@ meta-hsm-os/
 flowchart TD
     subgraph Bootloader ["Boot & Update Stage"]
         ROM["Broadcom VideoCore Boot ROM"]
-        UBOOT["U-Boot Dual-Slot Bootloader (rpi-u-boot-scr)\nDev: Interactive console & RAUC echo\nProd: Silent bootloader (CONFIG_BOOTDELAY=-2, silent=1)"]
+        UBOOT["U-Boot Dual-Slot Bootloader (rpi-u-boot-scr)\nno-net.cfg: CONFIG_NET & network commands disabled\nDev: Interactive serial0,115200 & RAUC echo\nProd: Silent bootloader (CONFIG_BOOTDELAY=-2, silent=1)"]
         SLOT_A["Slot A: /dev/mmcblk0p2 (RO ext4)"]
         SLOT_B["Slot B: /dev/mmcblk0p3 (RO ext4)"]
         ENV["U-Boot Environment (bootcount, upgrade_available)"]
@@ -207,11 +207,12 @@ flowchart TD
     end
 
     subgraph KernelSpace ["Linux Kernel 6.12+ (Hardened)"]
-        KCONFIG["Hardened Defconfig (No Net, No BT, No WiFi)"]
+        KCONFIG["Hardened Defconfig (No Net, No BT, No WiFi, # CONFIG_LOGO is not set)"]
         DTB["Device Tree Overlays (dwc2 host, no-wifi, no-bt, i2c-rtc,ds3231)"]
         KMOD["nrf52840-hsm-kmod (Out-of-tree Driver, Linux 6.12+ llseek compat)"]
         NFT["nftables Total Drop Hook"]
-        CMDLINE["Kernel Boot Console Multiplexing\nDev: console=serial0,115200 console=tty1 loglevel=7 debug earlyprintk\nProd: quiet loglevel=0 console=tty1 fsck.mode=skip"]
+        CMDLINE["Kernel Boot Console Multiplexing\nDev: console=serial0,115200 console=tty1 loglevel=7 debug earlyprintk logo.nologo\nProd: quiet loglevel=0 console=tty1 fsck.mode=skip logo.nologo vt.global_cursor_default=1"]
+        SYSCTL["sysctl: kernel.printk = 1 1 1 1"]
         RTC_DRV["HW-084 DS3231 RTC (I2C-1, rtc-ds1307, CONFIG_RTC_HCTOSYS)\nEarly Boot System Clock Sync (<50ms)"]
         
         KMOD --> DEV_NODES["/dev/tty.hsm<ble_address><number>"]
@@ -219,25 +220,27 @@ flowchart TD
         RTC_DRV --> RTC_DEV["/dev/rtc0"]
     end
 
-    subgraph UserSpace ["User Space (Read-Only Rootfs + RAM Overlays)"]
+    subgraph UserSpace ["User Space: piKMS (Read-Only Rootfs + RAM Overlays)"]
         VOLATILE["volatile-storage.service\n(/media tmpfs, /etc overlayfs, /home tmpfs)"]
-        INIT["System Init & Login Service"]
-        WIZARD["Mandatory Login Wizard\nInitial PWD 'password'\nPre-checks 6 complexity rules\nloadkeys layout selection\nUTC timezone standard"]
-        PAM["PAM & Security Subsystem\npam_pwquality.so complexity rules\nPASS_MAX_DAYS=90 password aging"]
+        INIT["System Init & Login Service (hostname: piKMS)"]
+        CLEAN_CON["clean-console.service (systemd 10-clean-console.conf: LogLevel=notice, ShowStatus=no)"]
+        PAM["PAM & Shadow Subsystem (sp_lstchg=0)\nNative first-login password enforcement via pam_pwquality.so"]
+        WIZARD["Deduplicated Login Wizard (first-login-wizard.sh)\nStep 1: Keyboard layout (loadkeys)\nStep 2: Locale / UTC timezone standard"]
         DATE_PROMPT["RTC-Aware Login Clock Prompt (clock-setup.sh)\nStatus verification, Enter-to-keep, SUID hsm-set-date dual sync"]
         AUTOMOUNT["Automount Manager (usb-mount.sh -> /media/usb-*)"]
         RAUC_SRV["RAUC Update Service (rauc-usb-autoinstall)"]
-        HSMUTIL["/usr/local/bin/gphsm (CLI / TUI)"]
+        GPHSM["/usr/local/bin/gphsm (Canonical CLI / TUI)\nSymlink: /usr/local/bin/hsmutil"]
         
         VOLATILE --> INIT
-        INIT --> WIZARD
-        WIZARD <--> PAM
+        CLEAN_CON --> INIT
+        INIT --> PAM
+        PAM --> WIZARD
         WIZARD --> DATE_PROMPT
-        DATE_PROMPT --> HSMUTIL
-        AUTOMOUNT --> HSMUTIL
+        DATE_PROMPT --> GPHSM
+        AUTOMOUNT --> GPHSM
         AUTOMOUNT -. Detects .raucb .-> RAUC_SRV
         RAUC_SRV --> UBOOT
-        SYMLINK --> HSMUTIL
+        SYMLINK --> GPHSM
         RTC_DEV --> DATE_PROMPT
     end
 
@@ -327,16 +330,16 @@ Configured via [`recipes-core/users/hsmutil-user.bb`](file:///Users/gpfister/Dev
     - No adjacent repeated identical characters (`maxrepeat = 1`, rejects `aa`, `11`)
     - No monotonic 3-character sequences (`maxsequence = 2`, rejects `abc`, `123`, `cba`)
     - Strict enforcement for root (`enforce_for_root`)
-- **90-Day Password Expiration Policy**:
+- **90-Day Password Expiration Policy & Native PAM First-Login Enforcement**:
   - `/etc/login.defs` sets `PASS_MAX_DAYS 90`.
-  - `/etc/shadow` configures `hsmutil` with a maximum password age of `90` days (field 5).
-- **First-Login Wizard (`first-login-wizard.sh`)**:
-  - Triggers on console login via `/etc/profile.d/hsm-login.sh`.
+  - In `recipes-core/users/hsmutil-user.bb`, `pkg_postinst` sets `sp_lstchg = 0` in `/etc/shadow` (`sed -i 's/^hsmutil:\([^:]*\):[^:]*:/hsmutil:\1:0:/' "$D/etc/shadow"`).
+  - On first boot, Linux PAM natively intercepts the login before shell startup, requiring immediate password rotation enforced by `pam_pwquality.so` (see [[Architecture/Decisions/ADR-0024 - Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication|ADR-0024]]).
+- **Deduplicated First-Login Wizard (`first-login-wizard.sh`)**:
+  - Triggers on console login via `/etc/profile.d/hsm-login.sh` only after successful PAM authentication and password rotation.
   - Checks for marker file `~/.wizard_completed`.
-  - Pre-validates password complexity with detailed rule violation feedback prior to invoking PAM.
-  - Enforces mandatory password change for `hsmutil` on initial login.
-  - Prompts operator to select physical keyboard layout (US, FR, DE, UK, fr_CH, sg) using `loadkeys` and persists selection to `~/.keymap`.
-  - Exports standard UTC timezone (`export TZ=UTC`).
+  - All duplicate bash password loops have been eliminated (see [[Architecture/Decisions/ADR-0024 - Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication|ADR-0024]]).
+  - Starts cleanly at **Step 1: Keyboard Layout Selection** (US, FR, DE, UK, fr_CH, sg) using `loadkeys` and persists selection to `~/.keymap`.
+  - Proceeds to **Step 2: Locale & Timezone Confirmation**, exporting standard UTC timezone (`export TZ=UTC`) and writing `~/.wizard_completed`.
 - **RTC-Aware Login Clock Calibration (`clock-setup.sh` & `hsm-set-date.c`)**:
   - The appliance integrates the **HW-084 (Maxim DS3231SN)** hardware RTC module over hardware I2C-1 (Pins 1, 3, 5, 9), enabling kernel-level early-boot synchronization via `CONFIG_RTC_DRV_DS1307=y` and `CONFIG_RTC_HCTOSYS=y` (see [[Architecture/Decisions/ADR-0021 - Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module|ADR-0021]]).
   - On console login (`/etc/profile.d/hsm-login.sh`), `clock-setup.sh` verifies `/dev/rtc0` health via `hwclock -u -r` (see [[Architecture/Decisions/ADR-0022 - RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync|ADR-0022]]).
@@ -351,15 +354,26 @@ Implemented in [`meta-hsm-os/recipes-support/usb-mount/`](file:///Users/gpfister
 - Mounts FAT32 or ext4 filesystem under `/media/usb-<devname>` with ownership `hsmutil:storage` and mode `0770`.
 - **Automatic RAUC Ingestion**: If any `*.raucb` file is present in the root directory of the mounted drive, `usb-mount.sh` automatically launches `rauc-usb-autoinstall.service`.
 
-### 5.8 Kernel Boot Console Multiplexing & U-Boot Bootloader Hardening
-Configured via [`recipes-bsp/bootfiles/rpi-cmdline.bbappend`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/bootfiles/rpi-cmdline.bbappend), [`recipes-bsp/u-boot/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/u-boot/), and [`recipes-bsp/rpi-u-boot-scr/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/rpi-u-boot-scr/):
-1. **Kernel Boot Console Multiplexing**:
+### 5.8 Bootloader Hardening, Network Elimination & Clean Console
+Configured via [`recipes-bsp/bootfiles/rpi-cmdline.bbappend`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-bsp/bootfiles/rpi-cmdline.bbappend), [`recipes-bsp/u-boot/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-bsp/u-boot/), [`recipes-bsp/rpi-u-boot-scr/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-bsp/rpi-u-boot-scr/), and [`recipes-core/clean-console/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-core/clean-console/):
+1. **Complete U-Boot Network Subsystem Deactivation**:
+   - In [`recipes-bsp/u-boot/files/no-net.cfg`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-bsp/u-boot/files/no-net.cfg), all network drivers, sockets, and commands (`CONFIG_NET`, `CONFIG_CMD_DHCP`, `CONFIG_CMD_PING`, `CONFIG_CMD_TFTPBOOT`, `CONFIG_CMD_NFS`, `CONFIG_NETDEVICES`) are completely compiled out of U-Boot (see [[Architecture/Decisions/ADR-0025 - Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance|ADR-0025]]).
+   - Enforces the zero-network physical air-gap invariant continuously across all bootloader stages.
+2. **Framebuffer Boot Logo & Splash Suppression**:
+   - Linux kernel defconfig fragment `hardened.cfg` unsets `# CONFIG_LOGO is not set` (and all CLUT/mono variants).
+   - Boot arguments in `rpi-cmdline.bbappend` inject `logo.nologo vt.global_cursor_default=1` across both dev and prod images (see [[Architecture/Decisions/ADR-0026 - HDMI Console Noise Suppression and Log Level Hardening|ADR-0026]]).
+   - Raspberry Pi firmware config maintains `disable_splash=1` and `DISABLE_RPI_BOOT_LOGO = "1"`.
+3. **Clean Console Hardening (`clean-console.bb`)**:
+   - Installs `/etc/systemd/system.conf.d/10-clean-console.conf` specifying `LogLevel=notice`, `LogTarget=journal`, `LogColor=no`, and `ShowStatus=no` to eliminate systemd service startup chatter and watchdog popups on `tty1`.
+   - Installs `/etc/sysctl.d/20-quiet-console.conf` enforcing `kernel.printk = 1 1 1 1` (allowing only emergency kernel panics to reach the screen).
+   - Production kernel cmdline enforces `quiet loglevel=0 console=tty1 fsck.mode=skip vt.global_cursor_default=1 logo.nologo`.
+4. **Kernel Boot Console Multiplexing**:
    - `meta-raspberrypi` builds `/boot/cmdline.txt` purely from `CMDLINE` variables, ignoring BitBake `APPEND`.
    - `rpi-cmdline.bbappend` specializes `CMDLINE` based on `HSM_DEV_MODE`:
-     - **Development (`HSM_DEV_MODE="1"`)**: `CMDLINE_DEV = "console=serial0,115200 console=tty1 loglevel=7 debug earlyprintk"`. Kernel `printk` broadcasts to both the physical HDMI monitor (`tty1`) and UART serial console (`serial0`), attaching `/dev/console` to the foreground monitor (`tty1`).
-     - **Production (`HSM_DEV_MODE="0"`)**: `CMDLINE_PROD = "quiet loglevel=0 console=tty1 fsck.mode=skip"`. Suppresses UART output completely and silences HDMI boot logs.
-2. **U-Boot Hardening & Non-Interactivity**:
-   - Production images include [`silent-boot.cfg`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/rpi-z2w-yocto-hsm/meta-hsm-os/recipes-bsp/u-boot/files/silent-boot.cfg) via `u-boot_%.bbappend`: sets `CONFIG_BOOTDELAY=-2` (disabling autoboot abort window), `CONFIG_SILENT_CONSOLE=y`, `CONFIG_SYS_DEVICE_NULLDEV=y`, and `CONFIG_SILENT_U_BOOT_ONLY=y`.
+     - **Development (`HSM_DEV_MODE="1"`)**: `CMDLINE_DEV = "console=serial0,115200 console=tty1 loglevel=7 debug earlyprintk logo.nologo vt.global_cursor_default=1"`. Kernel `printk` broadcasts to both the physical HDMI monitor (`tty1`) and UART serial console (`serial0`), attaching `/dev/console` to the foreground monitor (`tty1`).
+     - **Production (`HSM_DEV_MODE="0"`)**: `CMDLINE_PROD = "quiet loglevel=0 console=tty1 fsck.mode=skip vt.global_cursor_default=1 logo.nologo"`. Suppresses UART output completely and silences HDMI boot logs.
+5. **U-Boot Hardening & Non-Interactivity**:
+   - Production images include [`silent-boot.cfg`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-bsp/u-boot/files/silent-boot.cfg) via `u-boot_%.bbappend`: sets `CONFIG_BOOTDELAY=-2` (disabling autoboot abort window), `CONFIG_SILENT_CONSOLE=y`, `CONFIG_SYS_DEVICE_NULLDEV=y`, and `CONFIG_SILENT_U_BOOT_ONLY=y`.
    - In production, `rpi-u-boot-scr.bbappend` injects `setenv silent 1` and replaces verbose `echo` statements in `boot.cmd.in` with `#` comments, ensuring zero diagnostic emission over serial lines.
    - Development images retain `CONFIG_BOOTDELAY=2` and diagnostic RAUC slot echo messages.
 
@@ -386,6 +400,21 @@ The repository provides standalone test suites in [`scripts/`](file:///Users/gpf
 3. **Workspace Distclean Automation**:
    - The sub-repository [`Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/Makefile) provides `make distclean`, which atomically removes `build/`, `downloads/`, `sstate-cache/`, checked-out Kas layer repositories, and forcefully removes the container volume `rpi_yocto_hsm_tmp` via `$(CONTAINER_ENGINE) volume rm -f` (see [[Architecture/Decisions/ADR-0023 - Container Volume and Workspace Cache Purging during Distclean|ADR-0023]]).
    - Cascaded from root [`Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/Makefile) via `make yocto-distclean` and root `make distclean` (see [[Architecture/Build Lifecycle and Workspace Clean Routines|Build Lifecycle and Workspace Clean Routines]]).
+
+### 5.11 Appliance Identity (piKMS) & CLI Packaging Alignment (gphsm)
+Configured via [`kas-project.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/kas-project.yml) and [`recipes-support/gphsm/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-support/gphsm/):
+1. **Canonical Appliance Hostname (`piKMS`)**:
+   - Standardizes the system network and prompt identity to `piKMS` via BitBake configuration:
+     ```bitbake
+     hostname:pn-base-files = "piKMS"
+     ```
+   - Sets `/etc/hostname` to `piKMS`, ensuring consistent operator terminal prompts (`hsmutil@piKMS:~#` or `hsmutil@piKMS:~$`) across production and development builds (see [[Architecture/Decisions/ADR-0027 - Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm|ADR-0027]]).
+2. **Canonical CLI Packaging (`gphsm`)**:
+   - Recipe [`recipes-support/gphsm/gphsm.bb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-support/gphsm/gphsm.bb) packages the pre-compiled static Go ARM64 binary into `/usr/local/bin/gphsm`.
+   - Creates a symbolic link `/usr/local/bin/hsmutil` pointing to `gphsm` for complete backward compatibility.
+   - Provides transition aliases in `recipes-support/hsmutil/hsmutil.bb` mapping to `gphsm`.
+3. **Operator Account Preservation**:
+   - The primary appliance operator user account remains `hsmutil:users` with home directory `/home/hsmutil`, preserving existing automated provisioning, auto-login hooks, and credential setups while adopting modern binary tooling.
 
 ---
 
@@ -473,8 +502,15 @@ sequenceDiagram
 - **Hardware I2C-1 Bus Mapping for RTC**: [[Architecture/Decisions/ADR-0021 - Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module|ADR-0021: Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module]]
 - **RTC-Aware Informational Login Prompt**: [[Architecture/Decisions/ADR-0022 - RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync|ADR-0022: RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync]]
 - **Container Volume and Workspace Distclean**: [[Architecture/Decisions/ADR-0023 - Container Volume and Workspace Cache Purging during Distclean|ADR-0023: Container Volume and Workspace Cache Purging during Distclean]]
-- **Feature Specification**: [[features/yocto-blacksail-rtc-and-distclean|Feature: Yocto 6.1 (Blacksail), HW-084 (DS3231) RTC & Workspace Distclean]]
-- **Technical Specification**: [[Specification/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean|Specification: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]
-- **Implementation Plan**: [[Plan/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean Implementation Plan|Implementation Plan: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]
+- **Native Shadow PAM Password Expiration**: [[Architecture/Decisions/ADR-0024 - Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication|ADR-0024: Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication]]
+- **Complete U-Boot Network Subsystem Deactivation**: [[Architecture/Decisions/ADR-0025 - Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance|ADR-0025: Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance]]
+- **HDMI Console Noise Suppression & Log Level Hardening**: [[Architecture/Decisions/ADR-0026 - HDMI Console Noise Suppression and Log Level Hardening|ADR-0026: HDMI Console Noise Suppression and Log Level Hardening]]
+- **Appliance Identity & CLI Packaging Alignment**: [[Architecture/Decisions/ADR-0027 - Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm|ADR-0027: Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm]]
+- **Feature Specification (Hardening & piKMS)**: [[features/yocto-hardening-clean-console-pikms|Feature: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
+- **Feature Specification (Blacksail & RTC)**: [[features/yocto-blacksail-rtc-and-distclean|Feature: Yocto 6.1 (Blacksail), HW-084 (DS3231) RTC & Workspace Distclean]]
+- **Technical Specification (Hardening & piKMS)**: [[Specification/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment|Specification: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
+- **Technical Specification (Blacksail & RTC)**: [[Specification/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean|Specification: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]
+- **Implementation Plan (Hardening & piKMS)**: [[Plan/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment Implementation Plan|Implementation Plan: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
+- **Implementation Plan (Blacksail & RTC)**: [[Plan/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean Implementation Plan|Implementation Plan: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]
 - **Operational Guide**: [[Development/Yocto Build and RAUC Update Guide|Yocto Build and RAUC Update Guide]]
 - **Source Code**: [`hsm-yocto-offgrid-rpi/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)
