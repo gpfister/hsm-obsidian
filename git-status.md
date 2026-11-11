@@ -6,17 +6,20 @@ tags:
   - repository
   - branches
 created: 2026-10-31
-updated: 2026-11-06
-lifecycle_phase: Phase 6 Post-Merge Complete — Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery
-feature: "[[features/hsm-device-initialization-and-dual-mode-protocol-compatibility|HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
-plan: "[[Plan/HSM Device Initialization and Dual-Mode Protocol Compatibility Implementation Plan|Implementation Plan: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
+updated: 2026-11-11
+lifecycle_phase: Phase 6 Post-Merge Complete — Yocto 6.1 (Blacksail) Upgrade, HW-084 (DS3231) RTC Integration & Workspace Distclean
+feature: "[[features/yocto-blacksail-rtc-and-distclean|Yocto 6.1 (Blacksail), HW-084 (DS3231) RTC & Workspace Distclean]]"
+plan: "[[Plan/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean Implementation Plan|Implementation Plan: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]"
 adrs:
+  - "[[Architecture/Decisions/ADR-0023 - Container Volume and Workspace Cache Purging during Distclean|ADR-0023: Container Volume and Workspace Cache Purging during Distclean]]"
+  - "[[Architecture/Decisions/ADR-0022 - RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync|ADR-0022: RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync]]"
+  - "[[Architecture/Decisions/ADR-0021 - Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module|ADR-0021: Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module]]"
   - "[[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery]]"
   - "[[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
   - "[[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]"
   - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
-specification: "[[Specification/HSM Device Initialization and Dual-Mode Protocol Compatibility|Technical Specification: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
+specification: "[[Specification/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean|Technical Specification: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
 
@@ -30,16 +33,67 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Up to date with `origin/main` | `48d1ad9` (*chore(workspace): remove legacy symlink references from docs and test runner (#3)*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Ahead of `origin/main` by 2 commits | `37232ce` (*docs: pre-merge documentation update for Yocto 6.1, HW-084 RTC, and distclean*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Up to date with `origin/main` | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `7341531` (*refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Up to date with `origin/main` | `28925aa` (*docs: generalize README terminology to HSM USB key and appliance*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Up to date with `origin/main` | `HEAD` (*docs(vault): update git status and release changelogs for PR #2 and PR #3 merges*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Ahead of `origin/main` by 2 commits | `259b65c` (*docs: pre-merge update for HW-084 RTC, distclean, and vault links*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` by 1 commit | `HEAD` (*docs(vault): pre-merge formalization of ADR-0021 through ADR-0023, HW-084 RTC, and distclean*) | **Clean** | **Phase 6 Post-Merge Complete** |
 
 ---
 
-## 1.0 Merged Milestone: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery (Phase 6 Post-Merge Complete)
+## 1.0 Merged Milestone: Yocto 6.1 (Blacksail) Upgrade, HW-084 (DS3231) RTC Integration, and Workspace Distclean Automation (Phase 6 Post-Merge Complete)
+
+> [!NOTE]
+> **Post-Merge Milestone**: Full modernization of the air-gapped embedded Linux OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and workspace build orchestration successfully merged into `main`. Upgrades build manifests to Yocto Project 6.1 (`blacksail`) and BitBake 2.20, eliminates deprecated syntax (`*_OPTED_OUT`), enforces `${UNPACKDIR}` compliance, and integrates the battery-backed **HW-084 (Maxim DS3231SN)** hardware Real-Time Clock module over primary I2C-1 (Pins 1, 3, 5, 9) for high-precision air-gapped timekeeping. Establishes atomic `make distclean` and `make yocto-distclean` routines with container volume (`rpi_yocto_hsm_tmp`) purging.
+>
+> - **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+> - **Base Branch**: `main`
+> - **Merged Repositories & Commits**:
+>   - **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: Merged `feature/yocto-6.1-blacksail-rtc-distclean` into `main`
+>     - Commit: [`259b65c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`259b65c28e833ddca240f95c02bcfb1c1b18ca0e`) — *docs: pre-merge update for HW-084 RTC, distclean, and vault links*
+>     - Commit: [`76959a2`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`76959a20305fd128a58270d7f99164c6378d6c28`) — *feat(yocto): modernize kas manifest, integrate HW-084 DS3231 RTC, and add distclean*
+>   - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Merged `feature/yocto-6.1-blacksail-rtc-distclean` into `main`
+>     - Commit: [`37232ce`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`37232ce836d97f0805b55c804b023677f29887b1`) — *docs: pre-merge documentation update for Yocto 6.1, HW-084 RTC, and distclean*
+>     - Commit: [`b337753`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`b33775327f4c70ac937e659aed471f7aea2342f0`) — *build(make): add yocto-distclean forward and hook into distclean*
+> - **Branch Cleanup**: Both branches cleanly merged, local feature branch `feature/yocto-6.1-blacksail-rtc-distclean` synchronized, and working trees verified clean on `main`.
+> - **Architecture Decision Records**: 
+>   - [[Architecture/Decisions/ADR-0021 - Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module|ADR-0021: Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module]]
+>   - [[Architecture/Decisions/ADR-0022 - RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync|ADR-0022: RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync]]
+>   - [[Architecture/Decisions/ADR-0023 - Container Volume and Workspace Cache Purging during Distclean|ADR-0023: Container Volume and Workspace Cache Purging during Distclean]]
+> - **Architecture & Hardware Documentation**:
+>   - [[Architecture/08 - Air-Gapped Time Synchronization and Hardware RTC Architecture|08 - Time Synchronization Architecture]]
+>   - [[Architecture/Build Lifecycle and Workspace Clean Routines|Build Lifecycle and Workspace Clean Routines]]
+>   - [[Hardware/HW-084 DS3231 Real-Time Clock Module|HW-084 Real-Time Clock Module]]
+> - **Technical Specification & Plan**:
+>   - [[Specification/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean|SPEC-2026-YOCTO-BLACKSAIL-RTC]]
+>   - [[Plan/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean Implementation Plan|PLAN-2026-YOCTO-BLACKSAIL-RTC]]
+>   - [[features/yocto-blacksail-rtc-and-distclean|Feature: Yocto 6.1 (Blacksail), HW-084 (DS3231) RTC & Workspace Distclean]]
+> - **Release Changelog**: [[Changelog|Workspace Release Changelog]]
+>
+> ### Deliverable Components & Post-Merge Verifications
+> 1. **Air-Gapped Embedded Linux OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**:
+>    - Merged into `main` at commit [`259b65c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi).
+>    - Validated `kas-project.yml` syntax with zero BitBake deprecation warnings.
+>    - Verified kernel RTC options (`CONFIG_RTC_DRV_DS1307=y`, `CONFIG_RTC_HCTOSYS=y`, `CONFIG_I2C_BCM2835=y`) in `hardened.cfg`.
+>    - Verified `ENABLE_I2C = "1"` and `dtoverlay=i2c-rtc,ds3231` in `rpi-config_%.bbappend`.
+>    - Verified `i2c-tools` in `hsm-image-base.bb`.
+>    - Verified transactional SUID helper `hsm-set-date.c` (syntax check and compilation).
+>    - Verified `clock-setup.sh` syntax and status banner logic.
+>    - Verified subrepo `make distclean` dry-run purging build, downloads, sstate-cache, layers, and volume `rpi_yocto_hsm_tmp`.
+> 2. **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**:
+>    - Merged into `main` at commit [`37232ce`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm).
+>    - Added `yocto-distclean` target to root `Makefile` forwarding to subrepo `distclean`.
+>    - Hooked `yocto-distclean` into root `distclean` pipeline.
+>    - Updated root `README.md` and `AGENTS.md` with complete documentation for Yocto targets and RTC architecture.
+>    - Verified `make -n yocto-distclean` and `make -n distclean`.
+> 3. **Documentation Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**:
+>    - Formalized ADR-0021, ADR-0022, ADR-0023, Note 08, Build Lifecycle note, and HW-084 hardware reference.
+>    - Synchronized `00 - Index.md`, `README.md`, `07 - Air-Gapped RPi HSM OS Architecture.md`, `Changelog.md`, and `git-status.md`.
+
+---
+
+## 1.1 Merged Milestone: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
 > **Post-Merge Milestone**: Formal retirement of transitional build-time binary symlinks (`bin/gphsms`, `bin/hsmutil`, `bin/hsmutils`) from `hsm-cli/bin` and removal of legacy symlink references from workspace documentation and test runners successfully merged into `main`. Establishes `bin/gphsm` as the sole canonical binary executable across the workspace. Implements platform-tailored compilation: macOS builds with `CGO_ENABLED=1` linking Apple IOKit/CoreFoundation for native hardware USB discovery, while Linux and Windows builds remain 100% hermetic static binaries (`CGO_ENABLED=0`).

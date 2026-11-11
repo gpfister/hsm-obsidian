@@ -6,12 +6,60 @@ tags:
   - history
   - milestones
 created: 2026-10-31
-updated: 2026-11-06
+updated: 2026-11-11
 ---
 
 # Workspace Release Changelog
 
 This document tracks all formal releases, milestone deliveries, and post-merge changelog notes across the orchestrated multi-repository workspace (`ncs-nrf52840dongle-kms`).
+
+---
+
+## [Merged] — 2026-11-11: Yocto 6.1 (Blacksail) Upgrade, HW-084 (DS3231) RTC Integration, and Workspace Distclean Automation (Merged into main)
+
+> [!NOTE]
+> **Post-Merge Milestone**: Full modernization of the air-gapped embedded Linux operating system ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and workspace build orchestration successfully merged into `main`. Upgrades build manifests to Yocto Project 6.1 (`blacksail`) and BitBake 2.20, eliminates deprecated syntax (`*_OPTED_OUT`), enforces `${UNPACKDIR}` compliance, and integrates the battery-backed **HW-084 (Maxim DS3231SN)** hardware Real-Time Clock module over primary I2C-1 (Pins 1, 3, 5, 9) for high-precision air-gapped timekeeping. Establishes atomic `make distclean` and `make yocto-distclean` routines with container volume (`rpi_yocto_hsm_tmp`) purging.
+>
+> **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+>
+> **Merged Repositories & Commits**:
+> - **Air-Gapped Embedded Linux OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: Merged `feature/yocto-6.1-blacksail-rtc-distclean` into `main`
+>   - Commit: [`259b65c`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`259b65c28e833ddca240f95c02bcfb1c1b18ca0e`) — *docs: pre-merge update for HW-084 RTC, distclean, and vault links*
+>   - Commit: [`76959a2`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`76959a20305fd128a58270d7f99164c6378d6c28`) — *feat(yocto): modernize kas manifest, integrate HW-084 DS3231 RTC, and add distclean*
+> - **Workspace Root Orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Merged `feature/yocto-6.1-blacksail-rtc-distclean` into `main`
+>   - Commit: [`37232ce`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`37232ce836d97f0805b55c804b023677f29887b1`) — *docs: pre-merge documentation update for Yocto 6.1, HW-084 RTC, and distclean*
+>   - Commit: [`b337753`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`b33775327f4c70ac937e659aed471f7aea2342f0`) — *build(make): add yocto-distclean forward and hook into distclean*
+> - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Branch `main`
+>   - Formalized [[Architecture/Decisions/ADR-0021 - Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module|ADR-0021]], [[Architecture/Decisions/ADR-0022 - RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync|ADR-0022]], [[Architecture/Decisions/ADR-0023 - Container Volume and Workspace Cache Purging during Distclean|ADR-0023]], [[Architecture/08 - Air-Gapped Time Synchronization and Hardware RTC Architecture|08 - Time Synchronization Architecture]], [[Architecture/Build Lifecycle and Workspace Clean Routines|Build Lifecycle Architecture]], and [[Hardware/HW-084 DS3231 Real-Time Clock Module|HW-084 Hardware Specification]].
+>
+> **Deliverable Scope & Changes**:
+> 1. **Kas Project Modernization & Yocto 6.1 Alignment**:
+>    - Converted `DISTRO_FEATURES_OPTED_OUT += "sysvinit"` to `DISTRO_FEATURES:remove = "sysvinit"`.
+>    - Removed redundant `MACHINE_FEATURES_OPTED_OUT += "bluetooth wifi"` in `kas-project.yml`.
+>    - Enforced `LAYERSERIES_COMPAT` overrides for `meta-raspberrypi` and `meta-rauc` tracking `master`.
+>    - Verified `${UNPACKDIR}` compliance and Linux 6.12+ compatibility in `nrf52840-hsm-kmod`.
+> 2. **HW-084 (Maxim DS3231SN) Hardware RTC Integration**:
+>    - Enabled in-kernel `CONFIG_RTC_DRV_DS1307=y`, `CONFIG_RTC_HCTOSYS=y`, `CONFIG_RTC_HCTOSYS_DEVICE="rtc0"`, `CONFIG_I2C=y`, and `CONFIG_I2C_BCM2835=y` in `hardened.cfg`.
+>    - Injected `ENABLE_I2C = "1"` and `dtoverlay=i2c-rtc,ds3231` into `/boot/config.txt` via `rpi-config_%.bbappend`.
+>    - Added diagnostic utility `i2c-tools` (`/usr/sbin/i2cdetect`) to image manifest.
+> 3. **RTC-Aware Login Calibration & SUID Dual-Sync**:
+>    - Refactored `clock-setup.sh` to probe `/dev/rtc0` via `hwclock -u -r` and present an informative banner.
+>    - Implemented Enter-to-keep shortcut: pressing `[Enter]` retains valid RTC time without typing overhead.
+>    - Extended setuid root helper `hsm-set-date.c` with `<linux/rtc.h>` `ioctl(RTC_SET_TIME)` to atomically update both kernel system time (`settimeofday`) and `/dev/rtc0` hardware registers.
+> 4. **Two-Tier Workspace Distclean Automation**:
+>    - Implemented `make distclean` in `hsm-yocto-offgrid-rpi/Makefile` purging `build/`, `downloads/`, `sstate-cache/`, Kas layer clones, and container volume `rpi_yocto_hsm_tmp`.
+>    - Added `yocto-distclean` forward target in root `Makefile` and chained into root `make distclean`.
+>
+> **Associated Architecture & Decision Artifacts**:
+> - [[Architecture/Decisions/ADR-0021 - Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module|ADR-0021: Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module]]
+> - [[Architecture/Decisions/ADR-0022 - RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync|ADR-0022: RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync]]
+> - [[Architecture/Decisions/ADR-0023 - Container Volume and Workspace Cache Purging during Distclean|ADR-0023: Container Volume and Workspace Cache Purging during Distclean]]
+> - [[Architecture/08 - Air-Gapped Time Synchronization and Hardware RTC Architecture|08 - Air-Gapped Time Synchronization and Hardware RTC Architecture]]
+> - [[Architecture/Build Lifecycle and Workspace Clean Routines|Build Lifecycle and Workspace Clean Routines]]
+> - [[Hardware/HW-084 DS3231 Real-Time Clock Module|HW-084 DS3231 Real-Time Clock Module]]
+> - [[Specification/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean|Technical Specification: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]
+> - [[Plan/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean Implementation Plan|Implementation Plan: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]
+> - [[features/yocto-blacksail-rtc-and-distclean|Feature Specification: Yocto 6.1 (Blacksail), HW-084 (DS3231) RTC & Workspace Distclean]]
 
 ---
 
