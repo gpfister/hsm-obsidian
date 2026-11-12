@@ -6,11 +6,15 @@ tags:
   - repository
   - branches
 created: 2026-10-31
-updated: 2026-11-11
-lifecycle_phase: Phase 6 Post-Merge Complete — HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment
-feature: "[[features/yocto-hardening-clean-console-pikms|HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]"
-plan: "[[Plan/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment Implementation Plan|Implementation Plan: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]"
+updated: 2026-11-12
+lifecycle_phase: Phase 5 Pre-Merge Documentation Tidy-Up — Kernel Complete Network Stripping, Clean Sub-Repo Architecture, Environment Conditioning, and gphsm Workflow
+feature: "[[features/yocto-network-strip-clean-layout|Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]"
+plan: "[[Plan/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow Implementation Plan|Implementation Plan: Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]"
 adrs:
+  - "[[Architecture/Decisions/ADR-0031 - gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink|ADR-0031: gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink]]"
+  - "[[Architecture/Decisions/ADR-0030 - Sub-Repository Workspace Cleanliness via Encapsulated Build Directory|ADR-0030: Sub-Repository Workspace Cleanliness via Encapsulated Build Directory]]"
+  - "[[Architecture/Decisions/ADR-0029 - Production Session History Suppression and Environment-Conditioned Hostnames|ADR-0029: Production Session History Suppression and Environment-Conditioned Hostnames]]"
+  - "[[Architecture/Decisions/ADR-0028 - Complete Kernel Network Protocol Stripping|ADR-0028: Complete Kernel Network Protocol Stripping (Elimination of PF_INET and PF_INET6)]]"
   - "[[Architecture/Decisions/ADR-0027 - Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm|ADR-0027: Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm]]"
   - "[[Architecture/Decisions/ADR-0026 - HDMI Console Noise Suppression and Log Level Hardening|ADR-0026: HDMI Console Noise Suppression and Log Level Hardening]]"
   - "[[Architecture/Decisions/ADR-0025 - Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance|ADR-0025: Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance]]"
@@ -23,7 +27,7 @@ adrs:
   - "[[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]"
   - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
-specification: "[[Specification/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment|Technical Specification: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]"
+specification: "[[Specification/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow|Technical Specification: Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
 
@@ -37,16 +41,55 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Ahead of `origin/main` by 3 commits | `8487738` (*docs(workspace): document piKMS appliance identity, stealth console, and gphsm CLI alignment*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `feature/yocto-network-strip-clean-layout` | Branch active (ahead of `main` by 1 commit) | `4dc9461` (*docs(workspace): document kernel network stripping, encapsulated build layout, and gphsm alignment*) | **Clean** | **Phase 5 Pre-Merge Review** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Up to date with `origin/main` | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Production Ready** |
 | **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `7341531` (*refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*) | **Clean** | **Production Ready** |
 | **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Production Ready** |
-| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Ahead of `origin/main` by 6 commits | `624b6ba` (*docs: document clean console, piKMS identity, and U-Boot network deactivation in README*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` by 4 commits | `HEAD` (*docs(vault): post-merge documentation for clean console, piKMS identity, and u-boot network deactivation*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `feature/yocto-network-strip-clean-layout` | Branch active (ahead of `main` by 2 commits) | `4d403f1` (*docs: update README with network stripping, history conditioning, and ADR-0028-0031 links*) | **Clean** | **Phase 5 Pre-Merge Review** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` by 6 commits | `de00c99` (*docs(vault): formalize ADR-0028 through ADR-0031, clean layout, and network stripping*) | **Clean** | **Phase 5 Pre-Merge Review** |
 
 ---
 
-## 1.0 Merged Milestone: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, piKMS Hostname Standardization, and gphsm CLI Alignment (Phase 6 Post-Merge Complete)
+## 1.0 Active Milestone: Kernel Complete Network Stripping, Clean Sub-Repo Architecture, Environment Conditioning, and gphsm Workflow (Phase 5 Pre-Merge Documentation Tidy-Up)
+
+> [!NOTE]
+> **Active Milestone**: Advanced security hardening, sub-repository layout encapsulation, anti-forensic session protection, and tooling alignment for the air-gapped embedded Linux OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and root workspace coordination.
+>
+> - **Lifecycle Phase**: Phase 5 Pre-Merge Documentation Tidy-Up.
+> - **Target Branch**: `main`
+> - **Active Feature Branches**:
+>   - **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: `feature/yocto-network-strip-clean-layout`
+>     - `4d403f1` — *docs: update README with network stripping, history conditioning, and ADR-0028-0031 links*
+>     - `6b69035` — *feat(yocto): strip kernel network stacks, tidy subrepo layout, condition history and hostname*
+>   - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: `feature/yocto-network-strip-clean-layout`
+>     - `4dc9461` — *docs(workspace): document kernel network stripping, encapsulated build layout, and gphsm alignment*
+> - **Architecture Decision Records**:
+>   - [[Architecture/Decisions/ADR-0028 - Complete Kernel Network Protocol Stripping|ADR-0028: Complete Kernel Network Protocol Stripping (Elimination of PF_INET and PF_INET6)]]
+>   - [[Architecture/Decisions/ADR-0029 - Production Session History Suppression and Environment-Conditioned Hostnames|ADR-0029: Production Session History Suppression and Environment-Conditioned Hostnames]]
+>   - [[Architecture/Decisions/ADR-0030 - Sub-Repository Workspace Cleanliness via Encapsulated Build Directory|ADR-0030: Sub-Repository Workspace Cleanliness via Encapsulated Build Directory]]
+>   - [[Architecture/Decisions/ADR-0031 - gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink|ADR-0031: gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink]]
+> - **Technical Specification & Plan**:
+>   - [[Specification/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow|Technical Specification]]
+>   - [[Plan/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow Implementation Plan|Implementation Plan]]
+>   - [[features/yocto-network-strip-clean-layout|Feature Specification]]
+>
+> ### Deliverable Components & Pre-Merge Verifications
+> 1. **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**:
+>    - Stripped IPv4 (`# CONFIG_INET is not set`), IPv6 (`# CONFIG_IPV6 is not set`), and Netfilter (`# CONFIG_NETFILTER is not set`, `# CONFIG_NF_TABLES is not set`) while strictly preserving `CONFIG_NET=y` and `CONFIG_UNIX=y` for local IPC.
+>    - Purged user-space `nftables` and `nftables-rules` from `hsm-image-base.bb` and pruned `recipes-connectivity/nftables/`.
+>    - Deactivated production shell history (`HISTFILE=/dev/null`, `HISTSIZE=0`, `set +o history`) via `/etc/profile.d/99-hsm-history.sh` in `init-wizard.bb` (`HSM_DEV_MODE=0`) while preserving standard interactive history in development.
+>    - Differentiated hostname: `piKMS` in production (`hsm-image-prod.bb`) and `piKMS-dev` in development (`hsm-image-dev.bb`).
+>    - Encapsulated all Kas upstream layers into `build/repos/<name>`, downloads into `build/downloads/`, and sstate into `build/sstate-cache/`.
+>    - Packaged `/usr/local/bin/gphsm` via `recipes-support/gphsm/gphsm.bb` with dual local/git build workflows and permanently eliminated the legacy `hsmutil` symlink.
+> 2. **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**:
+>    - Updated `AGENTS.md`, `README.md`, and `Makefile` reflecting kernel network stripping, encapsulated layout, environment hostnames, and `gphsm` CLI packaging.
+> 3. **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**:
+>    - Formalized ADR-0028, ADR-0029, ADR-0030, and ADR-0031.
+>    - Updated Note 07 (*Air-Gapped RPi HSM OS Architecture*), Note on *Build Lifecycle and Workspace Clean Routines*, `00 - Index.md`, and `README.md`.
+>
+> ---
+>
+> ## 1.1 Merged Milestone: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, piKMS Hostname Standardization, and gphsm CLI Alignment (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
 > **Post-Merge Milestone**: Hardening, stealth console optimization, and CLI tooling alignment for the air-gapped embedded Linux operating system ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and workspace root orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)) successfully merged into `main`. Enforces native Linux PAM first-login password expiration (`sp_lstchg=0`) with deduplicated setup wizard, completely deactivates U-Boot network drivers and commands (`no-net.cfg`), eliminates boot logos and suppresses HDMI console noise (`10-clean-console.conf`, `20-quiet-console.conf`), standardizes system identity to `piKMS`, and aligns application packaging to `/usr/local/bin/gphsm` with `/usr/local/bin/hsmutil` symlink.
