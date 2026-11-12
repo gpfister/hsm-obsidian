@@ -7,7 +7,7 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-12
-lifecycle_phase: Phase 5 Pre-Merge Documentation Tidy-Up — Persistent Authentication & User Account State Across Reboots
+lifecycle_phase: Phase 6 Post-Merge Complete — Persistent Authentication & User Account State Across Reboots
 feature: "[[features/yocto-persist-auth-state|Persistent Authentication & User Account State Across Reboots]]"
 plan: "[[Plan/Persistent Authentication and User Account State Across Reboots Implementation Plan|Implementation Plan: Persistent Authentication & User Account State Across Reboots]]"
 adrs:
@@ -43,30 +43,29 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `feature/yocto-persist-auth-state` | Branch active (ahead of `main` by 1 commit) | `966b004` (*docs(workspace): document targeted authentication persistence and filesystem labeling*) | **Clean** | **Phase 5 Pre-Merge Review** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Up to date with `origin/main` | `966b004` (*docs(workspace): document targeted authentication persistence and filesystem labeling*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Up to date with `origin/main` | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Production Ready** |
 | **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `7341531` (*refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*) | **Clean** | **Production Ready** |
 | **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Production Ready** |
-| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `feature/yocto-persist-auth-state` | Branch active (ahead of `main` by 2 commits) | `51fa045` (*docs: add ADR-0032, ADR-0033, and auth persistence links to README*) | **Clean** | **Phase 5 Pre-Merge Review** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` by 9 commits | `583e099` (*docs(vault): formalize ADR-0032 and ADR-0033 for persistent authentication state*) | **Clean** | **Phase 5 Pre-Merge Review** |
+| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Up to date with `origin/main` | `51fa045` (*docs: add ADR-0032, ADR-0033, and auth persistence links to README*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` | `f08158f` (*docs(status): update workspace git status for Phase 5 pre-merge review*) | **Clean** | **Phase 6 Post-Merge Complete** |
 
 ---
 
-## 1.0 Active Milestone: Persistent Authentication & User Account State Across Reboots (Phase 5 Pre-Merge Documentation Tidy-Up)
+## 1.0 Merged Milestone: Persistent Authentication & User Account State Across Reboots (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
-> **Active Milestone**: Targeted authentication state persistence, power-fail safe atomic synchronization, and persistent home directory retention for the air-gapped embedded Linux operating system ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and root workspace coordination.
+> **Post-Merge Milestone**: Targeted authentication state persistence, real-time atomic credential synchronization, label-based filesystem mounting, and persistent user home directory preservation for the air-gapped embedded Linux operating system ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and workspace root orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)) successfully merged into `main`. Retains an immutable root filesystem (`read-only-rootfs`) with an ephemeral RAM tmpfs overlay over `/etc` (`/run/overlay/etc-upper`) to prevent configuration drift and guarantee clean RAUC A/B operating system updates, while securely persisting operator credentials (`/etc/shadow`, `/etc/passwd`, `/etc/group`, `/etc/gshadow`) to `/data/etc` (mode `0700`, owner `root:root`). Automatically seeds `/data/etc` on first boot, restores valid credentials on subsequent boots with corruption fallback to prevent lockout, synchronizes changes in real time via systemd path unit (`hsm-persist-auth.path`) and oneshot service (`hsm-persist-auth.service`) with atomic POSIX staging and `sync` flush, guarantees shutdown persistence via `ExecStop` flush hook, standardizes filesystem mounts on volume labels (`LABEL=data`, `LABEL=homefs`), and preserves operator home dotfiles (`.bashrc`, `.keymap`, `.wizard_completed`) across reboots.
 >
-> - **Lifecycle Phase**: Phase 5 Pre-Merge Documentation Tidy-Up.
-> - **Target Branch**: `main`
-> - **Active Feature Branches**:
->   - **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: `feature/yocto-persist-auth-state`
->     - `51fa045` — *docs: add ADR-0032, ADR-0033, and auth persistence links to README*
->     - `248daa4` — *feat(yocto): targeted auth persistence across reboots via /data/etc*
->   - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: `feature/yocto-persist-auth-state`
->     - `966b004` — *docs(workspace): document targeted authentication persistence and filesystem labeling*
->   - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: `main`
->     - `583e099` — *docs(vault): formalize ADR-0032 and ADR-0033 for persistent authentication state*
+> - **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+> - **Base Branch**: `main`
+> - **Merged Repositories & Commits**:
+>   - **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: Merged `feature/yocto-persist-auth-state` into `main`
+>     - Commit: [`51fa045`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`51fa045f4af05a74408b0bb491a595b7dc05062a`) — *docs: add ADR-0032, ADR-0033, and auth persistence links to README*
+>     - Commit: [`248daa4`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`248daa47cc15bb085d2f57f159dc843310878c6b`) — *feat(yocto): targeted auth persistence across reboots via /data/etc*
+>   - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Merged `feature/yocto-persist-auth-state` into `main`
+>     - Commit: [`966b004`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`966b004c15dfb7e6cafcf92aed0947f31bb7f853`) — *docs(workspace): document targeted authentication persistence and filesystem labeling*
+>   - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Branch `main`
 > - **Architecture Decision Records**:
 >   - [[Architecture/Decisions/ADR-0032 - Targeted Authentication State Persistence to data-etc with Ephemeral etc OverlayFS|ADR-0032: Targeted Authentication State Persistence to /data/etc with Ephemeral /etc OverlayFS]]
 >   - [[Architecture/Decisions/ADR-0033 - Real-Time Atomic Credential Synchronization and Reboot-Shutdown Flushes|ADR-0033: Real-Time Atomic Credential Synchronization and Reboot/Shutdown Flushes]]
@@ -74,9 +73,11 @@ This document tracks real-time Git branch topologies, commit records, working di
 >   - [[Specification/Persistent Authentication and User Account State Across Reboots|Technical Specification]]
 >   - [[Plan/Persistent Authentication and User Account State Across Reboots Implementation Plan|Implementation Plan]]
 >   - [[features/yocto-persist-auth-state|Feature Specification]]
+> - **Release Changelog**: [[Changelog|Workspace Release Changelog]]
 >
-> ### Deliverable Components & Pre-Merge Verifications
+> ### Deliverable Components & Post-Merge Verifications
 > 1. **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**:
+>    - Merged into `main` at commit [`51fa045`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi).
 >    - Standardized `/etc/fstab` to reference `/data` (`LABEL=data`) and `/home` (`LABEL=homefs`) by volume label instead of static partition indices.
 >    - Updated `hsm-setup-volatile.sh` to check `/data` mount, seed `/data/etc` (`0700 root:root`) from base rootfs template on first boot (`0400 root:shadow` for shadow/gshadow, `0644 root:root` for passwd/group).
 >    - Restored `/data/etc/*` into active `/etc` overlay on subsequent boots with strict ownership/permissions and corruption fallback to base template.
@@ -86,11 +87,12 @@ This document tracks real-time Git branch topologies, commit records, working di
 >    - Packaged all scripts and units in `recipes-core/volatile-storage/volatile-storage.bb` and enabled via systemd class.
 >    - Verified syntax with `bash -n` on all scripts; verified simulated seeding, subsequent restoration, atomic sync, and corruption fallback.
 > 2. **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**:
+>    - Merged into `main` at commit [`966b004`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm).
 >    - Updated `AGENTS.md` and `README.md` reflecting targeted authentication persistence architecture, real-time synchronization, filesystem volume labeling, and persistent home retention.
 > 3. **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**:
 >    - Formalized ADR-0032 and ADR-0033.
 >    - Authored Technical Specification, Implementation Plan, and Feature Specification.
->    - Synchronized Note 07 (*Air-Gapped RPi HSM OS Architecture*), `00 - Index.md`, `README.md`, and `git-status.md`.
+>    - Synchronized Note 07 (*Air-Gapped RPi HSM OS Architecture*), `00 - Index.md`, `README.md`, `Changelog.md`, and `git-status.md`.
 >
 > ---
 >

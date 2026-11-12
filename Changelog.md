@@ -6,12 +6,58 @@ tags:
   - history
   - milestones
 created: 2026-10-31
-updated: 2026-11-11
+updated: 2026-11-12
 ---
 
 # Workspace Release Changelog
 
 This document tracks all formal releases, milestone deliveries, and post-merge changelog notes across the orchestrated multi-repository workspace (`ncs-nrf52840dongle-kms`).
+
+---
+
+## [Merged] — 2026-11-12: Persistent Authentication & User Account State Across Reboots (Merged into main)
+
+> [!NOTE]
+> **Post-Merge Milestone**: Targeted authentication state persistence, real-time atomic credential synchronization, label-based filesystem mounting, and persistent user home directory preservation for the air-gapped embedded Linux operating system ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and workspace root orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)) successfully merged into `main`. Retains an immutable root filesystem (`read-only-rootfs`) with an ephemeral RAM tmpfs overlay over `/etc` (`/run/overlay/etc-upper`) to prevent configuration drift and guarantee clean RAUC A/B operating system updates, while securely persisting operator credentials (`/etc/shadow`, `/etc/passwd`, `/etc/group`, `/etc/gshadow`) to `/data/etc` (mode `0700`, owner `root:root`). Automatically seeds `/data/etc` on first boot, restores valid credentials on subsequent boots with corruption fallback to prevent lockout, synchronizes changes in real time via systemd path unit (`hsm-persist-auth.path`) and oneshot service (`hsm-persist-auth.service`) with atomic POSIX staging and `sync` flush, guarantees shutdown persistence via `ExecStop` flush hook, standardizes filesystem mounts on volume labels (`LABEL=data`, `LABEL=homefs`), and preserves operator home dotfiles (`.bashrc`, `.keymap`, `.wizard_completed`) across reboots.
+>
+> **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+>
+> **Merged Repositories & Commits**:
+> - **Air-Gapped Embedded Linux OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: Merged `feature/yocto-persist-auth-state` into `main`
+>   - Commit: [`51fa045`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`51fa045f4af05a74408b0bb491a595b7dc05062a`) — *docs: add ADR-0032, ADR-0033, and auth persistence links to README*
+>   - Commit: [`248daa4`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`248daa47cc15bb085d2f57f159dc843310878c6b`) — *feat(yocto): targeted auth persistence across reboots via /data/etc*
+> - **Workspace Root Orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Merged `feature/yocto-persist-auth-state` into `main`
+>   - Commit: [`966b004`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`966b004c15dfb7e6cafcf92aed0947f31bb7f853`) — *docs(workspace): document targeted authentication persistence and filesystem labeling*
+> - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Branch `main`
+>   - Formalized [[Architecture/Decisions/ADR-0032 - Targeted Authentication State Persistence to data-etc with Ephemeral etc OverlayFS|ADR-0032]], [[Architecture/Decisions/ADR-0033 - Real-Time Atomic Credential Synchronization and Reboot-Shutdown Flushes|ADR-0033]], [[features/yocto-persist-auth-state|Feature Specification]], [[Specification/Persistent Authentication and User Account State Across Reboots|Technical Specification]], [[Plan/Persistent Authentication and User Account State Across Reboots Implementation Plan|Implementation Plan]], and updated [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|07 - Air-Gapped RPi HSM OS Architecture]].
+>
+> **Deliverable Scope & Changes**:
+> 1. **Filesystem Mount Standardization (`/etc/fstab`)**:
+>    - Standardized partition mount declarations using volume labels: `LABEL=data` on `/data` and `LABEL=homefs` on `/home`.
+>    - Eliminated reliance on static, brittle MMC device node paths (`/dev/mmcblk0p5`, `/dev/mmcblk0p6`).
+> 2. **Targeted Authentication Persistence (`/data/etc`)**:
+>    - Designated `/data/etc` (mode `0700`, `root:root`) as the dedicated credential store for `shadow`, `passwd`, `group`, and `gshadow`.
+>    - Retained `/etc` as an ephemeral RAM tmpfs overlay (`/run/overlay/etc-upper`), preserving 100% rootfs immutability and preventing RAUC update configuration drift.
+> 3. **Early Boot Seeding & Restoration (`hsm-setup-volatile.sh`)**:
+>    - Verified `/data` mount; on first boot, seeds `/data/etc` from the clean rootfs template with strict mode and ownership enforcement (`0400 root:shadow` for shadow/gshadow, `0644 root:root` for passwd/group).
+>    - On subsequent boots, restores `/data/etc/*` into active `/etc` overlay before PAM or login services start, restoring valid `sp_lstchg` password age and eliminating repetitive first-login password prompts.
+>    - Implemented corruption fallback: empty or truncated files automatically fall back to base templates, preventing operator console lockout.
+> 4. **Real-Time Atomic Synchronization & Pre-Unmount Shutdown Flush**:
+>    - Deployed `hsm-persist-auth.path` monitoring `PathModified` on `/etc/{shadow,passwd,group,gshadow}`.
+>    - Deployed oneshot `hsm-persist-auth.service` executing `/usr/local/bin/hsm-sync-auth.sh`.
+>    - Implemented 4-phase atomic update pipeline: temporary PID-staging (`.<file>.tmp.$$`), permissions enforcement, backup rotation (`.bak`), POSIX `mv -f` atomic rename, and kernel `sync` flush to MMC storage.
+>    - Declared `Conflicts=shutdown.target` and `ExecStop=/usr/local/bin/hsm-sync-auth.sh`, ensuring all pending in-memory credential changes are committed to disk before `/data` unmounts on shutdown or reboot.
+> 5. **Persistent User Home Directory Retention**:
+>    - In `hsm-setup-volatile.sh`, added `mountpoint -q /home` verification; skips ephemeral tmpfs mounting on `/home/hsmutil` when persistent `/home` (`LABEL=homefs`) is mounted.
+>    - Retains operator shell preferences (`.bashrc`), keyboard layout (`.keymap`), and first-login wizard completion marker (`.wizard_completed`) across reboots.
+>
+> **Associated Architecture & Decision Artifacts**:
+> - [[Architecture/Decisions/ADR-0032 - Targeted Authentication State Persistence to data-etc with Ephemeral etc OverlayFS|ADR-0032: Targeted Authentication State Persistence to /data/etc with Ephemeral /etc OverlayFS]]
+> - [[Architecture/Decisions/ADR-0033 - Real-Time Atomic Credential Synchronization and Reboot-Shutdown Flushes|ADR-0033: Real-Time Atomic Credential Synchronization and Reboot/Shutdown Flushes]]
+> - [[features/yocto-persist-auth-state|Feature Specification: Persistent Authentication & User Account State Across Reboots]]
+> - [[Specification/Persistent Authentication and User Account State Across Reboots|Technical Specification: Persistent Authentication & User Account State Across Reboots]]
+> - [[Plan/Persistent Authentication and User Account State Across Reboots Implementation Plan|Implementation Plan: Persistent Authentication & User Account State Across Reboots]]
+> - [[Architecture/07 - Air-Gapped RPi HSM OS Architecture|07 - Air-Gapped RPi HSM OS Architecture]]
 
 ---
 
