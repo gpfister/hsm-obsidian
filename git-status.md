@@ -7,7 +7,7 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-12
-lifecycle_phase: Phase 5 Pre-Merge Documentation Tidy-Up — Kernel Complete Network Stripping, Clean Sub-Repo Architecture, Environment Conditioning, and gphsm Workflow
+lifecycle_phase: Phase 6 Post-Merge Complete — Kernel Complete Network Stripping, Clean Sub-Repo Architecture, Environment Conditioning, and gphsm Workflow
 feature: "[[features/yocto-network-strip-clean-layout|Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]"
 plan: "[[Plan/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow Implementation Plan|Implementation Plan: Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]"
 adrs:
@@ -41,28 +41,29 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `feature/yocto-network-strip-clean-layout` | Branch active (ahead of `main` by 1 commit) | `4dc9461` (*docs(workspace): document kernel network stripping, encapsulated build layout, and gphsm alignment*) | **Clean** | **Phase 5 Pre-Merge Review** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Up to date with `origin/main` | `4dc9461` (*docs(workspace): document kernel network stripping, encapsulated build layout, and gphsm alignment*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Up to date with `origin/main` | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Production Ready** |
 | **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `7341531` (*refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*) | **Clean** | **Production Ready** |
 | **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Production Ready** |
-| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `feature/yocto-network-strip-clean-layout` | Branch active (ahead of `main` by 2 commits) | `4d403f1` (*docs: update README with network stripping, history conditioning, and ADR-0028-0031 links*) | **Clean** | **Phase 5 Pre-Merge Review** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` by 6 commits | `de00c99` (*docs(vault): formalize ADR-0028 through ADR-0031, clean layout, and network stripping*) | **Clean** | **Phase 5 Pre-Merge Review** |
+| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Up to date with `origin/main` | `4d403f1` (*docs: update README with network stripping, history conditioning, and ADR-0028-0031 links*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` | `9f1427f` (*docs(status): update workspace git status for Phase 5 pre-merge review*) | **Clean** | **Phase 6 Post-Merge Complete** |
 
 ---
 
-## 1.0 Active Milestone: Kernel Complete Network Stripping, Clean Sub-Repo Architecture, Environment Conditioning, and gphsm Workflow (Phase 5 Pre-Merge Documentation Tidy-Up)
+## 1.0 Merged Milestone: Kernel Complete Network Stripping, Clean Sub-Repo Architecture, Environment Conditioning, and gphsm Workflow (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
-> **Active Milestone**: Advanced security hardening, sub-repository layout encapsulation, anti-forensic session protection, and tooling alignment for the air-gapped embedded Linux OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and root workspace coordination.
+> **Post-Merge Milestone**: Advanced security hardening, sub-repository layout encapsulation, anti-forensic session protection, and tooling alignment for the air-gapped embedded Linux operating system ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and workspace root orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)) successfully merged into `main`. Completely compiles out IPv4/IPv6 stacks (`# CONFIG_INET is not set`, `# CONFIG_IPV6 is not set`) and Netfilter packet filtering (`# CONFIG_NETFILTER is not set`, `# CONFIG_NF_TABLES is not set`) while strictly preserving `CONFIG_NET=y` and `CONFIG_UNIX=y` for local socket IPC (`systemd`, `udev`), purges user-space `nftables`, deactivates production shell history (`HISTFILE=/dev/null`, `HISTSIZE=0`, `set +o history`), conditions hostnames (`piKMS` prod vs `piKMS-dev` dev), encapsulates all Kas layer checkouts and caches inside `build/` (`build/repos`, `build/downloads`, `build/sstate-cache`), and packages `/usr/local/bin/gphsm` with the legacy `hsmutil` symlink permanently eliminated.
 >
-> - **Lifecycle Phase**: Phase 5 Pre-Merge Documentation Tidy-Up.
-> - **Target Branch**: `main`
-> - **Active Feature Branches**:
->   - **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: `feature/yocto-network-strip-clean-layout`
->     - `4d403f1` — *docs: update README with network stripping, history conditioning, and ADR-0028-0031 links*
->     - `6b69035` — *feat(yocto): strip kernel network stacks, tidy subrepo layout, condition history and hostname*
->   - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: `feature/yocto-network-strip-clean-layout`
->     - `4dc9461` — *docs(workspace): document kernel network stripping, encapsulated build layout, and gphsm alignment*
+> - **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+> - **Base Branch**: `main`
+> - **Merged Repositories & Commits**:
+>   - **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: Merged `feature/yocto-network-strip-clean-layout` into `main`
+>     - Commit: [`4d403f1`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`4d403f1b94c797f53c4612fa79a07156ef0fa42d`) — *docs: update README with network stripping, history conditioning, and ADR-0028-0031 links*
+>     - Commit: [`6b69035`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) (`6b69035dc2c6b31315271346dfa81d752c72ecec`) — *feat(yocto): strip kernel network stacks, tidy subrepo layout, condition history and hostname*
+>   - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: Merged `feature/yocto-network-strip-clean-layout` into `main`
+>     - Commit: [`4dc9461`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) (`4dc9461ecbc814ea34182e909cde260171b76d05`) — *docs(workspace): document kernel network stripping, encapsulated build layout, and gphsm alignment*
+>   - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Branch `main`
 > - **Architecture Decision Records**:
 >   - [[Architecture/Decisions/ADR-0028 - Complete Kernel Network Protocol Stripping|ADR-0028: Complete Kernel Network Protocol Stripping (Elimination of PF_INET and PF_INET6)]]
 >   - [[Architecture/Decisions/ADR-0029 - Production Session History Suppression and Environment-Conditioned Hostnames|ADR-0029: Production Session History Suppression and Environment-Conditioned Hostnames]]
@@ -72,9 +73,11 @@ This document tracks real-time Git branch topologies, commit records, working di
 >   - [[Specification/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow|Technical Specification]]
 >   - [[Plan/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow Implementation Plan|Implementation Plan]]
 >   - [[features/yocto-network-strip-clean-layout|Feature Specification]]
+> - **Release Changelog**: [[Changelog|Workspace Release Changelog]]
 >
-> ### Deliverable Components & Pre-Merge Verifications
+> ### Deliverable Components & Post-Merge Verifications
 > 1. **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**:
+>    - Merged into `main` at commit [`4d403f1`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi).
 >    - Stripped IPv4 (`# CONFIG_INET is not set`), IPv6 (`# CONFIG_IPV6 is not set`), and Netfilter (`# CONFIG_NETFILTER is not set`, `# CONFIG_NF_TABLES is not set`) while strictly preserving `CONFIG_NET=y` and `CONFIG_UNIX=y` for local IPC.
 >    - Purged user-space `nftables` and `nftables-rules` from `hsm-image-base.bb` and pruned `recipes-connectivity/nftables/`.
 >    - Deactivated production shell history (`HISTFILE=/dev/null`, `HISTSIZE=0`, `set +o history`) via `/etc/profile.d/99-hsm-history.sh` in `init-wizard.bb` (`HSM_DEV_MODE=0`) while preserving standard interactive history in development.
@@ -82,10 +85,11 @@ This document tracks real-time Git branch topologies, commit records, working di
 >    - Encapsulated all Kas upstream layers into `build/repos/<name>`, downloads into `build/downloads/`, and sstate into `build/sstate-cache/`.
 >    - Packaged `/usr/local/bin/gphsm` via `recipes-support/gphsm/gphsm.bb` with dual local/git build workflows and permanently eliminated the legacy `hsmutil` symlink.
 > 2. **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**:
+>    - Merged into `main` at commit [`4dc9461`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm).
 >    - Updated `AGENTS.md`, `README.md`, and `Makefile` reflecting kernel network stripping, encapsulated layout, environment hostnames, and `gphsm` CLI packaging.
 > 3. **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**:
 >    - Formalized ADR-0028, ADR-0029, ADR-0030, and ADR-0031.
->    - Updated Note 07 (*Air-Gapped RPi HSM OS Architecture*), Note on *Build Lifecycle and Workspace Clean Routines*, `00 - Index.md`, and `README.md`.
+>    - Updated Note 07 (*Air-Gapped RPi HSM OS Architecture*), Note on *Build Lifecycle and Workspace Clean Routines*, `00 - Index.md`, `README.md`, and `Changelog.md`.
 >
 > ---
 >
