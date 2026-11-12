@@ -64,9 +64,10 @@ flowchart TD
 
 BitBake builds within `hsm-yocto-offgrid-rpi` are executed in ephemeral Kas containers (`ghcr.io/siemens/kas/kas:latest`). To balance performance, reproducibility, and host isolation:
 
-1. **Kas Container Mounts**:
+1. **Kas Container Mounts & Workspace Encapsulation**:
    - The sub-repository workspace directory is bind-mounted into `/work` inside the container.
-   - Host `downloads/` and `sstate-cache/` are preserved across runs to minimize network usage and re-compilation.
+   - Per [[Architecture/Decisions/ADR-0030 - Sub-Repository Workspace Cleanliness via Encapsulated Build Directory|ADR-0030]], all transient layers (`build/repos/`), downloads (`build/downloads/`), and shared state caches (`build/sstate-cache/`) are strictly encapsulated inside `build/`.
+   - Host `build/downloads/` and `build/sstate-cache/` are preserved across routine builds to minimize network usage and re-compilation.
 2. **Container Named Volume (`rpi_yocto_hsm_tmp`)**:
    - Compiling kernel modules and generating root filesystems requires tens of thousands of I/O operations per second.
    - A dedicated Docker/Podman named volume `rpi_yocto_hsm_tmp` is created and mounted to `/tmp` inside the Kas container:
@@ -86,17 +87,17 @@ flowchart TD
     subgraph RoutineClean ["Tier 1: make clean (Fast Rebuild)"]
         C1["Purges build/tmp/ compilation outputs"]
         C2["Purges bin/ executables and CMake artifacts"]
-        C3["Preserves downloaded source tarballs"]
-        C4["Preserves shared-state binary cache (sstate)"]
-        C5["Preserves checked-out Kas layer repositories"]
+        C3["Preserves build/downloads/ source tarballs"]
+        C4["Preserves build/sstate-cache/ shared-state binaries"]
+        C5["Preserves build/repos/ Kas layer repositories"]
         C6["Preserves container tmp volume"]
     end
 
     subgraph TotalDistclean ["Tier 2: make distclean (Nuclear Reset)"]
-        D1["Purges build/ and all target output images"]
-        D2["Purges downloads/ (all source archives)"]
-        D3["Purges sstate-cache/ (all shared state binaries)"]
-        D4["Deletes cloned Kas layers (openembedded-core, bitbake, etc.)"]
+        D1["Purges entire build/ directory atomically"]
+        D2["Purges build/downloads/ (all source archives)"]
+        D3["Purges build/sstate-cache/ (all shared state binaries)"]
+        D4["Purges build/repos/ (all cloned Kas layers)"]
         D5["Removes Docker/Podman volume rpi_yocto_hsm_tmp"]
         D6["Restores all subrepos to clean git status"]
     end
@@ -111,8 +112,8 @@ flowchart TD
 | **`hsm-cli`** | `make clean` | `bin/gphsm`, coverage reports | Go module cache (`$GOPATH/pkg`) |
 | | `make cli-clean` | `bin/` | Pristine repository clone |
 | **`hsm-pkcs11`** | `make libpkcs11-clean` | `build/`, `bin/libgphsm.*` | Pristine repository clone |
-| **`hsm-yocto-offgrid-rpi`** | `make clean` | `build/tmp/` | `downloads/`, `sstate-cache/`, Kas layers |
-| | `make distclean` | `build/`, `downloads/`, `sstate-cache/`, `bitbake/`, `openembedded-core/`, `meta-yocto/`, `meta-openembedded/`, `meta-raspberrypi/`, `meta-rauc/`, and volume `rpi_yocto_hsm_tmp` | Only versioned git files (`meta-hsm-os/`, `kas-*.yml`, `Makefile`, `scripts/`) |
+| **`hsm-yocto-offgrid-rpi`** | `make clean` | `build/tmp/` | `build/downloads/`, `build/sstate-cache/`, `build/repos/` |
+| | `make distclean` | Complete `build/` directory (`build/repos/`, `build/downloads/`, `build/sstate-cache/`, `build/tmp/`) and volume `rpi_yocto_hsm_tmp` | Only versioned git files (`meta-hsm-os/`, `kas-*.yml`, `Makefile`, `scripts/`) |
 | **Root Workspace** | `make clean` | Calls `clean` across firmware, CLI, and PKCS#11 | Caches and layers |
 | | `make distclean` | Chains `firmware-distclean`, `cli-clean`, `libpkcs11-clean`, and `yocto-distclean` | Only versioned root files and clean sub-repos |
 
@@ -127,8 +128,7 @@ Configured in [`hsm-yocto-offgrid-rpi/Makefile`](file:///Users/gpfister/Developm
 distclean: clean
 	@echo "==> Purging Yocto workspace, caches, and Kas repositories..."
 	@rm -rf $(BUILD_DIR)
-	@rm -rf downloads sstate-cache
-	@rm -rf bitbake openembedded-core meta-yocto meta-openembedded meta-raspberrypi meta-rauc
+	@rm -rf downloads sstate-cache bitbake openembedded-core meta-yocto meta-openembedded meta-raspberrypi meta-rauc
 	@echo "==> Removing container volume rpi_yocto_hsm_tmp if present..."
 	@$(CONTAINER_ENGINE) volume rm -f rpi_yocto_hsm_tmp 2>/dev/null || true
 	@echo "Distclean completed."
@@ -137,7 +137,7 @@ distclean: clean
 ### Safety & Engine Portability
 - `$(CONTAINER_ENGINE)` dynamically adapts to either `docker` or `podman`.
 - `volume rm -f ... 2>/dev/null || true` ensures non-zero return codes are silenced if the volume does not exist or if the container daemon is currently stopped.
-- `rm -rf` targets are explicitly enumerated rather than using wildcard patterns to protect `meta-hsm-os/` and repository root files.
+- Encapsulating all transient artifacts inside `$(BUILD_DIR)` ensures that `rm -rf $(BUILD_DIR)` atomically purges everything without risking repository source files. Any legacy top-level layer checkouts are also pruned.
 
 ---
 

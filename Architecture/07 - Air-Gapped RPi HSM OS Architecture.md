@@ -207,10 +207,9 @@ flowchart TD
     end
 
     subgraph KernelSpace ["Linux Kernel 6.12+ (Hardened)"]
-        KCONFIG["Hardened Defconfig (No Net, No BT, No WiFi, # CONFIG_LOGO is not set)"]
+        KCONFIG["Hardened Defconfig (No IP, No Netfilter, No BT, No WiFi, # CONFIG_LOGO is not set)\nCONFIG_NET=y, CONFIG_UNIX=y (AF_UNIX Socket IPC)"]
         DTB["Device Tree Overlays (dwc2 host, no-wifi, no-bt, i2c-rtc,ds3231)"]
         KMOD["nrf52840-hsm-kmod (Out-of-tree Driver, Linux 6.12+ llseek compat)"]
-        NFT["nftables Total Drop Hook"]
         CMDLINE["Kernel Boot Console Multiplexing\nDev: console=serial0,115200 console=tty1 loglevel=7 debug earlyprintk logo.nologo\nProd: quiet loglevel=0 console=tty1 fsck.mode=skip logo.nologo vt.global_cursor_default=1"]
         SYSCTL["sysctl: kernel.printk = 1 1 1 1"]
         RTC_DRV["HW-084 DS3231 RTC (I2C-1, rtc-ds1307, CONFIG_RTC_HCTOSYS)\nEarly Boot System Clock Sync (<50ms)"]
@@ -222,14 +221,14 @@ flowchart TD
 
     subgraph UserSpace ["User Space: piKMS (Read-Only Rootfs + RAM Overlays)"]
         VOLATILE["volatile-storage.service\n(/media tmpfs, /etc overlayfs, /home tmpfs)"]
-        INIT["System Init & Login Service (hostname: piKMS)"]
+        INIT["System Init & Login Service\nProd: hostname piKMS, HISTFILE=/dev/null\nDev: hostname piKMS-dev, Bash history enabled"]
         CLEAN_CON["clean-console.service (systemd 10-clean-console.conf: LogLevel=notice, ShowStatus=no)"]
         PAM["PAM & Shadow Subsystem (sp_lstchg=0)\nNative first-login password enforcement via pam_pwquality.so"]
         WIZARD["Deduplicated Login Wizard (first-login-wizard.sh)\nStep 1: Keyboard layout (loadkeys)\nStep 2: Locale / UTC timezone standard"]
         DATE_PROMPT["RTC-Aware Login Clock Prompt (clock-setup.sh)\nStatus verification, Enter-to-keep, SUID hsm-set-date dual sync"]
         AUTOMOUNT["Automount Manager (usb-mount.sh -> /media/usb-*)"]
         RAUC_SRV["RAUC Update Service (rauc-usb-autoinstall)"]
-        GPHSM["/usr/local/bin/gphsm (Canonical CLI / TUI)\nSymlink: /usr/local/bin/hsmutil"]
+        GPHSM["/usr/local/bin/gphsm (Canonical CLI / TUI)\nNo hsmutil symlink"]
         
         VOLATILE --> INIT
         CLEAN_CON --> INIT
@@ -401,20 +400,55 @@ The repository provides standalone test suites in [`scripts/`](file:///Users/gpf
    - The sub-repository [`Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/Makefile) provides `make distclean`, which atomically removes `build/`, `downloads/`, `sstate-cache/`, checked-out Kas layer repositories, and forcefully removes the container volume `rpi_yocto_hsm_tmp` via `$(CONTAINER_ENGINE) volume rm -f` (see [[Architecture/Decisions/ADR-0023 - Container Volume and Workspace Cache Purging during Distclean|ADR-0023]]).
    - Cascaded from root [`Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/Makefile) via `make yocto-distclean` and root `make distclean` (see [[Architecture/Build Lifecycle and Workspace Clean Routines|Build Lifecycle and Workspace Clean Routines]]).
 
-### 5.11 Appliance Identity (piKMS) & CLI Packaging Alignment (gphsm)
-Configured via [`kas-project.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/kas-project.yml) and [`recipes-support/gphsm/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-support/gphsm/):
-1. **Canonical Appliance Hostname (`piKMS`)**:
-   - Standardizes the system network and prompt identity to `piKMS` via BitBake configuration:
+### 5.11 Appliance Identity, Session History Suppression & Canonical CLI Packaging
+Configured via [`kas-project.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/kas-project.yml), [`meta-hsm-os/recipes-core/init-wizard/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-core/init-wizard/), and [`meta-hsm-os/recipes-support/gphsm/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-support/gphsm/):
+1. **Environment-Conditioned Hostnames (`piKMS` vs `piKMS-dev`)**:
+   - Production appliances built via `hsm-image-prod.bb` configure:
      ```bitbake
      hostname:pn-base-files = "piKMS"
      ```
-   - Sets `/etc/hostname` to `piKMS`, ensuring consistent operator terminal prompts (`hsmutil@piKMS:~#` or `hsmutil@piKMS:~$`) across production and development builds (see [[Architecture/Decisions/ADR-0027 - Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm|ADR-0027]]).
-2. **Canonical CLI Packaging (`gphsm`)**:
-   - Recipe [`recipes-support/gphsm/gphsm.bb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-support/gphsm/gphsm.bb) packages the pre-compiled static Go ARM64 binary into `/usr/local/bin/gphsm`.
-   - Creates a symbolic link `/usr/local/bin/hsmutil` pointing to `gphsm` for complete backward compatibility.
-   - Provides transition aliases in `recipes-support/hsmutil/hsmutil.bb` mapping to `gphsm`.
-3. **Operator Account Preservation**:
+   - Development appliances built via `hsm-image-dev.bb` override the hostname:
+     ```bitbake
+     hostname:pn-base-files = "piKMS-dev"
+     ```
+   - Eliminates operational ambiguity at the console prompt (`hsmutil@piKMS:~$` vs `hsmutil@piKMS-dev:~$`) and in `/etc/hosts` (see [[Architecture/Decisions/ADR-0029 - Production Session History Suppression and Environment-Conditioned Hostnames|ADR-0029]]).
+2. **Production Session History Suppression**:
+   - In production builds (`HSM_DEV_MODE=0`), `init-wizard.bb` installs `/etc/profile.d/99-hsm-history.sh`:
+     ```bash
+     export HISTFILE=/dev/null
+     export HISTSIZE=0
+     export HISTFILESIZE=0
+     set +o history 2>/dev/null || true
+     ```
+   - Prevents forensic persistence of sensitive cryptographic parameters, key IDs, or PIN entries in memory or on disk.
+   - Development builds (`HSM_DEV_MODE=1`) omit this profile, preserving standard interactive bash history for developer agility (see [[Architecture/Decisions/ADR-0029 - Production Session History Suppression and Environment-Conditioned Hostnames|ADR-0029]]).
+3. **Canonical CLI Packaging (`gphsm`) & Symlink Deprecation**:
+   - Recipe [`recipes-support/gphsm/gphsm.bb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-support/gphsm/gphsm.bb) packages `/usr/local/bin/gphsm` as the sole canonical management executable.
+   - The transitional `/usr/local/bin/hsmutil` symlink and BitBake `RPROVIDES` aliases have been permanently eliminated (see [[Architecture/Decisions/ADR-0031 - gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink|ADR-0031]]).
+   - Supports dual build strategies: local binary packaging in development mode (`HSM_DEV_MODE=1`) and upstream Git remote fetching in production mode (`HSM_DEV_MODE=0`).
+4. **Operator Account Preservation**:
    - The primary appliance operator user account remains `hsmutil:users` with home directory `/home/hsmutil`, preserving existing automated provisioning, auto-login hooks, and credential setups while adopting modern binary tooling.
+
+### 5.12 Complete Kernel Network Protocol Stripping
+Configured via [`recipes-kernel/linux/files/hardened.cfg`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-kernel/linux/files/hardened.cfg) and [`recipes-core/images/hsm-image-base.bb`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-core/images/hsm-image-base.bb):
+1. **Elimination of IP Protocol Families (`PF_INET`, `PF_INET6`)**:
+   - The kernel defconfig fragment completely unsets `# CONFIG_INET is not set` and `# CONFIG_IPV6 is not set`.
+   - Kernel initialization registers zero IP protocols; calling `socket(AF_INET, ...)` or `socket(AF_INET6, ...)` unconditionally returns `EAFNOSUPPORT` (see [[Architecture/Decisions/ADR-0028 - Complete Kernel Network Protocol Stripping|ADR-0028]]).
+2. **Netfilter Subsystem Deactivation**:
+   - Disables all packet filtering infrastructure (`# CONFIG_NETFILTER is not set`, `# CONFIG_NF_TABLES is not set`).
+   - Purges user-space `nftables` and `nftables-rules` from `IMAGE_INSTALL` in `hsm-image-base.bb`, as dead firewall services are obsolete without IP stacks.
+3. **Preservation of Local Socket IPC**:
+   - Retains `CONFIG_NET=y` and `CONFIG_UNIX=y` to ensure `systemd`, `udev`, and local D-Bus IPC operate without regression over `AF_UNIX` domain sockets.
+
+### 5.13 Sub-Repository Workspace Encapsulation
+Configured via [`kas-project.yml`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/kas-project.yml) and [`Makefile`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/Makefile):
+1. **Encapsulated Layer Clones & Caches**:
+   - Reconfigures Kas repository paths to clone all upstream layers (`openembedded-core`, `bitbake`, `meta-yocto`, `meta-openembedded`, `meta-raspberrypi`, `meta-rauc`) into `build/repos/<repo-name>`.
+   - Places downloads in `build/downloads/` and shared state cache in `build/sstate-cache/`.
+   - The sub-repository root contains zero external clones or cache folders, ensuring a clean `git status` (see [[Architecture/Decisions/ADR-0030 - Sub-Repository Workspace Cleanliness via Encapsulated Build Directory|ADR-0030]]).
+2. **Atomic Cleanup Semantics**:
+   - `make clean` purges `build/tmp/` compilation outputs while preserving cached archives and layer checkouts.
+   - `make distclean` executes `rm -rf build/` and purges the Docker volume `rpi_yocto_hsm_tmp`, returning the sub-repository to a clean-slate state.
 
 ---
 
@@ -424,10 +458,13 @@ Configured via [`kas-project.yml`](file:///Users/gpfister/Development/Projects/g
 | :--- | :--- | :--- | :--- |
 | **Target Image** | BitBake Recipe | `hsm-image-prod` | `hsm-image-dev` |
 | **Kas Overlay** | Configuration File | `kas-prod.yml` | `kas-dev.yml` |
+| **System Hostname** | Network & Prompt Identity | `piKMS` (`hsmutil@piKMS:~$`) | `piKMS-dev` (`hsmutil@piKMS-dev:~$`) |
 | **Filesystem** | Root Filesystem Type | Strict read-only `ext4` / `squashfs` | Read-only `ext4` with writable `overlayfs` |
 | **Volatile State** | RAM Overlays | `/media` tmpfs, `/etc` overlayfs, `/home` tmpfs | Same |
-| **Networking** | Physical Drivers | WiFi, BLE, Ethernet stripped from kernel | Same (strict air-gap enforced) |
-| **Firewall** | Packet Filter Rules | `nftables` total drop (0 packets allowed) | `nftables` total drop |
+| **Shell History** | Bash Command History | Completely disabled (`HISTFILE=/dev/null`, `HISTSIZE=0`, `set +o history`) | Enabled (`~/.bash_history` standard retention) |
+| **Kernel IP Stacks** | Protocol Families | Stripped (`# CONFIG_INET is not set`, `# CONFIG_IPV6 is not set`) | Same (strict air-gap enforced) |
+| **Socket IPC** | Local Domain Sockets | Enabled (`CONFIG_NET=y`, `CONFIG_UNIX=y`) | Enabled (`CONFIG_NET=y`, `CONFIG_UNIX=y`) |
+| **Firewall / Netfilter** | Packet Filter Rules | Obsolete / Absent (`nftables` pruned) | Obsolete / Absent (`nftables` pruned) |
 | **Superuser Access** | Root Account | Account locked (`usermod -L root`) | Password `root`, login permitted |
 | **`hsmutil` User** | Escalation Privilege | Standard unprivileged operator, no `sudo` | Sudoer with `NOPASSWD: ALL` |
 | **Clock Setup** | Timestamp Sync Helper | Setuid root `hsm-set-date` helper | Setuid `hsm-set-date` or `sudo date` |
@@ -437,6 +474,7 @@ Configured via [`kas-project.yml`](file:///Users/gpfister/Development/Projects/g
 | **U-Boot Console Output** | Bootloader Serial Output | Completely silent (`CONFIG_SILENT_CONSOLE=y`, `silent=1`) | Diagnostic banners & RAUC slot `echo` messages |
 | **Kernel Log Visibility** | Early Boot Console Sinks | Silent monitor (`console=tty1 quiet loglevel=0 fsck.mode=skip`) | Multiplexed (`console=serial0,115200 console=tty1 loglevel=7 debug earlyprintk`) |
 | **Password Policy** | Initial Password & Expiration | Initial `password`, `pam_pwquality` enforced, 90-day max age | Same (`password`, `pam_pwquality`, 90-day max age) |
+| **Application Tooling** | Management CLI | `/usr/local/bin/gphsm` (no symlinks) | `/usr/local/bin/gphsm` (no symlinks) |
 | **Remote Terminal** | SSH (`sshd` / `dropbear`) | Completely absent | Completely absent |
 
 ---
@@ -506,10 +544,17 @@ sequenceDiagram
 - **Complete U-Boot Network Subsystem Deactivation**: [[Architecture/Decisions/ADR-0025 - Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance|ADR-0025: Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance]]
 - **HDMI Console Noise Suppression & Log Level Hardening**: [[Architecture/Decisions/ADR-0026 - HDMI Console Noise Suppression and Log Level Hardening|ADR-0026: HDMI Console Noise Suppression and Log Level Hardening]]
 - **Appliance Identity & CLI Packaging Alignment**: [[Architecture/Decisions/ADR-0027 - Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm|ADR-0027: Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm]]
+- **Complete Kernel Network Protocol Stripping**: [[Architecture/Decisions/ADR-0028 - Complete Kernel Network Protocol Stripping|ADR-0028: Complete Kernel Network Protocol Stripping (Elimination of PF_INET and PF_INET6)]]
+- **Production Session History Suppression & Environment Hostnames**: [[Architecture/Decisions/ADR-0029 - Production Session History Suppression and Environment-Conditioned Hostnames|ADR-0029: Production Session History Suppression and Environment-Conditioned Hostnames]]
+- **Sub-Repository Workspace Cleanliness via Encapsulated Build Directory**: [[Architecture/Decisions/ADR-0030 - Sub-Repository Workspace Cleanliness via Encapsulated Build Directory|ADR-0030: Sub-Repository Workspace Cleanliness via Encapsulated Build Directory]]
+- **gphsm Packaging Lifecycle & Complete Deprecation of hsmutil Symlink**: [[Architecture/Decisions/ADR-0031 - gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink|ADR-0031: gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink]]
+- **Feature Specification (Network Strip & Clean Layout)**: [[features/yocto-network-strip-clean-layout|Feature: Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]
 - **Feature Specification (Hardening & piKMS)**: [[features/yocto-hardening-clean-console-pikms|Feature: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
 - **Feature Specification (Blacksail & RTC)**: [[features/yocto-blacksail-rtc-and-distclean|Feature: Yocto 6.1 (Blacksail), HW-084 (DS3231) RTC & Workspace Distclean]]
+- **Technical Specification (Network Strip & Clean Layout)**: [[Specification/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow|Specification: Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]
 - **Technical Specification (Hardening & piKMS)**: [[Specification/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment|Specification: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
 - **Technical Specification (Blacksail & RTC)**: [[Specification/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean|Specification: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]
+- **Implementation Plan (Network Strip & Clean Layout)**: [[Plan/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow Implementation Plan|Implementation Plan: Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]
 - **Implementation Plan (Hardening & piKMS)**: [[Plan/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment Implementation Plan|Implementation Plan: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
 - **Implementation Plan (Blacksail & RTC)**: [[Plan/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean Implementation Plan|Implementation Plan: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]
 - **Operational Guide**: [[Development/Yocto Build and RAUC Update Guide|Yocto Build and RAUC Update Guide]]
