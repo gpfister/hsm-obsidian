@@ -9,7 +9,7 @@ tags:
   - rauc
   - rpi
 created: 2026-11-01
-updated: 2026-11-05
+updated: 2026-11-12
 status: Approved
 repository: rpi-z2w-yocto-hsm
 ---
@@ -220,10 +220,11 @@ flowchart TD
     end
 
     subgraph UserSpace ["User Space: piKMS (Read-Only Rootfs + RAM Overlays)"]
-        VOLATILE["volatile-storage.service\n(/media tmpfs, /etc overlayfs, /home tmpfs)"]
+        VOLATILE["volatile-storage.service\n(/media tmpfs, /etc overlayfs, persistent /data/etc restore)"]
         INIT["System Init & Login Service\nProd: hostname piKMS, HISTFILE=/dev/null\nDev: hostname piKMS-dev, Bash history enabled"]
         CLEAN_CON["clean-console.service (systemd 10-clean-console.conf: LogLevel=notice, ShowStatus=no)"]
         PAM["PAM & Shadow Subsystem (sp_lstchg=0)\nNative first-login password enforcement via pam_pwquality.so"]
+        AUTH_SYNC["hsm-persist-auth.path & service\n(Atomic sync of /etc/{shadow,passwd,group,gshadow} to /data/etc)"]
         WIZARD["Deduplicated Login Wizard (first-login-wizard.sh)\nStep 1: Keyboard layout (loadkeys)\nStep 2: Locale / UTC timezone standard"]
         DATE_PROMPT["RTC-Aware Login Clock Prompt (clock-setup.sh)\nStatus verification, Enter-to-keep, SUID hsm-set-date dual sync"]
         AUTOMOUNT["Automount Manager (usb-mount.sh -> /media/usb-*)"]
@@ -233,6 +234,7 @@ flowchart TD
         VOLATILE --> INIT
         CLEAN_CON --> INIT
         INIT --> PAM
+        PAM --> AUTH_SYNC
         PAM --> WIZARD
         WIZARD --> DATE_PROMPT
         DATE_PROMPT --> GPHSM
@@ -249,14 +251,16 @@ flowchart TD
 ```
 
 ### 4.1 Partition Layout (Dual-Slot A/B)
-The storage media (MicroSD / eMMC) is partitioned into 5 regions:
+The storage media (MicroSD / eMMC) is partitioned into 6 regions using deterministic GPT / MBR volume labels:
 
-| Partition | Device | Filesystem | Mount Point | Description |
+| Partition | Device / Label | Filesystem | Mount Point | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | **P1** | `/dev/mmcblk0p1` | `vfat` | `/boot` | Raspberry Pi firmware files, U-Boot binary, kernel images, and device trees. |
 | **P2** | `/dev/mmcblk0p2` | `ext4` | `/` (Slot A) | Read-only System Rootfs Slot A. |
 | **P3** | `/dev/mmcblk0p3` | `ext4` | `/` (Slot B) | Read-only System Rootfs Slot B. |
-| **P4** | `/dev/mmcblk0p4` | `ext4` | `/data` | Persistent writable state (user home `/home/hsmutil`, machine-id, u-boot env). |
+| **P4** | `/dev/mmcblk0p4` | raw / env | — | U-Boot persistent environment redundant blocks (`CONFIG_ENV_IS_IN_MMC`). |
+| **P5** | `LABEL=data` | `ext4` | `/data` | Persistent data store (`/data/etc/` credentials, machine-id, RAUC update state). |
+| **P6** | `LABEL=homefs` | `ext4` | `/home` | Persistent operator home storage (`/home/hsmutil`, `.bashrc`, `.keymap`, `.wizard_completed`). |
 | **RAM** | `tmpfs` | `tmpfs` | `/tmp`, `/run`, `/var/volatile`, `/media` | Volatile working memory discarded on power off. |
 
 ---
@@ -450,6 +454,25 @@ Configured via [`kas-project.yml`](file:///Users/gpfister/Development/Projects/g
    - `make clean` purges `build/tmp/` compilation outputs while preserving cached archives and layer checkouts.
    - `make distclean` executes `rm -rf build/` and purges the Docker volume `rpi_yocto_hsm_tmp`, returning the sub-repository to a clean-slate state.
 
+### 5.14 Targeted Authentication & Account State Persistence
+Configured via [`meta-hsm-os/recipes-core/base-files/files/fstab`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-core/base-files/files/fstab) and [`meta-hsm-os/recipes-core/volatile-storage/`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi/meta-hsm-os/recipes-core/volatile-storage/):
+1. **Ephemeral `/etc` OverlayFS & Targeted Vault**:
+   - `/etc` remains an ephemeral RAM-only tmpfs overlay (`lowerdir=/etc,upperdir=/run/overlay/etc-upper,workdir=/run/overlay/etc-work`), guaranteeing that system configuration files remain immutable and never drift across RAUC A/B upgrades (see [[Architecture/Decisions/ADR-0032 - Targeted Authentication State Persistence to data-etc with Ephemeral etc OverlayFS|ADR-0032]]).
+   - Dedicated directory `/data/etc` (mode `0700`, owner `root:root`) on persistent partition `LABEL=data` stores only the 4 canonical authentication databases: `shadow`, `passwd`, `group`, and `gshadow`.
+2. **Early Boot Seeding & Restoration (`hsm-setup-volatile.sh`)**:
+   - **First Boot**: If `/data/etc/shadow` is missing or 0 bytes, seeds `/data/etc/` from the read-only rootfs template with strict permissions (`0400 root:shadow` for shadow/gshadow, `0644 root:root` for passwd/group).
+   - **Subsequent Boots**: Restores `/data/etc/{shadow,passwd,group,gshadow}` into `/run/overlay/etc-upper` before PAM or login services start, restoring valid `sp_lstchg` password age and avoiding repetitive first-login prompts.
+   - **Corruption Fallback**: If persistent files are truncated or corrupt, falls back safely to the clean rootfs template and logs an alert to prevent console lockout.
+3. **Real-Time Atomic Synchronization (`hsm-sync-auth.sh`)**:
+   - Systemd path unit `hsm-persist-auth.path` monitors file modification events (`PathModified`) on `/etc/{shadow,passwd,group,gshadow}`.
+   - Activates oneshot service `hsm-persist-auth.service` executing `/usr/local/bin/hsm-sync-auth.sh` (see [[Architecture/Decisions/ADR-0033 - Real-Time Atomic Credential Synchronization and Reboot-Shutdown Flushes|ADR-0033]]).
+   - **Atomic Pipeline**: Stages writes to `.<file>.tmp.$$`, sets permissions, creates `.bak` backup of destination, performs POSIX `mv -f` atomic rename, and invokes `sync` to immediately commit dirty blocks to flash.
+4. **Shutdown & Reboot Pre-Unmount Flush**:
+   - `hsm-persist-auth.service` declares `Conflicts=shutdown.target` and `ExecStop=/usr/local/bin/hsm-sync-auth.sh`.
+   - On system halt, poweroff, or reboot, systemd executes `ExecStop`, guaranteeing that all pending in-memory credential changes are committed to disk before `/data` is unmounted.
+5. **Persistent Home Directory Retention**:
+   - Checks `mountpoint -q /home` (mounted from `LABEL=homefs`). If mounted, skips ephemeral tmpfs mounting on `/home/hsmutil`, preserving operator dotfiles (`.bashrc`, `.keymap`, `.wizard_completed`).
+
 ---
 
 ## 6. Production vs Development Matrix
@@ -548,12 +571,17 @@ sequenceDiagram
 - **Production Session History Suppression & Environment Hostnames**: [[Architecture/Decisions/ADR-0029 - Production Session History Suppression and Environment-Conditioned Hostnames|ADR-0029: Production Session History Suppression and Environment-Conditioned Hostnames]]
 - **Sub-Repository Workspace Cleanliness via Encapsulated Build Directory**: [[Architecture/Decisions/ADR-0030 - Sub-Repository Workspace Cleanliness via Encapsulated Build Directory|ADR-0030: Sub-Repository Workspace Cleanliness via Encapsulated Build Directory]]
 - **gphsm Packaging Lifecycle & Complete Deprecation of hsmutil Symlink**: [[Architecture/Decisions/ADR-0031 - gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink|ADR-0031: gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink]]
+- **Targeted Authentication State Persistence**: [[Architecture/Decisions/ADR-0032 - Targeted Authentication State Persistence to data-etc with Ephemeral etc OverlayFS|ADR-0032: Targeted Authentication State Persistence to /data/etc with Ephemeral /etc OverlayFS]]
+- **Real-Time Atomic Credential Synchronization**: [[Architecture/Decisions/ADR-0033 - Real-Time Atomic Credential Synchronization and Reboot-Shutdown Flushes|ADR-0033: Real-Time Atomic Credential Synchronization and Reboot/Shutdown Flushes]]
+- **Feature Specification (Persistent Auth State)**: [[features/yocto-persist-auth-state|Feature: Persistent Authentication & User Account State Across Reboots]]
 - **Feature Specification (Network Strip & Clean Layout)**: [[features/yocto-network-strip-clean-layout|Feature: Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]
 - **Feature Specification (Hardening & piKMS)**: [[features/yocto-hardening-clean-console-pikms|Feature: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
 - **Feature Specification (Blacksail & RTC)**: [[features/yocto-blacksail-rtc-and-distclean|Feature: Yocto 6.1 (Blacksail), HW-084 (DS3231) RTC & Workspace Distclean]]
+- **Technical Specification (Persistent Auth State)**: [[Specification/Persistent Authentication and User Account State Across Reboots|Specification: Persistent Authentication & User Account State Across Reboots]]
 - **Technical Specification (Network Strip & Clean Layout)**: [[Specification/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow|Specification: Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]
 - **Technical Specification (Hardening & piKMS)**: [[Specification/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment|Specification: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
 - **Technical Specification (Blacksail & RTC)**: [[Specification/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean|Specification: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]
+- **Implementation Plan (Persistent Auth State)**: [[Plan/Persistent Authentication and User Account State Across Reboots Implementation Plan|Implementation Plan: Persistent Authentication & User Account State Across Reboots]]
 - **Implementation Plan (Network Strip & Clean Layout)**: [[Plan/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow Implementation Plan|Implementation Plan: Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]
 - **Implementation Plan (Hardening & piKMS)**: [[Plan/HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment Implementation Plan|Implementation Plan: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, and gphsm CLI Alignment]]
 - **Implementation Plan (Blacksail & RTC)**: [[Plan/Yocto 6.1 Blacksail Upgrade, HW-084 DS3231 RTC Integration and Workspace Distclean Implementation Plan|Implementation Plan: Yocto 6.1 Blacksail Upgrade, HW-084 RTC & Distclean]]

@@ -7,10 +7,12 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-12
-lifecycle_phase: Phase 6 Post-Merge Complete — Kernel Complete Network Stripping, Clean Sub-Repo Architecture, Environment Conditioning, and gphsm Workflow
-feature: "[[features/yocto-network-strip-clean-layout|Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]"
-plan: "[[Plan/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow Implementation Plan|Implementation Plan: Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]"
+lifecycle_phase: Phase 3 Architecture Plan Documented — Persistent Authentication & User Account State Across Reboots
+feature: "[[features/yocto-persist-auth-state|Persistent Authentication & User Account State Across Reboots]]"
+plan: "[[Plan/Persistent Authentication and User Account State Across Reboots Implementation Plan|Implementation Plan: Persistent Authentication & User Account State Across Reboots]]"
 adrs:
+  - "[[Architecture/Decisions/ADR-0033 - Real-Time Atomic Credential Synchronization and Reboot-Shutdown Flushes|ADR-0033: Real-Time Atomic Credential Synchronization and Reboot/Shutdown Flushes]]"
+  - "[[Architecture/Decisions/ADR-0032 - Targeted Authentication State Persistence to data-etc with Ephemeral etc OverlayFS|ADR-0032: Targeted Authentication State Persistence to /data/etc with Ephemeral /etc OverlayFS]]"
   - "[[Architecture/Decisions/ADR-0031 - gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink|ADR-0031: gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink]]"
   - "[[Architecture/Decisions/ADR-0030 - Sub-Repository Workspace Cleanliness via Encapsulated Build Directory|ADR-0030: Sub-Repository Workspace Cleanliness via Encapsulated Build Directory]]"
   - "[[Architecture/Decisions/ADR-0029 - Production Session History Suppression and Environment-Conditioned Hostnames|ADR-0029: Production Session History Suppression and Environment-Conditioned Hostnames]]"
@@ -27,7 +29,7 @@ adrs:
   - "[[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]"
   - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
-specification: "[[Specification/Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow|Technical Specification: Kernel Network Stripping, Clean Subrepo Architecture, Environment Conditioning, and gphsm Workflow]]"
+specification: "[[Specification/Persistent Authentication and User Account State Across Reboots|Technical Specification: Persistent Authentication & User Account State Across Reboots]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
 
@@ -41,16 +43,50 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Up to date with `origin/main` | `4dc9461` (*docs(workspace): document kernel network stripping, encapsulated build layout, and gphsm alignment*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Up to date with `origin/main` | `4dc9461` (*docs(workspace): document kernel network stripping, encapsulated build layout, and gphsm alignment*) | **Clean** | **Production Ready** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Up to date with `origin/main` | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Production Ready** |
 | **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `7341531` (*refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*) | **Clean** | **Production Ready** |
 | **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Production Ready** |
-| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Up to date with `origin/main` | `4d403f1` (*docs: update README with network stripping, history conditioning, and ADR-0028-0031 links*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` | `9f1427f` (*docs(status): update workspace git status for Phase 5 pre-merge review*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Up to date with `origin/main` | `4d403f1` (*docs: update README with network stripping, history conditioning, and ADR-0028-0031 links*) | **Clean** | **Phase 3 Plan Documented** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` | `52a83e3` (*docs(release): post-merge changelog and git status for network stripping and clean layout*) | **Clean** | **Phase 3 Plan Documented** |
 
 ---
 
-## 1.0 Merged Milestone: Kernel Complete Network Stripping, Clean Sub-Repo Architecture, Environment Conditioning, and gphsm Workflow (Phase 6 Post-Merge Complete)
+## 1.0 Active Milestone: Persistent Authentication & User Account State Across Reboots (Phase 3 Architecture Plan Documented)
+
+> [!NOTE]
+> **Active Milestone**: Targeted authentication state persistence, power-fail safe atomic synchronization, and persistent home directory retention for the air-gapped embedded Linux operating system ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and root workspace coordination.
+>
+> - **Lifecycle Phase**: Phase 3 Architecture Plan Documented.
+> - **Target Branch**: `main`
+> - **Active Feature Branches**:
+>   - **Air-Gapped OS ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi))**: `feature/yocto-persist-auth-state` (to be created for Phase 4)
+>   - **Workspace Root ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm))**: `feature/yocto-persist-auth-state` (to be created for Phase 4)
+> - **Architecture Decision Records**:
+>   - [[Architecture/Decisions/ADR-0032 - Targeted Authentication State Persistence to data-etc with Ephemeral etc OverlayFS|ADR-0032: Targeted Authentication State Persistence to /data/etc with Ephemeral /etc OverlayFS]]
+>   - [[Architecture/Decisions/ADR-0033 - Real-Time Atomic Credential Synchronization and Reboot-Shutdown Flushes|ADR-0033: Real-Time Atomic Credential Synchronization and Reboot/Shutdown Flushes]]
+> - **Technical Specification & Plan**:
+>   - [[Specification/Persistent Authentication and User Account State Across Reboots|Technical Specification]]
+>   - [[Plan/Persistent Authentication and User Account State Across Reboots Implementation Plan|Implementation Plan]]
+>   - [[features/yocto-persist-auth-state|Feature Specification]]
+>
+> ### Deliverable Components & Planned Verifications
+> 1. **Filesystem Mount Standardization (`/etc/fstab`)**:
+>    - Standardize mounts for `/data` (`LABEL=data`) and `/home` (`LABEL=homefs`) using volume labels.
+> 2. **Targeted Credential Seeding & Restoration (`hsm-setup-volatile.sh`)**:
+>    - Check `/data` mount; seed `/data/etc` (`0700 root:root`) from base rootfs template on first boot (`0400 root:shadow` for shadow/gshadow, `0644 root:root` for passwd/group).
+>    - Restore `/data/etc/*` into active `/etc` overlay on subsequent boots, verifying file integrity and applying strict ownership/permissions. Fall back safely to clean template on corruption.
+>    - Check `mountpoint -q /home` and skip ephemeral tmpfs mounting on `/home/hsmutil` when persistent home is available.
+> 3. **Real-Time Atomic Sync & Shutdown Flush (`hsm-persist-auth.path`, `service`, `hsm-sync-auth.sh`)**:
+>    - Monitor `/etc/{shadow,passwd,group,gshadow}` via systemd path unit.
+>    - Execute atomic staging (`.<file>.tmp.$$`), `.bak` backup, POSIX `mv -f` rename, and kernel `sync` flush.
+>    - Pre-unmount shutdown flush via `Conflicts=shutdown.target` and `ExecStop=/usr/local/bin/hsm-sync-auth.sh`.
+> 4. **Recipe Packaging (`volatile-storage.bb`)**:
+>    - Install script, service, and path units; auto-enable via `SYSTEMD_SERVICE:${PN}`.
+>
+> ---
+>
+> ## 1.1 Merged Milestone: Kernel Complete Network Stripping, Clean Sub-Repo Architecture, Environment Conditioning, and gphsm Workflow (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
 > **Post-Merge Milestone**: Advanced security hardening, sub-repository layout encapsulation, anti-forensic session protection, and tooling alignment for the air-gapped embedded Linux operating system ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and workspace root orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)) successfully merged into `main`. Completely compiles out IPv4/IPv6 stacks (`# CONFIG_INET is not set`, `# CONFIG_IPV6 is not set`) and Netfilter packet filtering (`# CONFIG_NETFILTER is not set`, `# CONFIG_NF_TABLES is not set`) while strictly preserving `CONFIG_NET=y` and `CONFIG_UNIX=y` for local socket IPC (`systemd`, `udev`), purges user-space `nftables`, deactivates production shell history (`HISTFILE=/dev/null`, `HISTSIZE=0`, `set +o history`), conditions hostnames (`piKMS` prod vs `piKMS-dev` dev), encapsulates all Kas layer checkouts and caches inside `build/` (`build/repos`, `build/downloads`, `build/sstate-cache`), and packages `/usr/local/bin/gphsm` with the legacy `hsmutil` symlink permanently eliminated.
@@ -93,7 +129,7 @@ This document tracks real-time Git branch topologies, commit records, working di
 >
 > ---
 >
-> ## 1.1 Merged Milestone: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, piKMS Hostname Standardization, and gphsm CLI Alignment (Phase 6 Post-Merge Complete)
+> ## 1.2 Merged Milestone: HSM Yocto OS Hardening, Clean Console, U-Boot Network Deactivation, piKMS Hostname Standardization, and gphsm CLI Alignment (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
 > **Post-Merge Milestone**: Hardening, stealth console optimization, and CLI tooling alignment for the air-gapped embedded Linux operating system ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and workspace root orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)) successfully merged into `main`. Enforces native Linux PAM first-login password expiration (`sp_lstchg=0`) with deduplicated setup wizard, completely deactivates U-Boot network drivers and commands (`no-net.cfg`), eliminates boot logos and suppresses HDMI console noise (`10-clean-console.conf`, `20-quiet-console.conf`), standardizes system identity to `piKMS`, and aligns application packaging to `/usr/local/bin/gphsm` with `/usr/local/bin/hsmutil` symlink.
