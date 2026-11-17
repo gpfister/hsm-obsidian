@@ -13,11 +13,11 @@ tags:
   - security
 created: 2026-11-17
 updated: 2026-11-17
-status: "Implemented & Verified (Phase 5 Pre-Merge Review Complete)"
+status: "Released & Merged into main (Phase 6 Post-Merge Complete)"
 target_branches:
   root: main
-  cli: feature/shamir-checksummed-shares
-  obsidian: feature/shamir-checksummed-shares
+  cli: main
+  obsidian: main
 adrs:
   - "[[Architecture/Decisions/ADR-0034 - Shamir Key Format with Embedded Index and CRC32 Checksum|ADR-0034: Shamir Key Format with Embedded Index and CRC32 Checksum]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
@@ -33,8 +33,8 @@ references:
 # Feature Specification: Shamir Custodian Share Format with CRC32 Checksum
 
 > [!NOTE]
-> **Lifecycle Status**: Phase 5 Pre-Merge Review Complete  
-> **Target Branch**: `feature/shamir-checksummed-shares`  
+> **Lifecycle Status**: Phase 6 Post-Merge Complete (Merged into `main` via PR #3 in `hsm-cli` and PR #1 in `hsm-obsidian`)  
+> **Active Branch**: `main` (Feature branches pruned)  
 > **Related Architecture Decision Records**:
 > - [[Architecture/Decisions/ADR-0034 - Shamir Key Format with Embedded Index and CRC32 Checksum|ADR-0034: Shamir Key Format with Embedded Index and CRC32 Checksum]]  
 > - [[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]  

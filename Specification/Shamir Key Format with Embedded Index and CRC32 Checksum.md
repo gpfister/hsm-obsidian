@@ -12,7 +12,7 @@ tags:
   - ceremony
 created: 2026-11-17
 updated: 2026-11-17
-status: Approved (Phase 2 Specification Approved)
+status: Implemented & Merged into main (Phase 6 Post-Merge Complete)
 adrs:
   - "[[Architecture/Decisions/ADR-0034 - Shamir Key Format with Embedded Index and CRC32 Checksum|ADR-0034: Shamir Key Format with Embedded Index and CRC32 Checksum]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture]]"
@@ -27,7 +27,7 @@ references:
 
 # Technical Specification: Shamir Key Format with Embedded Index and CRC32 Checksum
 
-> **Document Status**: APPROVED (Phase 2 Specification Approved)  
+> **Document Status**: IMPLEMENTED & MERGED (Phase 6 Post-Merge Complete)  
 > **Target Repositories**: [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli), [`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian)  
 > **Target Components**: Host Management CLI (`gphsm`), Ceremony Domain Services, Documentation Vault  
 > **Related Architecture Decision Records**:

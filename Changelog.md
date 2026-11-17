@@ -6,12 +6,60 @@ tags:
   - history
   - milestones
 created: 2026-10-31
-updated: 2026-11-12
+updated: 2026-11-17
 ---
 
 # Workspace Release Changelog
 
 This document tracks all formal releases, milestone deliveries, and post-merge changelog notes across the orchestrated multi-repository workspace (`ncs-nrf52840dongle-kms`).
+
+---
+
+## [Merged] — 2026-11-17: Shamir Key Format with Embedded Index and CRC32 Checksum (Merged into main)
+
+> [!NOTE]
+> **Post-Merge Milestone**: Introduction of canonical 75-character formatted custodian shares (`<index>-<64_hex_share>-<8_hex_crc32>`), fail-fast offline CRC-32 validation, and streamlined single masked prompt authentication ceremony across the host CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli)) and documentation vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian)) successfully merged into `main`. Protects hardware non-volatile retry counters against accidental lockout from transcription typos, prevents index disassociation on physical media, and maintains 100% wire-protocol invariance with nRF52840 firmware (`AT+SHARE`).
+>
+> **Lifecycle Phase**: Phase 6 Post-Merge Complete.
+>
+> **Merged Repositories & Commits**:
+> - **Host Management CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**: Merged PR [#3 (https://github.com/gpfister/hsm-cli/pull/3)](https://github.com/gpfister/hsm-cli/pull/3) into `main` (Branch pruned)
+>   - Commit: [`4be49c7`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`4be49c7b3efd143f4045a47c0beeb101e0840806`) — *feat(cli): introduce checksummed Shamir custodian share format with fail-fast CRC32 validation (#3)*
+> - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Merged PR [#1 (https://github.com/gpfister/hsm-obsidian/pull/1)](https://github.com/gpfister/hsm-obsidian/pull/1) into `main` (Branch pruned)
+>   - Commit: [`1b038a2`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) (`1b038a249eabc0b2f90998cef827c3e14137633a`) — *docs(vault): formalize ADR-0034 and document checksummed Shamir shares (#1)*
+> - **Branch Cleanup**: Both feature branches cleanly merged, remote and local feature branches pruned, and working trees verified clean on `main`.
+>
+> **Deliverable Scope & Changes**:
+> 1. **Canonical 75-Character Custodian Share Format**:
+>    - Defined canonical format: `<index>-<64_hex_share>-<8_hex_crc32>` where `<index>` is a single digit $[1, 5]$, `<64_hex_share>` is 32-byte cryptographic share in uppercase hex, and `<8_hex_crc32>` is 4-byte uppercase hex CRC-32.
+>    - Bound custodian index directly to share data, permanently eliminating index disassociation on paper or metal backup media.
+> 2. **Fail-Fast IEEE 802.3 CRC-32 Validation**:
+>    - Computed standard IEEE 802.3 CRC-32 polynomial (`0xEDB88320`) over the 33-byte binary slice `[uint8(index) || 32_byte_share]`.
+>    - Implemented `FormatCustodianShare(index, shareHex)`, `CalculateShareCRC32(index, shareHex)`, and `ParseCustodianShare(input)`.
+>    - Defined explicit sentinel error taxonomy: `ErrInvalidShareFormat`, `ErrInvalidCustodianIndex`, `ErrInvalidShareHex`, `ErrInvalidShareChecksum`, and `ErrRawShareDetected`.
+>    - Rejects legacy raw 64-character hex shares with actionable guidance to prevent accidental retry counter decrementing.
+> 3. **Turn-by-Turn Ceremony Streamlining (`internal/usecases`, `internal/ui/cli`)**:
+>    - `RunTurnByTurnInit`: Outputs canonical formatted shares to custodians during `gphsm device init --mode shamir`, along with custodian distribution and steel plate backup instructions.
+>    - `RunTurnByTurnAuth`: Streamlines custodian turn to a single masked prompt (`Enter Custodian Secret Share (masked): `), parsing and validating the share offline before transmitting `AT+SHARE=<idx>,<shareHex>`.
+>    - Eliminates multi-prompt friction (entering index cleartext then share masked) and protects hardware retry counters from typos.
+> 4. **Wire-Protocol Invariance**:
+>    - Maintained 100% wire compatibility with PCA10059 firmware command `AT+SHARE=<idx>,<shareHex>`.
+>    - All formatting, parsing, and CRC-32 validation execute hermetically within host CLI domain logic with zero changes required in microcontroller firmware.
+> 5. **Architecture & Documentation Formalization**:
+>    - Formalized [[Architecture/Decisions/ADR-0034 - Shamir Key Format with Embedded Index and CRC32 Checksum|ADR-0034: Shamir Key Format with Embedded Index and CRC32 Checksum]].
+>    - Authored [[Specification/Shamir Key Format with Embedded Index and CRC32 Checksum|Technical Specification]] and [[Plan/Shamir Key Format with Embedded Index and CRC32 Checksum Implementation Plan|Implementation Plan]].
+>    - Authored [[features/shamir-share-format-crc32|Feature Specification]].
+>    - Updated [[Development/CLI Reference|CLI Reference]] and `hsm-cli/README.md` with share format and single-prompt ceremony details.
+>
+> **Associated Architecture & Decision Artifacts**:
+> - [[Architecture/Decisions/ADR-0034 - Shamir Key Format with Embedded Index and CRC32 Checksum|ADR-0034: Shamir Key Format with Embedded Index and CRC32 Checksum]]
+> - [[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]
+> - [[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]
+> - [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
+> - [[features/shamir-share-format-crc32|Feature Specification: Shamir Custodian Share Format with CRC32 Checksum]]
+> - [[Specification/Shamir Key Format with Embedded Index and CRC32 Checksum|Technical Specification: Shamir Key Format with Embedded Index and CRC32 Checksum]]
+> - [[Plan/Shamir Key Format with Embedded Index and CRC32 Checksum Implementation Plan|Implementation Plan: Shamir Key Format with Embedded Index and CRC32 Checksum]]
+> - [[Development/CLI Reference|CLI Reference: gphsm]]
 
 ---
 

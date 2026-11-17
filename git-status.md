@@ -7,7 +7,7 @@ tags:
   - branches
 created: 2026-10-31
 updated: 2026-11-17
-lifecycle_phase: Phase 5 Pre-Merge Documentation Tidy-Up — Shamir Custodian Share Format with CRC32 Checksum
+lifecycle_phase: Phase 6 Post-Merge Complete — Shamir Custodian Share Format with CRC32 Checksum
 feature: "[[features/shamir-share-format-crc32|Shamir Custodian Share Format with CRC32 Checksum]]"
 plan: "[[Plan/Shamir Key Format with Embedded Index and CRC32 Checksum Implementation Plan|Implementation Plan: Shamir Key Format with Embedded Index and CRC32 Checksum]]"
 adrs:
@@ -31,26 +31,26 @@ This document tracks real-time Git branch topologies, commit records, working di
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Up to date with `origin/main` | `966b004` (*docs(workspace): document targeted authentication persistence and filesystem labeling*) | **Clean** | **Production Ready** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Up to date with `origin/main` | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Production Ready** |
-| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `feature/shamir-checksummed-shares` | Active (ahead of `main` by 2 commits) | `8560700` (*docs(cli): document canonical 75-character Shamir share format and single masked prompt ceremony*) | **Clean** | **Phase 5 Pre-Merge Review Complete** |
+| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `4be49c7` (*feat(cli): introduce checksummed Shamir custodian share format with fail-fast CRC32 validation (#3)*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Production Ready** |
 | **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Up to date with `origin/main` | `51fa045` (*docs: add ADR-0032, ADR-0033, and auth persistence links to README*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `feature/shamir-checksummed-shares` | Active (ahead of `main` by 1 commit) | `6b2140c` (*docs: formalize ADR-0034 and document Shamir key format with embedded index and CRC32*) | **Clean** | **Phase 5 Pre-Merge Review Complete** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Up to date with `origin/main` | `1b038a2` (*docs(vault): formalize ADR-0034 and document checksummed Shamir shares (#1)*) | **Clean** | **Phase 6 Post-Merge Complete** |
 
 ---
 
-## 1.0 Active Milestone: Shamir Custodian Share Format with CRC32 Checksum (Phase 5 Pre-Merge Review Complete)
+## 1.0 Merged Milestone: Shamir Custodian Share Format with CRC32 Checksum (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
-> **Active Milestone**: Self-contained 75-character formatted custodian shares (`<index>-<64_hex_share>-<8_hex_crc32>`), fail-fast offline CRC-32 validation, and streamlined single masked prompt authentication ceremony across the host CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli)) and documentation vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian)). Protects hardware non-volatile retry counters against accidental lockout from transcription typos, prevents index disassociation on physical media, and maintains 100% wire-protocol invariance with nRF52840 firmware (`AT+SHARE`).
+> **Post-Merge Milestone**: Self-contained 75-character formatted custodian shares (`<index>-<64_hex_share>-<8_hex_crc32>`), fail-fast offline CRC-32 validation, and streamlined single masked prompt authentication ceremony across the host CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli)) and documentation vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian)) successfully merged into `main`. Protects hardware non-volatile retry counters against accidental lockout from transcription typos, prevents index disassociation on physical media, and maintains 100% wire-protocol invariance with nRF52840 firmware (`AT+SHARE`).
 >
-> - **Lifecycle Phase**: Phase 5 Pre-Merge Review Complete (Ready for Merge).
-> - **Target Branch**: `main`
-> - **Active Feature Branches**:
->   - **CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**: `feature/shamir-checksummed-shares`
->     - `8560700` — *docs(cli): document canonical 75-character Shamir share format and single masked prompt ceremony*
->     - `9f0291c` — *feat(cli): introduce checksummed Shamir custodian share format with fail-fast CRC32 validation*
->   - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: `feature/shamir-checksummed-shares`
->     - `6b2140c` — *docs: formalize ADR-0034 and document Shamir key format with embedded index and CRC32*
+> - **Lifecycle Phase**: Phase 6 Post-Merge Complete (Merged into `main`).
+> - **Base Branch**: `main`
+> - **Merged Pull Requests & Commits**:
+>   - **Host Management CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**: Merged PR [#3 (https://github.com/gpfister/hsm-cli/pull/3)](https://github.com/gpfister/hsm-cli/pull/3) into `main` (Branch pruned)
+>     - Commit: [`4be49c7`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) (`4be49c7b3efd143f4045a47c0beeb101e0840806`) — *feat(cli): introduce checksummed Shamir custodian share format with fail-fast CRC32 validation (#3)*
+>   - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: Merged PR [#1 (https://github.com/gpfister/hsm-obsidian/pull/1)](https://github.com/gpfister/hsm-obsidian/pull/1) into `main` (Branch pruned)
+>     - Commit: [`1b038a2`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) (`1b038a249eabc0b2f90998cef827c3e14137633a`) — *docs(vault): formalize ADR-0034 and document checksummed Shamir shares (#1)*
+> - **Branch Cleanup**: Both branches cleanly merged, remote and local feature branches pruned, and working trees verified clean on `main`.
 > - **Architecture Decision Records**:
 >   - [[Architecture/Decisions/ADR-0034 - Shamir Key Format with Embedded Index and CRC32 Checksum|ADR-0034: Shamir Key Format with Embedded Index and CRC32 Checksum]]
 >   - [[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]
@@ -60,8 +60,9 @@ This document tracks real-time Git branch topologies, commit records, working di
 >   - [[Specification/Shamir Key Format with Embedded Index and CRC32 Checksum|Technical Specification]]
 >   - [[Plan/Shamir Key Format with Embedded Index and CRC32 Checksum Implementation Plan|Implementation Plan]]
 >   - [[features/shamir-share-format-crc32|Feature Specification]]
+> - **Release Changelog**: [[Changelog|Workspace Release Changelog]]
 >
-> ### Deliverable Components & Pre-Merge Verifications
+> ### Deliverable Components & Post-Merge Verifications
 > 1. **Domain Logic (`internal/domain`)**:
 >    - `FormatCustodianShare(index, shareHex)`: Encodes canonical 75-character `<index>-<64_hex_share>-<8_hex_crc32>` string with upper-case hex.
 >    - `CalculateShareCRC32(index, shareHex)`: Computes IEEE 802.3 CRC-32 over binary slice `[uint8(index) || 32_byte_share]`.
@@ -76,7 +77,7 @@ This document tracks real-time Git branch topologies, commit records, working di
 >    - `hsm-cli/README.md` updated with canonical share format and single masked prompt ceremony.
 >    - Formalized ADR-0034 in vault.
 >    - Authored Technical Specification, Implementation Plan, and Feature Specification.
->    - Updated Vault Index (`00 - Index.md`), Vault README (`README.md`), CLI Reference (`Development/CLI Reference.md`), and Git Status (`git-status.md`).
+>    - Updated Vault Index (`00 - Index.md`), Vault README (`README.md`), CLI Reference (`Development/CLI Reference.md`), Changelog (`Changelog.md`), and Git Status (`git-status.md`).
 >
 > ---
 >

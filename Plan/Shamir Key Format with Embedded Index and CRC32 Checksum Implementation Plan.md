@@ -11,7 +11,7 @@ tags:
   - cli
 created: 2026-11-17
 updated: 2026-11-17
-status: Approved (Phase 3 Plan Approved)
+status: Completed & Merged into main (Phase 6 Post-Merge Complete)
 adrs:
   - "[[Architecture/Decisions/ADR-0034 - Shamir Key Format with Embedded Index and CRC32 Checksum|ADR-0034: Shamir Key Format with Embedded Index and CRC32 Checksum]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture]]"
@@ -26,13 +26,13 @@ references:
 
 # Implementation Plan: Shamir Key Format with Embedded Index and CRC32 Checksum
 
-> **Document Status**: APPROVED (Phase 3 Plan Approved)  
+> **Document Status**: COMPLETED & MERGED (Phase 6 Post-Merge Complete)  
 > **Associated Specification**: [[Specification/Shamir Key Format with Embedded Index and CRC32 Checksum|Technical Specification: Shamir Key Format with Embedded Index and CRC32 Checksum]]  
 > **Associated Architecture Decision Record**: [[Architecture/Decisions/ADR-0034 - Shamir Key Format with Embedded Index and CRC32 Checksum|ADR-0034: Shamir Key Format with Embedded Index and CRC32 Checksum]]  
 > **Target Repositories**:
 > - [`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli)
 > - [`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian)  
-> **Target Git Branch**: `feature/shamir-checksummed-shares`  
+> **Target Git Branch**: `main` (PR #3 in `hsm-cli` and PR #1 in `hsm-obsidian` merged, feature branches pruned)  
 > **Author**: `coding-plan` (Architecture Planner)
 
 ---
