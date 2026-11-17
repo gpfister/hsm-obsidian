@@ -34,7 +34,7 @@ This document tracks real-time Git branch topologies, commit records, working di
 | **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `4be49c7` (*feat(cli): introduce checksummed Shamir custodian share format with fail-fast CRC32 validation (#3)*) | **Clean** | **Phase 6 Post-Merge Complete** |
 | **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Production Ready** |
 | **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Up to date with `origin/main` | `51fa045` (*docs: add ADR-0032, ADR-0033, and auth persistence links to README*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Up to date with `origin/main` | `1b038a2` (*docs(vault): formalize ADR-0034 and document checksummed Shamir shares (#1)*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Up to date with `origin/main` | `af80e4c` (*docs(release): post-merge changelog, git status, and feature records for checksummed Shamir shares*) | **Clean** | **Phase 6 Post-Merge Complete** |
 
 ---
 
