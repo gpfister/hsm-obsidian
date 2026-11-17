@@ -148,11 +148,14 @@ Initializes authentication mode on an unconfigured device (`CONFIGURED=0`):
    - Maximum 2 sequential monotonic characters.
    - Flags: `--pin <string>` (or env `GPHSM_PIN`).
 3. **Shamir Mode (`--mode shamir`)**:
-   Executes a 3-of-5 threshold ceremony, emitting 5 custodian shares and requiring confirmation before zeroizing RAM buffers.
+   Executes a 3-of-5 threshold ceremony, emitting 5 custodian shares in canonical 75-character self-contained format (`<index>-<64_hex_share>-<8_hex_crc32>`) and requiring confirmation before zeroizing RAM buffers.
+   - **Canonical Format**: Each custodian receives a delimited string binding their index, 32-byte secret share, and an 8-character IEEE 802.3 CRC-32 checksum (e.g. `1-E4C20F9B...71A3-9F8120B4`).
+   - **Integrity Guarantee**: Custodians must preserve the complete 75-character string. The embedded CRC-32 prevents transcription typos from exhausting hardware retry counters during recovery.
 
 > [!TIP]
-> **Protocol Compatibility & Error Sentinels (ADR-0019)**:
-> - **Fallback Compatibility**: If an un-upgraded firmware build rejects `AT+INIT=SHAMIR` with `+CME ERROR: 8` (`ErrCommandUnsupported`), `gphsm` automatically falls back to canonical legacy `AT+INIT=1`.
+> **Protocol Compatibility & Error Sentinels (ADR-0019, ADR-0034)**:
+> - **Self-Verifying Shares (ADR-0034)**: The CLI packages emitted shares with embedded index and CRC-32, enabling offline validation without altering the underlying firmware `AT+INIT` wire protocol.
+> - **Fallback Compatibility (ADR-0019)**: If an un-upgraded firmware build rejects `AT+INIT=SHAMIR` with `+CME ERROR: 8` (`ErrCommandUnsupported`), `gphsm` automatically falls back to canonical legacy `AT+INIT=1`.
 > - **Multi-Prefix Tolerance**: The line parser tolerates response shares prefixed with either `+INIT:` (modern firmware/mock) or `+SHARE:` (legacy).
 > - **Hardware CME Mappings**: Hardware CME errors are parsed into typed Go error sentinels: Code 41 (`ErrAlreadyConfigured`), Code 42 (`ErrInvalidAuthMode`), and Code 103 (`ErrDuplicateShare`).
 
@@ -263,7 +266,10 @@ Authenticates the operator session, unlocks the HSM hardware state machine, and 
    - Interactive TTY: prompts with a masked `bubbles/textinput` widget (`••••••••`).
    - Headless: reads `--pin`, `stdin`, or `GPHSM_PIN`.
 5. If `METHOD=SHAMIR`:
-   - Initiates turn-by-turn custodian threshold unlock ceremony, prompting for quorum shares.
+   - Initiates turn-by-turn custodian threshold unlock ceremony (3-of-5 threshold).
+   - **Streamlined Single Prompt**: Prompts each custodian with a single masked input: `"Enter Custodian Secret Share (masked): "`.
+   - **Fail-Fast Offline Validation (ADR-0034)**: Parses `<index>-<64_hex_share>-<8_hex_crc32>` and validates IEEE 802.3 CRC-32 over `[uint8(index) || 32_byte_share]` locally. If a typo or format error is detected, execution aborts locally without transmitting across serial `AT+SHARE`, preserving device non-volatile retry counters.
+   - **Legacy Share Guard**: Accidental entry of legacy 64-hex shares is caught locally and returns explicit upgrade guidance (`ErrRawShareDetected`).
 
 ---
 
@@ -298,6 +304,8 @@ Standard OpenSC `pkcs11-tool` invocations map to `gphsm` and `libgphsm` commands
 
 ## Cross-References
 
+- [[Architecture/Decisions/ADR-0034 - Shamir Key Format with Embedded Index and CRC32 Checksum|ADR-0034: Shamir Key Format with Embedded Index and CRC32 Checksum]]
+- [[features/shamir-share-format-crc32|Feature Specification: Shamir Custodian Share Format with CRC32 Checksum]]
 - [[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery]]
 - [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
 - [[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]

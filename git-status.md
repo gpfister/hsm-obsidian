@@ -6,30 +6,16 @@ tags:
   - repository
   - branches
 created: 2026-10-31
-updated: 2026-11-12
-lifecycle_phase: Phase 6 Post-Merge Complete — Persistent Authentication & User Account State Across Reboots
-feature: "[[features/yocto-persist-auth-state|Persistent Authentication & User Account State Across Reboots]]"
-plan: "[[Plan/Persistent Authentication and User Account State Across Reboots Implementation Plan|Implementation Plan: Persistent Authentication & User Account State Across Reboots]]"
+updated: 2026-11-17
+lifecycle_phase: Phase 5 Pre-Merge Documentation Tidy-Up — Shamir Custodian Share Format with CRC32 Checksum
+feature: "[[features/shamir-share-format-crc32|Shamir Custodian Share Format with CRC32 Checksum]]"
+plan: "[[Plan/Shamir Key Format with Embedded Index and CRC32 Checksum Implementation Plan|Implementation Plan: Shamir Key Format with Embedded Index and CRC32 Checksum]]"
 adrs:
-  - "[[Architecture/Decisions/ADR-0033 - Real-Time Atomic Credential Synchronization and Reboot-Shutdown Flushes|ADR-0033: Real-Time Atomic Credential Synchronization and Reboot/Shutdown Flushes]]"
-  - "[[Architecture/Decisions/ADR-0032 - Targeted Authentication State Persistence to data-etc with Ephemeral etc OverlayFS|ADR-0032: Targeted Authentication State Persistence to /data/etc with Ephemeral /etc OverlayFS]]"
-  - "[[Architecture/Decisions/ADR-0031 - gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink|ADR-0031: gphsm Packaging Lifecycle and Complete Deprecation of hsmutil Symlink]]"
-  - "[[Architecture/Decisions/ADR-0030 - Sub-Repository Workspace Cleanliness via Encapsulated Build Directory|ADR-0030: Sub-Repository Workspace Cleanliness via Encapsulated Build Directory]]"
-  - "[[Architecture/Decisions/ADR-0029 - Production Session History Suppression and Environment-Conditioned Hostnames|ADR-0029: Production Session History Suppression and Environment-Conditioned Hostnames]]"
-  - "[[Architecture/Decisions/ADR-0028 - Complete Kernel Network Protocol Stripping|ADR-0028: Complete Kernel Network Protocol Stripping (Elimination of PF_INET and PF_INET6)]]"
-  - "[[Architecture/Decisions/ADR-0027 - Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm|ADR-0027: Appliance Identity Standardization to piKMS and CLI Packaging Alignment to gphsm]]"
-  - "[[Architecture/Decisions/ADR-0026 - HDMI Console Noise Suppression and Log Level Hardening|ADR-0026: HDMI Console Noise Suppression and Log Level Hardening]]"
-  - "[[Architecture/Decisions/ADR-0025 - Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance|ADR-0025: Complete U-Boot Network Subsystem Deactivation in Air-Gapped Appliance]]"
-  - "[[Architecture/Decisions/ADR-0024 - Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication|ADR-0024: Native Shadow PAM Password Expiration vs First-Login Wizard Deduplication]]"
-  - "[[Architecture/Decisions/ADR-0023 - Container Volume and Workspace Cache Purging during Distclean|ADR-0023: Container Volume and Workspace Cache Purging during Distclean]]"
-  - "[[Architecture/Decisions/ADR-0022 - RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync|ADR-0022: RTC-Aware Informational Login Prompt with Transactional Hardware Clock Sync]]"
-  - "[[Architecture/Decisions/ADR-0021 - Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module|ADR-0021: Hardware I2C-1 Bus Mapping for HW-084 DS3231 RTC Module]]"
-  - "[[Architecture/Decisions/ADR-0020 - Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery|ADR-0020: Retirement of Backward-Compatible Binary Symlinks and Native macOS USB Discovery]]"
-  - "[[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
-  - "[[Architecture/Decisions/ADR-0018 - Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance|ADR-0018: Sub-Repository Renaming to hsm-pkcs11 with libgphsm ABI Invariance]]"
-  - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
+  - "[[Architecture/Decisions/ADR-0034 - Shamir Key Format with Embedded Index and CRC32 Checksum|ADR-0034: Shamir Key Format with Embedded Index and CRC32 Checksum]]"
   - "[[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]"
-specification: "[[Specification/Persistent Authentication and User Account State Across Reboots|Technical Specification: Persistent Authentication & User Account State Across Reboots]]"
+  - "[[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]"
+  - "[[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]"
+specification: "[[Specification/Shamir Key Format with Embedded Index and CRC32 Checksum|Technical Specification: Shamir Key Format with Embedded Index and CRC32 Checksum]]"
 changelog: "[[Changelog|Workspace Release Changelog]]"
 ---
 
@@ -43,16 +29,58 @@ This document tracks real-time Git branch topologies, commit records, working di
 
 | Repository | Path | Active Branch | Tracking / Upstream | Latest Commit | Working Tree Status | Release / Lifecycle Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Up to date with `origin/main` | `966b004` (*docs(workspace): document targeted authentication persistence and filesystem labeling*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Workspace Root** | [nrf52840-hsm](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm) | `main` | Up to date with `origin/main` | `966b004` (*docs(workspace): document targeted authentication persistence and filesystem labeling*) | **Clean** | **Production Ready** |
 | **Firmware** | [hsm-ncs-firmware](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-ncs-firmware) | `main` | Up to date with `origin/main` | `7f516bd` (*docs(firmware): document dual-mode authentication in README*) | **Clean** | **Production Ready** |
-| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `main` | Up to date with `origin/main` | `7341531` (*refactor(cli): remove build-time binary symlinks and retire fallback discovery (#2)*) | **Clean** | **Production Ready** |
+| **CLI** | [hsm-cli](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli) | `feature/shamir-checksummed-shares` | Active (ahead of `main` by 2 commits) | `8560700` (*docs(cli): document canonical 75-character Shamir share format and single masked prompt ceremony*) | **Clean** | **Phase 5 Pre-Merge Review Complete** |
 | **PKCS#11 Provider** | [hsm-pkcs11](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-pkcs11) | `main` | Up to date with `origin/main` | `d25adea` (*docs(p11): align protocol ID reference with ADR-0013 in README*) | **Clean** | **Production Ready** |
 | **Air-Gapped OS** | [hsm-yocto-offgrid-rpi](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi) | `main` | Up to date with `origin/main` | `51fa045` (*docs: add ADR-0032, ADR-0033, and auth persistence links to README*) | **Clean** | **Phase 6 Post-Merge Complete** |
-| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `main` | Ahead of `origin/main` | `f08158f` (*docs(status): update workspace git status for Phase 5 pre-merge review*) | **Clean** | **Phase 6 Post-Merge Complete** |
+| **Obsidian Vault** | [hsm-obsidian](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian) | `feature/shamir-checksummed-shares` | Active (ahead of `main` by 1 commit) | `6b2140c` (*docs: formalize ADR-0034 and document Shamir key format with embedded index and CRC32*) | **Clean** | **Phase 5 Pre-Merge Review Complete** |
 
 ---
 
-## 1.0 Merged Milestone: Persistent Authentication & User Account State Across Reboots (Phase 6 Post-Merge Complete)
+## 1.0 Active Milestone: Shamir Custodian Share Format with CRC32 Checksum (Phase 5 Pre-Merge Review Complete)
+
+> [!NOTE]
+> **Active Milestone**: Self-contained 75-character formatted custodian shares (`<index>-<64_hex_share>-<8_hex_crc32>`), fail-fast offline CRC-32 validation, and streamlined single masked prompt authentication ceremony across the host CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli)) and documentation vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian)). Protects hardware non-volatile retry counters against accidental lockout from transcription typos, prevents index disassociation on physical media, and maintains 100% wire-protocol invariance with nRF52840 firmware (`AT+SHARE`).
+>
+> - **Lifecycle Phase**: Phase 5 Pre-Merge Review Complete (Ready for Merge).
+> - **Target Branch**: `main`
+> - **Active Feature Branches**:
+>   - **CLI ([`hsm-cli`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-cli))**: `feature/shamir-checksummed-shares`
+>     - `8560700` — *docs(cli): document canonical 75-character Shamir share format and single masked prompt ceremony*
+>     - `9f0291c` — *feat(cli): introduce checksummed Shamir custodian share format with fail-fast CRC32 validation*
+>   - **Knowledge Vault ([`hsm-obsidian`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-obsidian))**: `feature/shamir-checksummed-shares`
+>     - `6b2140c` — *docs: formalize ADR-0034 and document Shamir key format with embedded index and CRC32*
+> - **Architecture Decision Records**:
+>   - [[Architecture/Decisions/ADR-0034 - Shamir Key Format with Embedded Index and CRC32 Checksum|ADR-0034: Shamir Key Format with Embedded Index and CRC32 Checksum]]
+>   - [[Architecture/Decisions/ADR-0016 - Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)|ADR-0016: Dual-Mode Authentication Architecture (PIN and Shamir Secret Sharing)]]
+>   - [[Architecture/Decisions/ADR-0017 - Host CLI Rebranding to gphsm and PKCS11 Refactoring to libgphsm|ADR-0017: Host CLI Rebranding to gphsm and PKCS#11 Refactoring to libgphsm]]
+>   - [[Architecture/Decisions/ADR-0019 - HSM Device Initialization and Dual-Mode Protocol Compatibility|ADR-0019: HSM Device Initialization and Dual-Mode Protocol Compatibility]]
+> - **Technical Specification & Plan**:
+>   - [[Specification/Shamir Key Format with Embedded Index and CRC32 Checksum|Technical Specification]]
+>   - [[Plan/Shamir Key Format with Embedded Index and CRC32 Checksum Implementation Plan|Implementation Plan]]
+>   - [[features/shamir-share-format-crc32|Feature Specification]]
+>
+> ### Deliverable Components & Pre-Merge Verifications
+> 1. **Domain Logic (`internal/domain`)**:
+>    - `FormatCustodianShare(index, shareHex)`: Encodes canonical 75-character `<index>-<64_hex_share>-<8_hex_crc32>` string with upper-case hex.
+>    - `CalculateShareCRC32(index, shareHex)`: Computes IEEE 802.3 CRC-32 over binary slice `[uint8(index) || 32_byte_share]`.
+>    - `ParseCustodianShare(input)`: Validates 75-char length, hyphen delimiters, index range $[1, 5]$, 64 hex characters, and verifies CRC-32.
+>    - Sentinels: `ErrInvalidShareFormat`, `ErrInvalidCustodianIndex`, `ErrInvalidShareHex`, `ErrInvalidShareChecksum`, and `ErrRawShareDetected`.
+>    - Full unit test coverage: round-trip parity, single-bit corruption detection, case-insensitivity, delimiter variations, and raw share detection.
+> 2. **Turn-by-Turn Ceremonies (`internal/usecases`, `internal/ui/cli`)**:
+>    - `RunTurnByTurnInit`: Outputs canonical formatted shares to custodians with backup guidance.
+>    - `RunTurnByTurnAuth`: Streamlines each custodian turn to a single masked prompt (`Enter Custodian Secret Share (masked): `), performing offline CRC-32 validation before dispatching `AT+SHARE`.
+>    - Hardware retry counters are invariant to invalid inputs or typos.
+> 3. **Documentation & Architecture (`hsm-cli`, `hsm-obsidian`)**:
+>    - `hsm-cli/README.md` updated with canonical share format and single masked prompt ceremony.
+>    - Formalized ADR-0034 in vault.
+>    - Authored Technical Specification, Implementation Plan, and Feature Specification.
+>    - Updated Vault Index (`00 - Index.md`), Vault README (`README.md`), CLI Reference (`Development/CLI Reference.md`), and Git Status (`git-status.md`).
+>
+> ---
+>
+> ## 1.1 Merged Milestone: Persistent Authentication & User Account State Across Reboots (Phase 6 Post-Merge Complete)
 
 > [!NOTE]
 > **Post-Merge Milestone**: Targeted authentication state persistence, real-time atomic credential synchronization, label-based filesystem mounting, and persistent user home directory preservation for the air-gapped embedded Linux operating system ([`hsm-yocto-offgrid-rpi`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm/hsm-yocto-offgrid-rpi)) and workspace root orchestrator ([`nrf52840-hsm`](file:///Users/gpfister/Development/Projects/gpfister/nrf52840-hsm)) successfully merged into `main`. Retains an immutable root filesystem (`read-only-rootfs`) with an ephemeral RAM tmpfs overlay over `/etc` (`/run/overlay/etc-upper`) to prevent configuration drift and guarantee clean RAUC A/B operating system updates, while securely persisting operator credentials (`/etc/shadow`, `/etc/passwd`, `/etc/group`, `/etc/gshadow`) to `/data/etc` (mode `0700`, owner `root:root`). Automatically seeds `/data/etc` on first boot, restores valid credentials on subsequent boots with corruption fallback to prevent lockout, synchronizes changes in real time via systemd path unit (`hsm-persist-auth.path`) and oneshot service (`hsm-persist-auth.service`) with atomic POSIX staging and `sync` flush, guarantees shutdown persistence via `ExecStop` flush hook, standardizes filesystem mounts on volume labels (`LABEL=data`, `LABEL=homefs`), and preserves operator home dotfiles (`.bashrc`, `.keymap`, `.wizard_completed`) across reboots.
